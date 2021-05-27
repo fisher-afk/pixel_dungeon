@@ -15,32 +15,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.sprites;
+package com.watabou.pixeldungeon.sprites
 
-import com.watabou.noosa.TextureFilm;
-import com.watabou.pixeldungeon.Assets;
-
-public class BatSprite extends MobSprite {
-	
-	public BatSprite() {
-		super();
-		
-		texture( Assets.BAT );
-		
-		TextureFilm frames = new TextureFilm( texture, 15, 15 );
-		
-		idle = new Animation( 8, true );
-		idle.frames( frames, 0, 1 );
-		
-		run = new Animation( 12, true );
-		run.frames( frames, 0, 1 );
-		
-		attack = new Animation( 12, false );
-		attack.frames( frames, 2, 3, 0, 1 );
-		
-		die = new Animation( 12, false );
-		die.frames( frames, 4, 5, 6 );
-		
-		play( idle );
-	}
+import com.watabou.noosa.TextureFilm
+class BatSprite : MobSprite() {
+    init {
+        texture(Assets.BAT)
+        val frames = TextureFilm(texture, 15, 15)
+        idle = Animation(8, true)
+        idle.frames(frames, 0, 1)
+        run = Animation(12, true)
+        run.frames(frames, 0, 1)
+        attack = Animation(12, false)
+        attack.frames(frames, 2, 3, 0, 1)
+        die = Animation(12, false)
+        die.frames(frames, 4, 5, 6)
+        play(idle)
+    }
 }

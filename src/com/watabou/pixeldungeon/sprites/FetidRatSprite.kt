@@ -15,42 +15,31 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.sprites;
+package com.watabou.pixeldungeon.sprites
 
-import com.watabou.noosa.particles.Emitter;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.effects.Speck;
+import com.watabou.noosa.particles.Emitter
 
-public class FetidRatSprite extends RatSprite {
-	
-	private Emitter cloud;
-	
-	@Override
-	public void link( Char ch ) {
-		super.link( ch );
-		
-		if (cloud == null) {
-			cloud = emitter();
-			cloud.pour( Speck.factory( Speck.PARALYSIS ), 0.7f );
-		}
-	}
-	
-	@Override
-	public void update() {
-		
-		super.update();
-		
-		if (cloud != null) {
-			cloud.visible = visible;
-		}
-	}
-	
-	@Override
-	public void die() {
-		super.die();
-		
-		if (cloud != null) {
-			cloud.on = false;
-		}
-	}
+class FetidRatSprite : RatSprite() {
+    private var cloud: Emitter? = null
+    fun link(ch: Char?) {
+        super.link(ch)
+        if (cloud == null) {
+            cloud = emitter()
+            cloud.pour(Speck.factory(Speck.PARALYSIS), 0.7f)
+        }
+    }
+
+    override fun update() {
+        super.update()
+        if (cloud != null) {
+            cloud.visible = visible
+        }
+    }
+
+    override fun die() {
+        super.die()
+        if (cloud != null) {
+            cloud.on = false
+        }
+    }
 }

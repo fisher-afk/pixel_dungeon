@@ -15,41 +15,33 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.rings;
+package com.watabou.pixeldungeon.items.rings
 
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.hero.Hero;
+import com.watabou.pixeldungeon.Dungeon
 
-public class RingOfDetection extends Ring {
+class RingOfDetection : Ring() {
+    override fun doEquip(hero: Hero): Boolean {
+        return if (super.doEquip(hero)) {
+            Dungeon.hero.search(false)
+            true
+        } else {
+            false
+        }
+    }
 
-	{
-		name = "Ring of Detection";
-	}
-	
-	@Override
-	public boolean doEquip( Hero hero ) {
-		if (super.doEquip( hero )) {
-			Dungeon.hero.search( false );
-			return true;
-		} else {
-			return false;
-		}
-	}
-	
-	@Override
-	protected RingBuff buff( ) {
-		return new Detection();
-	}
-	
-	@Override
-	public String desc() {
-		return isKnown() ?
-			"Wearing this ring will allow the wearer to notice hidden secrets - " +
-			"traps and secret doors - without taking time to search. Degraded rings of detection " +
-			"will dull your senses, making it harder to notice secrets even when actively searching for them." :
-			super.desc();
-	}
-	
-	public class Detection extends RingBuff {
-	}
+    protected override fun buff(): RingBuff {
+        return Detection()
+    }
+
+    override fun desc(): String {
+        return if (isKnown()) "Wearing this ring will allow the wearer to notice hidden secrets - " +
+                "traps and secret doors - without taking time to search. Degraded rings of detection " +
+                "will dull your senses, making it harder to notice secrets even when actively searching for them." else super.desc()
+    }
+
+    inner class Detection : RingBuff()
+
+    init {
+        name = "Ring of Detection"
+    }
 }

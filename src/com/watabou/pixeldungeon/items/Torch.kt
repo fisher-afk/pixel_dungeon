@@ -15,80 +15,53 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items;
+package com.watabou.pixeldungeon.items
 
-import java.util.ArrayList;
+import com.watabou.noosa.particles.Emitter
 
-import com.watabou.noosa.particles.Emitter;
-import com.watabou.pixeldungeon.actors.buffs.Buff;
-import com.watabou.pixeldungeon.actors.buffs.Light;
-import com.watabou.pixeldungeon.actors.hero.Hero;
-import com.watabou.pixeldungeon.effects.particles.FlameParticle;
-import com.watabou.pixeldungeon.sprites.ItemSpriteSheet;
+class Torch : Item() {
+    override fun actions(hero: Hero?): ArrayList<String> {
+        val actions: ArrayList<String> = super.actions(hero)
+        actions.add(AC_LIGHT)
+        return actions
+    }
 
-public class Torch extends Item {
+    fun execute(hero: Hero, action: String) {
+        if (action === AC_LIGHT) {
+            hero.spend(TIME_TO_LIGHT)
+            hero.busy()
+            hero.sprite.operate(hero.pos)
+            detach(hero.belongings.backpack)
+            Buff.affect(hero, Light::class.java, Light.DURATION)
+            val emitter: Emitter = hero.sprite.centerEmitter()
+            emitter.start(FlameParticle.FACTORY, 0.2f, 3)
+        } else {
+            super.execute(hero, action)
+        }
+    }
 
-	public static final String AC_LIGHT	= "LIGHT";
-	
-	public static final float TIME_TO_LIGHT = 1;
-	
-	{
-		name = "torch";
-		image = ItemSpriteSheet.TORCH;
-		
-		stackable = true;
-		
-		defaultAction = AC_LIGHT;
-	}
-	
-	@Override
-	public ArrayList<String> actions( Hero hero ) {
-		ArrayList<String> actions = super.actions( hero );
-		actions.add( AC_LIGHT );
-		return actions;
-	}
-	
-	@Override
-	public void execute( Hero hero, String action ) {
-		
-		if (action == AC_LIGHT) {
-			
-			hero.spend( TIME_TO_LIGHT );
-			hero.busy();
-			
-			hero.sprite.operate( hero.pos );
-			
-			detach( hero.belongings.backpack );
-			Buff.affect( hero, Light.class, Light.DURATION );
-			
-			Emitter emitter = hero.sprite.centerEmitter();
-			emitter.start( FlameParticle.FACTORY, 0.2f, 3 );
-			
-		} else {
-			
-			super.execute( hero, action );
-			
-		}
-	}
-	
-	@Override
-	public boolean isUpgradable() {
-		return false;
-	}
-	
-	@Override
-	public boolean isIdentified() {
-		return true;
-	}
-	
-	@Override
-	public int price() {
-		return 10 * quantity;
-	}
-	
-	@Override
-	public String info() {
-		return
-			"It's an indispensable item in The Demon Halls, which are notorious for their poor ambient lighting.";
-	}
+    override val isUpgradable: Boolean
+        get() = false
+    override val isIdentified: Boolean
+        get() = true
+
+    override fun price(): Int {
+        return 10 * quantity
+    }
+
+    override fun info(): String {
+        return "It's an indispensable item in The Demon Halls, which are notorious for their poor ambient lighting."
+    }
+
+    companion object {
+        const val AC_LIGHT = "LIGHT"
+        const val TIME_TO_LIGHT = 1f
+    }
+
+    init {
+        name = "torch"
+        image = ItemSpriteSheet.TORCH
+        stackable = true
+        defaultAction = AC_LIGHT
+    }
 }

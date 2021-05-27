@@ -15,103 +15,78 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.mobs;
+package com.watabou.pixeldungeon.actors.mobs
 
-import java.util.HashSet;
+import com.watabou.pixeldungeon.Dungeon
 
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.buffs.Buff;
-import com.watabou.pixeldungeon.actors.buffs.Cripple;
-import com.watabou.pixeldungeon.actors.buffs.Light;
-import com.watabou.pixeldungeon.actors.buffs.Poison;
-import com.watabou.pixeldungeon.items.food.MysteryMeat;
-import com.watabou.pixeldungeon.items.potions.PotionOfHealing;
-import com.watabou.pixeldungeon.items.weapon.enchantments.Leech;
-import com.watabou.pixeldungeon.levels.Level;
-import com.watabou.pixeldungeon.mechanics.Ballistica;
-import com.watabou.pixeldungeon.sprites.ScorpioSprite;
-import com.watabou.utils.Random;
+class Scorpio : Mob() {
+    fun damageRoll(): Int {
+        return Random.NormalIntRange(20, 32)
+    }
 
-public class Scorpio extends Mob {
-	
-	{
-		name = "scorpio";
-		spriteClass = ScorpioSprite.class;
-		
-		HP = HT = 95;
-		defenseSkill = 24;
-		viewDistance = Light.DISTANCE;
-		
-		EXP = 14;
-		maxLvl = 25;
-		
-		loot = new PotionOfHealing();
-		lootChance = 0.125f;
-	}
-	
-	@Override
-	public int damageRoll() {
-		return Random.NormalIntRange( 20, 32 );
-	}
-	
-	@Override
-	public int attackSkill( Char target ) {
-		return 36;
-	}
-	
-	@Override
-	public int dr() {
-		return 16;
-	}
-	
-	@Override
-	protected boolean canAttack( Char enemy ) {
-		return !Level.adjacent( pos, enemy.pos ) && Ballistica.cast( pos, enemy.pos, false, true ) == enemy.pos;
-	}
-	
-	@Override
-	public int attackProc( Char enemy, int damage ) {
-		if (Random.Int( 2 ) == 0) {
-			Buff.prolong( enemy, Cripple.class, Cripple.DURATION );
-		}
-		
-		return damage;
-	}
-	
-	@Override
-	protected boolean getCloser( int target ) {
-		if (state == HUNTING) {
-			return enemySeen && getFurther( target );
-		} else {
-			return super.getCloser( target );
-		}
-	}
-	
-	@Override
-	protected void dropLoot() {
-		if (Random.Int( 8 ) == 0) {
-			Dungeon.level.drop( new PotionOfHealing(), pos ).sprite.drop();
-		} else if (Random.Int( 6 ) == 0) {
-			Dungeon.level.drop( new MysteryMeat(), pos ).sprite.drop();
-		}
-	}
-	
-	@Override
-	public String description() {
-		return
-			"These huge arachnid-like demonic creatures avoid close combat by all means, " +
-			"firing crippling serrated spikes from long distances.";
-	}
-	
-	private static final HashSet<Class<?>> RESISTANCES = new HashSet<Class<?>>();
-	static {
-		RESISTANCES.add( Leech.class );
-		RESISTANCES.add( Poison.class );
-	}
-	
-	@Override
-	public HashSet<Class<?>> resistances() {
-		return RESISTANCES;
-	}
+    fun attackSkill(target: Char?): Int {
+        return 36
+    }
+
+    fun dr(): Int {
+        return 16
+    }
+
+    protected fun canAttack(enemy: Char): Boolean {
+        return !Level.adjacent(pos, enemy.pos) && Ballistica.cast(pos, enemy.pos, false, true) === enemy.pos
+    }
+
+    fun attackProc(enemy: Char?, damage: Int): Int {
+        if (Random.Int(2) === 0) {
+            Buff.prolong(enemy, Cripple::class.java, Cripple.DURATION)
+        }
+        return damage
+    }
+
+    protected override fun getCloser(target: Int): Boolean {
+        return if (state === HUNTING) {
+            enemySeen && getFurther(target)
+        } else {
+            super.getCloser(target)
+        }
+    }
+
+    protected override fun dropLoot() {
+        if (Random.Int(8) === 0) {
+            Dungeon.level.drop(PotionOfHealing(), pos).sprite.drop()
+        } else if (Random.Int(6) === 0) {
+            Dungeon.level.drop(MysteryMeat(), pos).sprite.drop()
+        }
+    }
+
+    override fun description(): String {
+        return "These huge arachnid-like demonic creatures avoid close combat by all means, " +
+                "firing crippling serrated spikes from long distances."
+    }
+
+    companion object {
+        private val RESISTANCES = HashSet<Class<*>>()
+
+        init {
+            RESISTANCES.add(Leech::class.java)
+            RESISTANCES.add(Poison::class.java)
+        }
+    }
+
+    fun resistances(): HashSet<Class<*>> {
+        return RESISTANCES
+    }
+
+    init {
+        name = "scorpio"
+        spriteClass = ScorpioSprite::class.java
+        HT = 95
+        HP = HT
+        defenseSkill = 24
+        viewDistance = Light.DISTANCE
+        EXP = 14
+        maxLvl = 25
+        loot = PotionOfHealing()
+        lootChance = 0.125f
+    }
 }

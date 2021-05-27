@@ -15,27 +15,23 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.food;
+package com.watabou.pixeldungeon.items.food
 
-import com.watabou.pixeldungeon.actors.buffs.Hunger;
-import com.watabou.pixeldungeon.sprites.ItemSpriteSheet;
+import com.watabou.pixeldungeon.actors.buffs.Hunger
 
-public class OverpricedRation extends Food {
+class OverpricedRation : Food() {
+    override fun info(): String {
+        return "It looks exactly like a standard ration of food but smaller."
+    }
 
-	{
-		name = "overpriced food ration";
-		image = ItemSpriteSheet.OVERPRICED;
-		energy = Hunger.STARVING - Hunger.HUNGRY;
-		message = "That food tasted ok.";
-	}
-	
-	@Override
-	public String info() {
-		return "It looks exactly like a standard ration of food but smaller.";
-	}
-	
-	@Override
-	public int price() {
-		return 20 * quantity;
-	}
+    override fun price(): Int {
+        return 20 * quantity
+    }
+
+    init {
+        name = "overpriced food ration"
+        image = ItemSpriteSheet.OVERPRICED
+        energy = Hunger.STARVING - Hunger.HUNGRY
+        message = "That food tasted ok."
+    }
 }

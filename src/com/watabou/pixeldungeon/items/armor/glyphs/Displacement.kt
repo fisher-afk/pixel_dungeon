@@ -15,56 +15,39 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.armor.glyphs;
+package com.watabou.pixeldungeon.items.armor.glyphs
 
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.Actor;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.items.armor.Armor;
-import com.watabou.pixeldungeon.items.armor.Armor.Glyph;
-import com.watabou.pixeldungeon.items.wands.WandOfBlink;
-import com.watabou.pixeldungeon.levels.Level;
-import com.watabou.pixeldungeon.sprites.ItemSprite;
-import com.watabou.pixeldungeon.sprites.ItemSprite.Glowing;
-import com.watabou.utils.Random;
+import com.watabou.pixeldungeon.Dungeon
 
-public class Displacement extends Glyph {
+class Displacement : Glyph() {
+    fun proc(armor: Armor, attacker: Char?, defender: Char?, damage: Int): Int {
+        if (Dungeon.bossLevel()) {
+            return damage
+        }
+        val level: Int = armor.effectiveLevel()
+        val nTries = (if (level < 0) 1 else level + 1) * 5
+        for (i in 0 until nTries) {
+            val pos: Int = Random.Int(Level.LENGTH)
+            if (Dungeon.visible.get(pos) && Level.passable.get(pos) && Actor.findChar(pos) == null) {
+                WandOfBlink.appear(defender, pos)
+                Dungeon.level.press(pos, defender)
+                Dungeon.observe()
+                break
+            }
+        }
+        return damage
+    }
 
-	private static final String TXT_DISPLACEMENT	= "%s of displacement";
-	
-	private static ItemSprite.Glowing BLUE = new ItemSprite.Glowing( 0x66AAFF );
-	
-	@Override
-	public int proc( Armor armor, Char attacker, Char defender, int damage ) {
+    fun name(weaponName: String?): String {
+        return String.format(TXT_DISPLACEMENT, weaponName)
+    }
 
-		if (Dungeon.bossLevel()) {
-			return damage;
-		}
-		
-		int level = armor.effectiveLevel();
-		int nTries = (level < 0 ? 1 : level + 1) * 5;
-		for (int i=0; i < nTries; i++) {
-			int pos = Random.Int( Level.LENGTH );
-			if (Dungeon.visible[pos] && Level.passable[pos] && Actor.findChar( pos ) == null) {
-				
-				WandOfBlink.appear( defender, pos );
-				Dungeon.level.press( pos, defender );
-				Dungeon.observe();
+    fun glowing(): Glowing {
+        return BLUE
+    }
 
-				break;
-			}
-		}
-		
-		return damage;
-	}
-	
-	@Override
-	public String name( String weaponName) {
-		return String.format( TXT_DISPLACEMENT, weaponName );
-	}
-
-	@Override
-	public Glowing glowing() {
-		return BLUE;
-	}
+    companion object {
+        private const val TXT_DISPLACEMENT = "%s of displacement"
+        private val BLUE: ItemSprite.Glowing = Glowing(0x66AAFF)
+    }
 }

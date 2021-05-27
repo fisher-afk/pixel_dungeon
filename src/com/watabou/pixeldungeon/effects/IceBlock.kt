@@ -15,54 +15,41 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.effects;
+package com.watabou.pixeldungeon.effects
 
-import com.watabou.noosa.Game;
-import com.watabou.noosa.Gizmo;
-import com.watabou.noosa.audio.Sample;
-import com.watabou.pixeldungeon.Assets;
-import com.watabou.pixeldungeon.sprites.CharSprite;
+import com.watabou.noosa.Game
 
-public class IceBlock extends Gizmo {
-	
-	private float phase; 
-	
-	private CharSprite target;
-	
-	public IceBlock( CharSprite target ) {
-		super();
+class IceBlock(target: CharSprite) : Gizmo() {
+    private var phase: Float
+    private val target: CharSprite
+    fun update() {
+        super.update()
+        if (Game.elapsed * 2.let { phase += it; phase } < 1) {
+            target.tint(0.83f, 1.17f, 1.33f, phase * 0.6f)
+        } else {
+            target.tint(0.83f, 1.17f, 1.33f, 0.6f)
+        }
+    }
 
-		this.target = target;
-		phase = 0;
-	}
-	
-	@Override
-	public void update() {
-		super.update();
+    fun melt() {
+        target.resetColor()
+        killAndErase()
+        if (visible) {
+            Splash.at(target.center(), -0x4d2901, 5)
+            Sample.INSTANCE.play(Assets.SND_SHATTER)
+        }
+    }
 
-		if ((phase += Game.elapsed * 2) < 1) {
-			target.tint( 0.83f, 1.17f, 1.33f, phase * 0.6f );
-		} else {
-			target.tint( 0.83f, 1.17f, 1.33f, 0.6f );
-		}
-	}
-	
-	public void melt() {
+    companion object {
+        fun freeze(sprite: CharSprite): IceBlock {
+            val iceBlock = IceBlock(sprite)
+            sprite.parent.add(iceBlock)
+            return iceBlock
+        }
+    }
 
-		target.resetColor();
-		killAndErase();
-
-		if (visible) {
-			Splash.at( target.center(), 0xFFB2D6FF, 5 );
-			Sample.INSTANCE.play( Assets.SND_SHATTER );
-		}
-	}
-	
-	public static IceBlock freeze( CharSprite sprite ) {
-		
-		IceBlock iceBlock = new IceBlock( sprite );
-		sprite.parent.add( iceBlock );
-		
-		return iceBlock;
-	}
+    init {
+        this.target = target
+        phase = 0f
+    }
 }

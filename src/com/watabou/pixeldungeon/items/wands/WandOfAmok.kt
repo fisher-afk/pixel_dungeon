@@ -15,53 +15,35 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.wands;
+package com.watabou.pixeldungeon.items.wands
 
-import com.watabou.noosa.audio.Sample;
-import com.watabou.pixeldungeon.Assets;
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.Actor;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.buffs.Amok;
-import com.watabou.pixeldungeon.actors.buffs.Buff;
-import com.watabou.pixeldungeon.actors.buffs.Vertigo;
-import com.watabou.pixeldungeon.effects.MagicMissile;
-import com.watabou.pixeldungeon.utils.GLog;
-import com.watabou.utils.Callback;
+import com.watabou.noosa.audio.Sample
 
-public class WandOfAmok extends Wand {
+class WandOfAmok : Wand() {
+    protected override fun onZap(cell: Int) {
+        val ch: Char = Actor.findChar(cell)
+        if (ch != null) {
+            if (ch === Dungeon.hero) {
+                Buff.affect(ch, Vertigo::class.java, Vertigo.duration(ch))
+            } else {
+                Buff.affect(ch, Amok::class.java, 3f + power())
+            }
+        } else {
+            GLog.i("nothing happened")
+        }
+    }
 
-	{
-		name = "Wand of Amok";
-	}
+    protected override fun fx(cell: Int, callback: Callback?) {
+        MagicMissile.purpleLight(curUser.sprite.parent, curUser.pos, cell, callback)
+        Sample.INSTANCE.play(Assets.SND_ZAP)
+    }
 
-	@Override
-	protected void onZap( int cell ) {
-		Char ch = Actor.findChar( cell );
-		if (ch != null) {
-			
-			if (ch == Dungeon.hero) {
-				Buff.affect( ch, Vertigo.class, Vertigo.duration( ch ) );
-			} else {
-				Buff.affect( ch, Amok.class, 3f + power() );
-			}
+    fun desc(): String {
+        return "The purple light from this wand will make the target run amok " +
+                "attacking random creatures in its vicinity."
+    }
 
-		} else {
-			
-			GLog.i( "nothing happened" );
-			
-		}
-	}
-	
-	protected void fx( int cell, Callback callback ) {
-		MagicMissile.purpleLight( curUser.sprite.parent, curUser.pos, cell, callback );
-		Sample.INSTANCE.play( Assets.SND_ZAP );
-	}
-	
-	@Override
-	public String desc() {
-		return
-			"The purple light from this wand will make the target run amok " +
-			"attacking random creatures in its vicinity.";
-	}
+    init {
+        name = "Wand of Amok"
+    }
 }

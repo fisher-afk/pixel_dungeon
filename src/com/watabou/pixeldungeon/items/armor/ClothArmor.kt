@@ -15,24 +15,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.armor;
+package com.watabou.pixeldungeon.items.armor
 
-import com.watabou.pixeldungeon.sprites.ItemSpriteSheet;
+import com.watabou.pixeldungeon.sprites.ItemSpriteSheet
 
+class ClothArmor : Armor(1) {
+    fun desc(): String {
+        return "This lightweight armor offers basic protection."
+    }
 
-public class ClothArmor extends Armor {
-
-	{	
-		name = "cloth armor";
-		image = ItemSpriteSheet.ARMOR_CLOTH;
-	}
-	
-	public ClothArmor() {
-		super( 1 );
-	}
-	
-	@Override
-	public String desc() {
-		return "This lightweight armor offers basic protection.";
-	}
+    init {
+        name = "cloth armor"
+        image = ItemSpriteSheet.ARMOR_CLOTH
+    }
 }

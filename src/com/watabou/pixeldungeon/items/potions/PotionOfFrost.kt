@@ -15,56 +15,41 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.potions;
+package com.watabou.pixeldungeon.items.potions
 
-import com.watabou.noosa.audio.Sample;
-import com.watabou.pixeldungeon.Assets;
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.blobs.Fire;
-import com.watabou.pixeldungeon.actors.blobs.Freezing;
-import com.watabou.pixeldungeon.levels.Level;
-import com.watabou.pixeldungeon.utils.BArray;
-import com.watabou.utils.PathFinder;
+import com.watabou.noosa.audio.Sample
 
-public class PotionOfFrost extends Potion {
-	
-	private static final int DISTANCE	= 2;
-	
-	{
-		name = "Potion of Frost";
-	}
-	
-	@Override
-	public void shatter( int cell ) {
-		
-		PathFinder.buildDistanceMap( cell, BArray.not( Level.losBlocking, null ), DISTANCE );
-		
-		Fire fire = (Fire)Dungeon.level.blobs.get( Fire.class );
-		
-		boolean visible = false;
-		for (int i=0; i < Level.LENGTH; i++) {
-			if (PathFinder.distance[i] < Integer.MAX_VALUE) {
-				visible = Freezing.affect( i, fire ) || visible;
-			}
-		}
-		
-		if (visible) {
-			splash( cell );
-			Sample.INSTANCE.play( Assets.SND_SHATTER );
-			
-			setKnown();
-		}
-	}
-	
-	@Override
-	public String desc() {
-		return 
-			"Upon exposure to open air, this chemical will evaporate into a freezing cloud, causing " +
-			"any creature that contacts it to be frozen in place, unable to act and move.";
-	}
-	
-	@Override
-	public int price() {
-		return isKnown() ? 50 * quantity : super.price();
-	}
+class PotionOfFrost : Potion() {
+    override fun shatter(cell: Int) {
+        PathFinder.buildDistanceMap(cell, BArray.not(Level.losBlocking, null), DISTANCE)
+        val fire: Fire = Dungeon.level.blobs.get(Fire::class.java) as Fire
+        var visible = false
+        for (i in 0 until Level.LENGTH) {
+            if (PathFinder.distance.get(i) < Int.MAX_VALUE) {
+                visible = Freezing.affect(i, fire) || visible
+            }
+        }
+        if (visible) {
+            splash(cell)
+            Sample.INSTANCE.play(Assets.SND_SHATTER)
+            setKnown()
+        }
+    }
+
+    fun desc(): String {
+        return "Upon exposure to open air, this chemical will evaporate into a freezing cloud, causing " +
+                "any creature that contacts it to be frozen in place, unable to act and move."
+    }
+
+    override fun price(): Int {
+        return if (isKnown()) 50 * quantity else super.price()
+    }
+
+    companion object {
+        private const val DISTANCE = 2
+    }
+
+    init {
+        name = "Potion of Frost"
+    }
 }

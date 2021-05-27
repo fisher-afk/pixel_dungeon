@@ -15,130 +15,105 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.mobs;
+package com.watabou.pixeldungeon.actors.mobs
 
-import java.util.HashSet;
+import com.watabou.pixeldungeon.Badges
 
-import com.watabou.pixeldungeon.Badges;
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.Statistics;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.blobs.ToxicGas;
-import com.watabou.pixeldungeon.actors.buffs.Burning;
-import com.watabou.pixeldungeon.actors.buffs.Frost;
-import com.watabou.pixeldungeon.actors.buffs.Paralysis;
-import com.watabou.pixeldungeon.actors.buffs.Roots;
-import com.watabou.pixeldungeon.items.food.MysteryMeat;
-import com.watabou.pixeldungeon.levels.Level;
-import com.watabou.pixeldungeon.sprites.PiranhaSprite;
-import com.watabou.utils.Random;
+class Piranha : Mob() {
+    protected override fun act(): Boolean {
+        return if (!Level.water.get(pos)) {
+            die(null)
+            true
+        } else {
+            super.act()
+        }
+    }
 
-public class Piranha extends Mob {
-	
-	{
-		name = "giant piranha";
-		spriteClass = PiranhaSprite.class;
+    fun damageRoll(): Int {
+        return Random.NormalIntRange(Dungeon.depth, 4 + Dungeon.depth * 2)
+    }
 
-		baseSpeed = 2f;
-		
-		EXP = 0;
-	}
-	
-	public Piranha() {
-		super();
-		
-		HP = HT = 10 + Dungeon.depth * 5;
-		defenseSkill = 10 + Dungeon.depth * 2;
-	}
-	
-	@Override
-	protected boolean act() {
-		if (!Level.water[pos]) {
-			die( null );
-			return true;
-		} else {
-			return super.act();
-		}
-	}
-	
-	@Override
-	public int damageRoll() {
-		return Random.NormalIntRange( Dungeon.depth, 4 + Dungeon.depth * 2 );
-	}
-	
-	@Override
-	public int attackSkill( Char target ) {
-		return 20 + Dungeon.depth * 2;
-	}
-	
-	@Override
-	public int dr() {
-		return Dungeon.depth;
-	}
-	
-	@Override
-	public void die( Object cause ) {
-		Dungeon.level.drop( new MysteryMeat(), pos ).sprite.drop();
-		super.die( cause );
-		
-		Statistics.piranhasKilled++;
-		Badges.validatePiranhasKilled();
-	}
-	
-	@Override
-	public boolean reset() {
-		return true;
-	}
-	
-	@Override
-	protected boolean getCloser( int target ) {
-		
-		if (rooted) {
-			return false;
-		}
-		
-		int step = Dungeon.findPath( this, pos, target, 
-			Level.water, 
-			Level.fieldOfView );
-		if (step != -1) {
-			move( step );
-			return true;
-		} else {
-			return false;
-		}
-	}
-	
-	@Override
-	protected boolean getFurther( int target ) {
-		int step = Dungeon.flee( this, pos, target, 
-			Level.water, 
-			Level.fieldOfView );
-		if (step != -1) {
-			move( step );
-			return true;
-		} else {
-			return false;
-		}
-	}
+    fun attackSkill(target: Char?): Int {
+        return 20 + Dungeon.depth * 2
+    }
 
-	@Override
-	public String description() {
-		return
-			"These carnivorous fish are not natural inhabitants of underground pools. " +
-			"They were bred specifically to protect flooded treasure vaults.";
-	}
-	
-	private static final HashSet<Class<?>> IMMUNITIES = new HashSet<Class<?>>();
-	static {
-		IMMUNITIES.add( Burning.class );
-		IMMUNITIES.add( Paralysis.class );
-		IMMUNITIES.add( ToxicGas.class );
-		IMMUNITIES.add( Roots.class );
-		IMMUNITIES.add( Frost.class );
-	}
-	
-	@Override
-	public HashSet<Class<?>> immunities() {
-		return IMMUNITIES;
-	}
+    fun dr(): Int {
+        return Dungeon.depth
+    }
+
+    override fun die(cause: Any?) {
+        Dungeon.level.drop(MysteryMeat(), pos).sprite.drop()
+        super.die(cause)
+        Statistics.piranhasKilled++
+        Badges.validatePiranhasKilled()
+    }
+
+    override fun reset(): Boolean {
+        return true
+    }
+
+    protected override fun getCloser(target: Int): Boolean {
+        if (rooted) {
+            return false
+        }
+        val step: Int = Dungeon.findPath(
+            this, pos, target,
+            Level.water,
+            Level.fieldOfView
+        )
+        return if (step != -1) {
+            move(step)
+            true
+        } else {
+            false
+        }
+    }
+
+    protected override fun getFurther(target: Int): Boolean {
+        val step: Int = Dungeon.flee(
+            this, pos, target,
+            Level.water,
+            Level.fieldOfView
+        )
+        return if (step != -1) {
+            move(step)
+            true
+        } else {
+            false
+        }
+    }
+
+    override fun description(): String {
+        return "These carnivorous fish are not natural inhabitants of underground pools. " +
+                "They were bred specifically to protect flooded treasure vaults."
+    }
+
+    companion object {
+        private val IMMUNITIES = HashSet<Class<*>>()
+
+        init {
+            IMMUNITIES.add(Burning::class.java)
+            IMMUNITIES.add(Paralysis::class.java)
+            IMMUNITIES.add(ToxicGas::class.java)
+            IMMUNITIES.add(Roots::class.java)
+            IMMUNITIES.add(Frost::class.java)
+        }
+    }
+
+    fun immunities(): HashSet<Class<*>> {
+        return IMMUNITIES
+    }
+
+    init {
+        name = "giant piranha"
+        spriteClass = PiranhaSprite::class.java
+        baseSpeed = 2f
+        EXP = 0
+    }
+
+    init {
+        HT = 10 + Dungeon.depth * 5
+        HP = HT
+        defenseSkill = 10 + Dungeon.depth * 2
+    }
 }

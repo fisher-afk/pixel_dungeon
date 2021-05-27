@@ -15,49 +15,39 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.ui;
+package com.watabou.pixeldungeon.ui
 
-import com.watabou.pixeldungeon.scenes.PixelScene;
+import com.watabou.pixeldungeon.scenes.PixelScene
 
-public class CheckBox extends RedButton {
+class CheckBox(label: String?) : RedButton(label) {
+    private var checked = false
+    protected override fun layout() {
+        super.layout()
+        var margin: Float = (height - text.baseLine()) / 2
+        text.x = PixelScene.align(PixelScene.uiCamera, x + margin)
+        text.y = PixelScene.align(PixelScene.uiCamera, y + margin)
+        margin = (height - icon.height) / 2
+        icon.x = PixelScene.align(PixelScene.uiCamera, x + width - margin - icon.width)
+        icon.y = PixelScene.align(PixelScene.uiCamera, y + margin)
+    }
 
-	private boolean checked = false;
-	
-	public CheckBox( String label ) {
-		super( label );
-		
-		icon( Icons.get( Icons.UNCHECKED ) );
-	}
+    fun checked(): Boolean {
+        return checked
+    }
 
-	@Override
-	protected void layout() {
-		super.layout();
-		
-		float margin = (height - text.baseLine()) / 2;
-		
-		text.x = PixelScene.align( PixelScene.uiCamera, x + margin );
-		text.y = PixelScene.align( PixelScene.uiCamera, y + margin );
-		
-		margin = (height - icon.height) / 2;
-		
-		icon.x = PixelScene.align( PixelScene.uiCamera, x + width - margin - icon.width );
-		icon.y = PixelScene.align( PixelScene.uiCamera, y + margin );
-	}
-	
-	public boolean checked() {
-		return checked;
-	}
-	
-	public void checked( boolean value ) {
-		if (checked != value) {
-			checked = value;
-			icon.copy( Icons.get( checked ? Icons.CHECKED : Icons.UNCHECKED ) );
-		}
-	}
-	
-	@Override
-	protected void onClick() {
-		super.onClick();
-		checked( !checked );
-	}
+    fun checked(value: Boolean) {
+        if (checked != value) {
+            checked = value
+            icon.copy(Icons.get(if (checked) Icons.CHECKED else Icons.UNCHECKED))
+        }
+    }
+
+    protected fun onClick() {
+        super.onClick()
+        checked(!checked)
+    }
+
+    init {
+        icon(Icons.get(Icons.UNCHECKED))
+    }
 }

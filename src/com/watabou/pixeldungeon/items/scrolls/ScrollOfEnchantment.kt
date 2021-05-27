@@ -15,53 +15,36 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.scrolls;
+package com.watabou.pixeldungeon.items.scrolls
 
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.effects.Enchanting;
-import com.watabou.pixeldungeon.effects.Speck;
-import com.watabou.pixeldungeon.items.Item;
-import com.watabou.pixeldungeon.items.armor.Armor;
-import com.watabou.pixeldungeon.items.weapon.Weapon;
-import com.watabou.pixeldungeon.utils.GLog;
-import com.watabou.pixeldungeon.windows.WndBag;
+import com.watabou.pixeldungeon.Dungeon
 
-public class ScrollOfEnchantment extends InventoryScroll {
+class ScrollOfEnchantment : InventoryScroll() {
+    protected override fun onItemSelected(item: Item) {
+        ScrollOfRemoveCurse.uncurse(Dungeon.hero, item)
+        if (item is Weapon) {
+            (item as Weapon).enchant()
+        } else {
+            (item as Armor).inscribe()
+        }
+        item.fix()
+        curUser.sprite.emitter().start(Speck.factory(Speck.LIGHT), 0.1f, 5)
+        Enchanting.show(curUser, item)
+        GLog.w(TXT_GLOWS, item.name())
+    }
 
-	private static final String TXT_GLOWS	= "your %s glows in the dark";
-	
-	{
-		name = "Scroll of Enchantment";
-		inventoryTitle = "Select an enchantable item";
-		mode = WndBag.Mode.ENCHANTABLE;
-	}
-	
-	@Override
-	protected void onItemSelected( Item item ) {
+    fun desc(): String {
+        return "This scroll is able to imbue a weapon or an armor " +
+                "with a random enchantment, granting it a special power."
+    }
 
-		ScrollOfRemoveCurse.uncurse( Dungeon.hero, item );
-		
-		if (item instanceof Weapon) {
-			
-			((Weapon)item).enchant();
-			
-		} else {
+    companion object {
+        private const val TXT_GLOWS = "your %s glows in the dark"
+    }
 
-			((Armor)item).inscribe();
-		
-		}
-		
-		item.fix();
-		
-		curUser.sprite.emitter().start( Speck.factory( Speck.LIGHT ), 0.1f, 5 );
-		Enchanting.show( curUser, item );
-		GLog.w( TXT_GLOWS, item.name() );
-	}
-	
-	@Override
-	public String desc() {
-		return
-			"This scroll is able to imbue a weapon or an armor " +
-			"with a random enchantment, granting it a special power.";
-	}
+    init {
+        name = "Scroll of Enchantment"
+        inventoryTitle = "Select an enchantable item"
+        mode = WndBag.Mode.ENCHANTABLE
+    }
 }

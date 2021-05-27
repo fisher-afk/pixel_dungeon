@@ -15,59 +15,57 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon;
+package com.watabou.pixeldungeon
 
-import com.watabou.noosa.Game;
+import com.watabou.noosa.Game
 
-import android.content.SharedPreferences;
+internal enum class Preferences {
+    INSTANCE;
 
-enum Preferences {
+    private var prefs: SharedPreferences? = null
+    private fun get(): SharedPreferences? {
+        if (prefs == null) {
+            prefs = Game.instance.getPreferences(Game.MODE_PRIVATE)
+        }
+        return prefs
+    }
 
-	INSTANCE;
-	
-	public static final String KEY_LANDSCAPE	= "landscape";
-	public static final String KEY_IMMERSIVE	= "immersive";
-	public static final String KEY_GOOGLE_PLAY	= "google_play";
-	public static final String KEY_SCALE_UP		= "scaleup";
-	public static final String KEY_MUSIC		= "music";
-	public static final String KEY_SOUND_FX		= "soundfx";
-	public static final String KEY_ZOOM			= "zoom";
-	public static final String KEY_LAST_CLASS	= "last_class";
-	public static final String KEY_CHALLENGES	= "challenges";
-	public static final String KEY_DONATED		= "donated";
-	public static final String KEY_INTRO		= "intro";
-	public static final String KEY_BRIGHTNESS	= "brightness";
-	
-	private SharedPreferences prefs;
-	
-	private SharedPreferences get() {
-		if (prefs == null) {
-			prefs = Game.instance.getPreferences( Game.MODE_PRIVATE );
-		}
-		return prefs;
-	}
-	
-	int getInt( String key, int defValue  ) {
-		return get().getInt( key, defValue );
-	}
-	
-	boolean getBoolean( String key, boolean defValue  ) {
-		return get().getBoolean( key, defValue );
-	}
-	
-	String getString( String key, String defValue  ) {
-		return get().getString( key, defValue );
-	}
-	
-	void put( String key, int value ) {
-		get().edit().putInt( key, value ).commit();
-	}
-	
-	void put( String key, boolean value ) {
-		get().edit().putBoolean( key, value ).commit();
-	}
-	
-	void put( String key, String value ) {
-		get().edit().putString( key, value ).commit();
-	}
+    fun getInt(key: String?, defValue: Int): Int {
+        return get().getInt(key, defValue)
+    }
+
+    fun getBoolean(key: String?, defValue: Boolean): Boolean {
+        return get().getBoolean(key, defValue)
+    }
+
+    fun getString(key: String?, defValue: String?): String {
+        return get().getString(key, defValue)
+    }
+
+    fun put(key: String?, value: Int) {
+        get().edit().putInt(key, value).commit()
+    }
+
+    fun put(key: String?, value: Boolean) {
+        get().edit().putBoolean(key, value).commit()
+    }
+
+    fun put(key: String?, value: String?) {
+        get().edit().putString(key, value).commit()
+    }
+
+    companion object {
+        const val KEY_LANDSCAPE = "landscape"
+        const val KEY_IMMERSIVE = "immersive"
+        const val KEY_GOOGLE_PLAY = "google_play"
+        const val KEY_SCALE_UP = "scaleup"
+        const val KEY_MUSIC = "music"
+        const val KEY_SOUND_FX = "soundfx"
+        const val KEY_ZOOM = "zoom"
+        const val KEY_LAST_CLASS = "last_class"
+        const val KEY_CHALLENGES = "challenges"
+        const val KEY_DONATED = "donated"
+        const val KEY_INTRO = "intro"
+        const val KEY_BRIGHTNESS = "brightness"
+    }
 }

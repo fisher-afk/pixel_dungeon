@@ -15,86 +15,60 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.effects;
+package com.watabou.pixeldungeon.effects
 
-import com.watabou.noosa.Game;
-import com.watabou.noosa.Visual;
-import com.watabou.pixeldungeon.actors.Actor;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.sprites.CharSprite;
-import com.watabou.utils.PointF;
+import com.watabou.noosa.Game
 
-public class Pushing extends Actor {
+class Pushing(ch: Char, from: Int, to: Int) : Actor() {
+    private val sprite: CharSprite?
+    private val from: Int
+    private val to: Int
+    private val effect: Effect? = null
+    protected fun act(): Boolean {
+        return if (sprite != null) {
+            if (effect == null) {
+                Effect()
+            }
+            false
+        } else {
+            Actor.remove(this@Pushing)
+            true
+        }
+    }
 
-	private CharSprite sprite;
-	private int from;
-	private int to;
-	
-	private Effect effect;
-	
-	public Pushing( Char ch, int from, int to ) {
-		sprite = ch.sprite;
-		this.from = from;
-		this.to = to;
-	}
-	
-	@Override
-	protected boolean act() {
-		if (sprite != null) {
-			
-			if (effect == null) {
-				new Effect();
-			}
-			return false;
-			
-		} else {
-			
-			Actor.remove( Pushing.this );
-			return true;
-		}
-	}
+    inner class Effect : Visual(0, 0, 0, 0) {
+        private val end: PointF
+        private var delay: Float
+        fun update() {
+            super.update()
+            if (Game.elapsed.let { delay += it; delay } < Companion.DELAY) {
+                sprite.x = x
+                sprite.y = y
+            } else {
+                sprite.point(end)
+                killAndErase()
+                Actor.remove(this@Pushing)
+                next()
+            }
+        }
 
-	public class Effect extends Visual {
+        companion object {
+            private const val DELAY = 0.15f
+        }
 
-		private static final float DELAY = 0.15f;
-		
-		private PointF end;
-		
-		private float delay;
-		
-		public Effect() {
-			super( 0, 0, 0, 0 );
-			
-			point( sprite.worldToCamera( from ) );
-			end = sprite.worldToCamera( to );
-			
-			speed.set( 2 * (end.x - x) / DELAY, 2 * (end.y - y) / DELAY );
-			acc.set( -speed.x / DELAY, -speed.y / DELAY );
-			
-			delay = 0;
-			
-			sprite.parent.add( this );
-		}
-		
-		@Override
-		public void update() {
-			super.update();
-			
-			if ((delay += Game.elapsed) < DELAY) {
-				
-				sprite.x = x;
-				sprite.y = y;
-				
-			} else {
-				
-				sprite.point( end );
-				
-				killAndErase();
-				Actor.remove( Pushing.this );
-				
-				next();
-			}
-		}
-	}
+        init {
+            point(sprite.worldToCamera(from))
+            end = sprite.worldToCamera(to)
+            speed.set(2 * (end.x - x) / Companion.DELAY, 2 * (end.y - y) / Companion.DELAY)
+            acc.set(-speed.x / Companion.DELAY, -speed.y / Companion.DELAY)
+            delay = 0f
+            sprite.parent.add(this)
+        }
+    }
 
+    init {
+        sprite = ch.sprite
+        this.from = from
+        this.to = to
+    }
 }

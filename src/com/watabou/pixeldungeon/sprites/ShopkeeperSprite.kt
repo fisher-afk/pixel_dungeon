@@ -15,46 +15,34 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.sprites;
+package com.watabou.pixeldungeon.sprites
 
-import com.watabou.noosa.TextureFilm;
-import com.watabou.noosa.particles.PixelParticle;
-import com.watabou.pixeldungeon.Assets;
+import com.watabou.noosa.TextureFilm
 
-public class ShopkeeperSprite extends MobSprite {
-	
-	private PixelParticle coin;
-	
-	public ShopkeeperSprite() {
-		super();
-		
-		texture( Assets.KEEPER );
-		TextureFilm film = new TextureFilm( texture, 14, 14 );
-		
-		idle = new Animation( 10, true );
-		idle.frames( film, 1, 1, 1, 1, 1, 0, 0, 0, 0 );
-		
-		die = new Animation( 20, false );
-		die.frames( film, 0 );
-		
-		run = idle.clone();
-		attack = idle.clone();
-		
-		idle();
-	}
-	
-	@Override
-	public void onComplete( Animation anim ) {
-		super.onComplete( anim );
-		
-		if (visible && anim == idle) {
-			if (coin == null) {
-				coin = new PixelParticle();
-				parent.add( coin );
-			}
-			coin.reset( x + (flipHorizontal ? 0 : 13), y + 7, 0xFFFF00, 1, 0.5f );
-			coin.speed.y = -40;
-			coin.acc.y = +160;
-		}
-	}
+class ShopkeeperSprite : MobSprite() {
+    private var coin: PixelParticle? = null
+    override fun onComplete(anim: Animation) {
+        super.onComplete(anim)
+        if (visible && anim === idle) {
+            if (coin == null) {
+                coin = PixelParticle()
+                parent.add(coin)
+            }
+            coin.reset(x + if (flipHorizontal) 0 else 13, y + 7, 0xFFFF00, 1, 0.5f)
+            coin.speed.y = -40
+            coin.acc.y = +160
+        }
+    }
+
+    init {
+        texture(Assets.KEEPER)
+        val film = TextureFilm(texture, 14, 14)
+        idle = Animation(10, true)
+        idle.frames(film, 1, 1, 1, 1, 1, 0, 0, 0, 0)
+        die = Animation(20, false)
+        die.frames(film, 0)
+        run = idle.clone()
+        attack = idle.clone()
+        idle()
+    }
 }

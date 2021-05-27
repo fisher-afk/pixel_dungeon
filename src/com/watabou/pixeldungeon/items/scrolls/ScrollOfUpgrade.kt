@@ -15,53 +15,41 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.scrolls;
+package com.watabou.pixeldungeon.items.scrolls
 
-import com.watabou.pixeldungeon.Badges;
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.hero.Hero;
-import com.watabou.pixeldungeon.effects.Speck;
-import com.watabou.pixeldungeon.items.Item;
-import com.watabou.pixeldungeon.utils.GLog;
-import com.watabou.pixeldungeon.windows.WndBag;
+import com.watabou.pixeldungeon.Badges
 
-public class ScrollOfUpgrade extends InventoryScroll {
+class ScrollOfUpgrade : InventoryScroll() {
+    protected override fun onItemSelected(item: Item) {
+        ScrollOfRemoveCurse.uncurse(Dungeon.hero, item)
+        if (item.isBroken()) {
+            item.fix()
+        } else {
+            item.upgrade()
+        }
+        upgrade(curUser)
+        GLog.p(TXT_LOOKS_BETTER, item.name())
+        Badges.validateItemLevelAquired(item)
+    }
 
-	private static final String TXT_LOOKS_BETTER	= "your %s certainly looks better now";
-	
-	{
-		name = "Scroll of Upgrade";
-		inventoryTitle = "Select an item to upgrade";
-		mode = WndBag.Mode.UPGRADEABLE;
-	}
-	
-	@Override
-	protected void onItemSelected( Item item ) {
+    fun desc(): String {
+        return "This scroll will upgrade a single item, improving its quality. A wand will " +
+                "increase in power and in number of charges; a weapon will inflict more damage " +
+                "or find its mark more frequently; a suit of armor will deflect additional blows; " +
+                "the effect of a ring on its wearer will intensify. Weapons and armor will also " +
+                "require less strength to use, and any curses on the item will be lifted."
+    }
 
-		ScrollOfRemoveCurse.uncurse( Dungeon.hero, item );
-		if (item.isBroken()) {
-			item.fix();
-		} else {
-			item.upgrade();
-		}
-		
-		upgrade( curUser );
-		GLog.p( TXT_LOOKS_BETTER, item.name() );
-		
-		Badges.validateItemLevelAquired( item );
-	}
-	
-	public static void upgrade( Hero hero ) {
-		hero.sprite.emitter().start( Speck.factory( Speck.UP ), 0.2f, 3 );
-	}
-	
-	@Override
-	public String desc() {
-		return
-			"This scroll will upgrade a single item, improving its quality. A wand will " +
-			"increase in power and in number of charges; a weapon will inflict more damage " +
-			"or find its mark more frequently; a suit of armor will deflect additional blows; " +
-			"the effect of a ring on its wearer will intensify. Weapons and armor will also " +
-			"require less strength to use, and any curses on the item will be lifted.";
-	}
+    companion object {
+        private const val TXT_LOOKS_BETTER = "your %s certainly looks better now"
+        fun upgrade(hero: Hero) {
+            hero.sprite.emitter().start(Speck.factory(Speck.UP), 0.2f, 3)
+        }
+    }
+
+    init {
+        name = "Scroll of Upgrade"
+        inventoryTitle = "Select an item to upgrade"
+        mode = WndBag.Mode.UPGRADEABLE
+    }
 }

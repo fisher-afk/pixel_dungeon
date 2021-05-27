@@ -15,55 +15,41 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.effects.particles;
+package com.watabou.pixeldungeon.effects.particles
 
-import com.watabou.noosa.particles.Emitter;
-import com.watabou.noosa.particles.PixelParticle;
-import com.watabou.noosa.particles.Emitter.Factory;
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.utils.ColorMath;
-import com.watabou.utils.Random;
+import com.watabou.noosa.particles.Emitter
 
-public class LeafParticle extends PixelParticle.Shrinking {
-	
-	public static int color1;
-	public static int color2;
-	
-	
-	public static final Emitter.Factory GENERAL = new Factory() {	
-		@Override
-		public void emit( Emitter emitter, int index, float x, float y ) {
-			LeafParticle p = ((LeafParticle)emitter.recycle( LeafParticle.class ));
-			p.color( ColorMath.random( 0x004400, 0x88CC44 ) );
-			p.reset( x, y );
-		}
-	};
-	
-	public static final Emitter.Factory LEVEL_SPECIFIC = new Factory() {	
-		@Override
-		public void emit( Emitter emitter, int index, float x, float y ) {
-			LeafParticle p = ((LeafParticle)emitter.recycle( LeafParticle.class ));
-			p.color( ColorMath.random( Dungeon.level.color1, Dungeon.level.color2 ) );
-			p.reset( x, y );
-		}
-	};
-	
-	public LeafParticle() {
-		super();
-		
-		lifespan = 1.2f;
-		acc.set( 0, 25 );
-	}
-	
-	public void reset( float x, float y ) {
-		revive();
-		
-		this.x = x;
-		this.y = y;
-		
-		speed.set( Random.Float( -8, +8 ), -20 );
-		
-		left = lifespan;
-		size = Random.Float( 2, 3 );
-	}
+class LeafParticle : PixelParticle.Shrinking() {
+    fun reset(x: Float, y: Float) {
+        revive()
+        x = x
+        y = y
+        speed.set(Random.Float(-8, +8), -20)
+        left = lifespan
+        size = Random.Float(2, 3)
+    }
+
+    companion object {
+        var color1 = 0
+        var color2 = 0
+        val GENERAL: Emitter.Factory = object : Factory() {
+            fun emit(emitter: Emitter, index: Int, x: Float, y: Float) {
+                val p = emitter.recycle(LeafParticle::class.java) as LeafParticle
+                p.color(ColorMath.random(0x004400, 0x88CC44))
+                p.reset(x, y)
+            }
+        }
+        val LEVEL_SPECIFIC: Emitter.Factory = object : Factory() {
+            fun emit(emitter: Emitter, index: Int, x: Float, y: Float) {
+                val p = emitter.recycle(LeafParticle::class.java) as LeafParticle
+                p.color(ColorMath.random(Dungeon.level.color1, Dungeon.level.color2))
+                p.reset(x, y)
+            }
+        }
+    }
+
+    init {
+        lifespan = 1.2f
+        acc.set(0, 25)
+    }
 }

@@ -15,35 +15,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.bags;
+package com.watabou.pixeldungeon.items.bags
 
-import com.watabou.pixeldungeon.items.Item;
-import com.watabou.pixeldungeon.items.scrolls.Scroll;
-import com.watabou.pixeldungeon.sprites.ItemSpriteSheet;
+import com.watabou.pixeldungeon.items.Item
 
-public class ScrollHolder extends Bag {
+class ScrollHolder : Bag() {
+    override fun grab(item: Item?): Boolean {
+        return item is Scroll
+    }
 
-	{
-		name = "scroll holder";
-		image = ItemSpriteSheet.HOLDER;
-		
-		size = 12;
-	}
-	
-	@Override
-	public boolean grab( Item item ) {
-		return item instanceof Scroll;
-	}
-	
-	@Override
-	public int price() {
-		return 50;
-	}
-	
-	@Override
-	public String info() {
-		return
-			"You can place any number of scrolls into this tubular container. " +
-			"It saves room in your backpack and protects scrolls from fire.";
-	}
+    fun price(): Int {
+        return 50
+    }
+
+    fun info(): String {
+        return "You can place any number of scrolls into this tubular container. " +
+                "It saves room in your backpack and protects scrolls from fire."
+    }
+
+    init {
+        name = "scroll holder"
+        image = ItemSpriteSheet.HOLDER
+        size = 12
+    }
 }

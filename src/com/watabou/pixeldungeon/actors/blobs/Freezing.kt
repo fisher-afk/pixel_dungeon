@@ -15,42 +15,29 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.blobs;
+package com.watabou.pixeldungeon.actors.blobs
 
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.Actor;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.buffs.Buff;
-import com.watabou.pixeldungeon.actors.buffs.Frost;
-import com.watabou.pixeldungeon.effects.CellEmitter;
-import com.watabou.pixeldungeon.effects.particles.SnowParticle;
-import com.watabou.pixeldungeon.items.Heap;
-import com.watabou.utils.Random;
+import com.watabou.pixeldungeon.Dungeon
 
-public class Freezing {
-	
-	// Returns true, if this cell is visible
-	public static boolean affect( int cell, Fire fire ) {
-		
-		Char ch = Actor.findChar( cell ); 
-		if (ch != null) {
-			Buff.prolong( ch, Frost.class, Frost.duration( ch ) * Random.Float( 1.0f, 1.5f ) );
-		}
-		
-		if (fire != null) {
-			fire.clear( cell );
-		}
-		
-		Heap heap = Dungeon.level.heaps.get( cell );
-		if (heap != null) {
-			heap.freeze();
-		}
-
-		if (Dungeon.visible[cell]) {
-			CellEmitter.get( cell ).start( SnowParticle.FACTORY, 0.2f, 6 );
-			return true;
-		} else {
-			return false;
-		}
-	}
+object Freezing {
+    // Returns true, if this cell is visible
+    fun affect(cell: Int, fire: Fire?): Boolean {
+        val ch: Char = Actor.findChar(cell)
+        if (ch != null) {
+            Buff.prolong(ch, Frost::class.java, Frost.duration(ch) * Random.Float(1.0f, 1.5f))
+        }
+        if (fire != null) {
+            fire.clear(cell)
+        }
+        val heap: Heap = Dungeon.level.heaps.get(cell)
+        if (heap != null) {
+            heap.freeze()
+        }
+        return if (Dungeon.visible.get(cell)) {
+            CellEmitter.get(cell).start(SnowParticle.FACTORY, 0.2f, 6)
+            true
+        } else {
+            false
+        }
+    }
 }

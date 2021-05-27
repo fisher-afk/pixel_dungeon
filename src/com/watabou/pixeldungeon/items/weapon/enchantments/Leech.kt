@@ -15,54 +15,39 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.weapon.enchantments;
+package com.watabou.pixeldungeon.items.weapon.enchantments
 
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.effects.Speck;
-import com.watabou.pixeldungeon.items.weapon.Weapon;
-import com.watabou.pixeldungeon.sprites.CharSprite;
-import com.watabou.pixeldungeon.sprites.ItemSprite;
-import com.watabou.pixeldungeon.sprites.ItemSprite.Glowing;
-import com.watabou.utils.Random;
+import com.watabou.pixeldungeon.actors.Char
 
-public class Leech extends Weapon.Enchantment {
+class Leech : Weapon.Enchantment() {
+    fun proc(weapon: Weapon, attacker: Char, defender: Char?, damage: Int): Boolean {
+        val level = Math.max(0, weapon.effectiveLevel())
 
-	private static final String TXT_VAMPIRIC	= "vampiric %s";
-	
-	private static ItemSprite.Glowing RED = new ItemSprite.Glowing( 0x660022 );
-	
-	@Override
-	public boolean proc( Weapon weapon, Char attacker, Char defender, int damage ) {
-		
-		int level = Math.max( 0, weapon.effectiveLevel() );
-		
-		// lvl 0 - 33%
-		// lvl 1 - 43%
-		// lvl 2 - 50%
-		int maxValue = damage * (level + 2) / (level + 6);
-		int effValue = Math.min( Random.IntRange( 0, maxValue ), attacker.HT - attacker.HP );
-		
-		if (effValue > 0) {
-		
-			attacker.HP += effValue;
-			attacker.sprite.emitter().start( Speck.factory( Speck.HEALING ), 0.4f, 1 );
-			attacker.sprite.showStatus( CharSprite.POSITIVE, Integer.toString( effValue ) );
-			
-			return true;
-			
-		} else {
-			return false;
-		}
-	}
-	
-	@Override
-	public Glowing glowing() {
-		return RED;
-	}
-	
-	@Override
-	public String name( String weaponName ) {
-		return String.format( TXT_VAMPIRIC, weaponName );
-	}
+        // lvl 0 - 33%
+        // lvl 1 - 43%
+        // lvl 2 - 50%
+        val maxValue = damage * (level + 2) / (level + 6)
+        val effValue: Int = Math.min(Random.IntRange(0, maxValue), attacker.HT - attacker.HP)
+        return if (effValue > 0) {
+            attacker.HP += effValue
+            attacker.sprite.emitter().start(Speck.factory(Speck.HEALING), 0.4f, 1)
+            attacker.sprite.showStatus(CharSprite.POSITIVE, Integer.toString(effValue))
+            true
+        } else {
+            false
+        }
+    }
 
+    fun glowing(): Glowing {
+        return RED
+    }
+
+    fun name(weaponName: String?): String {
+        return String.format(TXT_VAMPIRIC, weaponName)
+    }
+
+    companion object {
+        private const val TXT_VAMPIRIC = "vampiric %s"
+        private val RED: ItemSprite.Glowing = Glowing(0x660022)
+    }
 }

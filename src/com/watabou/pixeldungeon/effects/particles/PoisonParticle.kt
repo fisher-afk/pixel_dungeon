@@ -15,74 +15,58 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.effects.particles;
+package com.watabou.pixeldungeon.effects.particles
 
-import com.watabou.noosa.particles.Emitter;
-import com.watabou.noosa.particles.PixelParticle;
-import com.watabou.noosa.particles.Emitter.Factory;
-import com.watabou.utils.ColorMath;
-import com.watabou.utils.Random;
+import com.watabou.noosa.particles.Emitter
 
-public class PoisonParticle extends PixelParticle {
-	
-	public static final Emitter.Factory MISSILE = new Factory() {	
-		@Override
-		public void emit( Emitter emitter, int index, float x, float y ) {
-			((PoisonParticle)emitter.recycle( PoisonParticle.class )).resetMissile( x, y );
-		}
-		@Override
-		public boolean lightMode() {
-			return true;
-		};
-	};
-	
-	public static final Emitter.Factory SPLASH = new Factory() {	
-		@Override
-		public void emit( Emitter emitter, int index, float x, float y ) {
-			((PoisonParticle)emitter.recycle( PoisonParticle.class )).resetSplash( x, y );
-		}
-		@Override
-		public boolean lightMode() {
-			return true;
-		};
-	};
-	
-	public PoisonParticle() {
-		super();
-		
-		lifespan = 0.6f;
-		
-		acc.set( 0, +30 );
-	}
-	
-	public void resetMissile( float x, float y ) {
-		revive();
-		
-		this.x = x;
-		this.y = y;
-		
-		left = lifespan;
-		
-		speed.polar( -Random.Float( 3.1415926f ), Random.Float( 6 ) );
-	}
-	
-	public void resetSplash( float x, float y ) {
-		revive();
-		
-		this.x = x;
-		this.y = y;
-		
-		left = lifespan;
-		
-		speed.polar( Random.Float( 3.1415926f ), Random.Float( 10, 20 ) );
-	}
-	
-	@Override
-	public void update() {
-		super.update();
-		// alpha: 1 -> 0; size: 1 -> 4
-		size( 4 - (am = left / lifespan) * 3 );
-		// color: 0x8844FF -> 0x00FF00
-		color( ColorMath.interpolate( 0x00FF00, 0x8844FF, am ) );
-	}
+class PoisonParticle : PixelParticle() {
+    fun resetMissile(x: Float, y: Float) {
+        revive()
+        x = x
+        y = y
+        left = lifespan
+        speed.polar(-Random.Float(3.1415926f), Random.Float(6))
+    }
+
+    fun resetSplash(x: Float, y: Float) {
+        revive()
+        x = x
+        y = y
+        left = lifespan
+        speed.polar(Random.Float(3.1415926f), Random.Float(10, 20))
+    }
+
+    fun update() {
+        super.update()
+        // alpha: 1 -> 0; size: 1 -> 4
+        size(4 - left / lifespan.also { am = it } * 3)
+        // color: 0x8844FF -> 0x00FF00
+        color(ColorMath.interpolate(0x00FF00, 0x8844FF, am))
+    }
+
+    companion object {
+        val MISSILE: Emitter.Factory = object : Factory() {
+            fun emit(emitter: Emitter, index: Int, x: Float, y: Float) {
+                (emitter.recycle(PoisonParticle::class.java) as PoisonParticle).resetMissile(x, y)
+            }
+
+            fun lightMode(): Boolean {
+                return true
+            }
+        }
+        val SPLASH: Emitter.Factory = object : Factory() {
+            fun emit(emitter: Emitter, index: Int, x: Float, y: Float) {
+                (emitter.recycle(PoisonParticle::class.java) as PoisonParticle).resetSplash(x, y)
+            }
+
+            fun lightMode(): Boolean {
+                return true
+            }
+        }
+    }
+
+    init {
+        lifespan = 0.6f
+        acc.set(0, +30)
+    }
 }

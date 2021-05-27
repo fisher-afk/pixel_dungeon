@@ -15,26 +15,20 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.rings;
+package com.watabou.pixeldungeon.items.rings
 
-public class RingOfSatiety extends Ring {
+class RingOfSatiety : Ring() {
+    protected override fun buff(): RingBuff {
+        return Satiety()
+    }
 
-	{
-		name = "Ring of Satiety";
-	}
-	
-	@Override
-	protected RingBuff buff( ) {
-		return new Satiety();
-	}
-	
-	@Override
-	public String desc() {
-		return isKnown() ?
-			"Wearing this ring you can go without food longer. Degraded rings of satiety will cause the opposite effect." :
-			super.desc();
-	}
-	
-	public class Satiety extends RingBuff {
-	}
+    override fun desc(): String {
+        return if (isKnown()) "Wearing this ring you can go without food longer. Degraded rings of satiety will cause the opposite effect." else super.desc()
+    }
+
+    inner class Satiety : RingBuff()
+
+    init {
+        name = "Ring of Satiety"
+    }
 }

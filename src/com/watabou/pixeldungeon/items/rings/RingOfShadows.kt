@@ -15,27 +15,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.rings;
+package com.watabou.pixeldungeon.items.rings
 
-public class RingOfShadows extends Ring {
+class RingOfShadows : Ring() {
+    protected override fun buff(): RingBuff {
+        return Shadows()
+    }
 
-	{
-		name = "Ring of Shadows";
-	}
-	
-	@Override
-	protected RingBuff buff( ) {
-		return new Shadows();
-	}
-	
-	@Override
-	public String desc() {
-		return isKnown() ?
-			"Enemies will be less likely to notice you if you wear this ring. Degraded rings " +
-			"of shadows will alert enemies who might otherwise not have noticed your presence." :
-			super.desc();
-	}
-	
-	public class Shadows extends RingBuff {
-	}
+    override fun desc(): String {
+        return if (isKnown()) "Enemies will be less likely to notice you if you wear this ring. Degraded rings " +
+                "of shadows will alert enemies who might otherwise not have noticed your presence." else super.desc()
+    }
+
+    inner class Shadows : RingBuff()
+
+    init {
+        name = "Ring of Shadows"
+    }
 }

@@ -15,32 +15,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.windows;
+package com.watabou.pixeldungeon.windows
 
-import com.watabou.noosa.BitmapTextMultiline;
-import com.watabou.pixeldungeon.PixelDungeon;
-import com.watabou.pixeldungeon.scenes.PixelScene;
-import com.watabou.pixeldungeon.ui.Window;
+import com.watabou.noosa.BitmapTextMultiline
 
-public class WndMessage extends Window {
-	
-	private static final int WIDTH_P = 120;
-	private static final int WIDTH_L = 144;
-	
-	private static final int MARGIN = 4;
-	
-	public WndMessage( String text ) {
-		
-		super();
-		
-		BitmapTextMultiline info = PixelScene.createMultiline( text, 6 );
-		info.maxWidth = (PixelDungeon.landscape() ? WIDTH_L : WIDTH_P) - MARGIN * 2;
-		info.measure();
-		info.x = info.y = MARGIN;
-		add( info );
+class WndMessage(text: String?) : Window() {
+    companion object {
+        private const val WIDTH_P = 120
+        private const val WIDTH_L = 144
+        private const val MARGIN = 4
+    }
 
-		resize( 
-			(int)info.width() + MARGIN * 2, 
-			(int)info.height() + MARGIN * 2 );
-	}
+    init {
+        val info: BitmapTextMultiline = PixelScene.createMultiline(text, 6)
+        info.maxWidth = (if (PixelDungeon.landscape()) WIDTH_L else WIDTH_P) - MARGIN * 2
+        info.measure()
+        info.y = MARGIN
+        info.x = info.y
+        add(info)
+        resize(
+            info.width() as Int + MARGIN * 2,
+            info.height() as Int + MARGIN * 2
+        )
+    }
 }

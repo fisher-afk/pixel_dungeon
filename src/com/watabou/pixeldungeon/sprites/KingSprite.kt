@@ -15,32 +15,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.sprites;
+package com.watabou.pixeldungeon.sprites
 
-import com.watabou.noosa.TextureFilm;
-import com.watabou.pixeldungeon.Assets;
-
-public class KingSprite extends MobSprite {
-	
-	public KingSprite() {
-		super();
-		
-		texture( Assets.KING );
-		
-		TextureFilm frames = new TextureFilm( texture, 16, 16 );
-		
-		idle = new Animation( 12, true );
-		idle.frames( frames, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2 );
-		
-		run = new Animation( 15, true );
-		run.frames( frames, 3, 4, 5, 6, 7, 8 );
-		
-		attack = new Animation( 15, false );
-		attack.frames( frames, 9, 10, 11 );
-		
-		die = new Animation( 8, false );
-		die.frames( frames, 12, 13, 14, 15 );
-		
-		play( idle );
-	}
+import com.watabou.noosa.TextureFilm
+class KingSprite : MobSprite() {
+    init {
+        texture(Assets.KING)
+        val frames = TextureFilm(texture, 16, 16)
+        idle = Animation(12, true)
+        idle.frames(frames, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2)
+        run = Animation(15, true)
+        run.frames(frames, 3, 4, 5, 6, 7, 8)
+        attack = Animation(15, false)
+        attack.frames(frames, 9, 10, 11)
+        die = Animation(8, false)
+        die.frames(frames, 12, 13, 14, 15)
+        play(idle)
+    }
 }

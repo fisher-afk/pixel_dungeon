@@ -15,94 +15,72 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.sprites;
+package com.watabou.pixeldungeon.sprites
 
-import com.watabou.noosa.Game;
-import com.watabou.noosa.Image;
-import com.watabou.noosa.TextureFilm;
-import com.watabou.pixeldungeon.Assets;
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.DungeonTilemap;
-import com.watabou.pixeldungeon.levels.Level;
-import com.watabou.pixeldungeon.plants.Plant;
+import com.watabou.noosa.Game
 
-public class PlantSprite extends Image {
+class PlantSprite() : Image(Assets.PLANTS) {
+    private enum class State {
+        GROWING, NORMAL, WITHERING
+    }
 
-	private static final float DELAY = 0.2f;
-	
-	private static enum State {
-		GROWING, NORMAL, WITHERING
-	}
-	private State state = State.NORMAL;
-	private float time;
-	
-	private static TextureFilm frames;
-	
-	private int pos = -1;
-	
-	public PlantSprite() {
-		super( Assets.PLANTS );
-		
-		if (frames == null) {
-			frames = new TextureFilm( texture, 16, 16 );
-		}
-		
-		origin.set( 8, 12 );
-	}
-	
-	public PlantSprite( int image ) {
-		this();
-		reset( image );
-	}
-	
-	public void reset( Plant plant ) {
-		
-		revive();
-		
-		reset( plant.image );
-		alpha( 1f );
-		
-		pos = plant.pos;
-		x = (pos % Level.WIDTH) * DungeonTilemap.SIZE;
-		y = (pos / Level.WIDTH) * DungeonTilemap.SIZE;
-		
-		state = State.GROWING;
-		time = DELAY;
-	}
-	
-	public void reset( int image ) {
-		frame( frames.get( image ) );
-	}
-	
-	@Override
-	public void update() {
-		super.update();
-		
-		visible = pos == -1 || Dungeon.visible[pos];
-		
-		switch (state) {
-		case GROWING:
-			if ((time -= Game.elapsed) <= 0) {
-				state = State.NORMAL;
-				scale.set( 1 );
-			} else {
-				scale.set( 1 - time / DELAY );
-			}
-			break;
-		case WITHERING:
-			if ((time -= Game.elapsed) <= 0) {
-				super.kill();
-			} else {
-				alpha( time / DELAY );
-			}
-			break;
-		default:
-		}
-	}
-	
-	@Override
-	public void kill() {
-		state = State.WITHERING;
-		time = DELAY;
-	}
+    private var state = State.NORMAL
+    private var time = 0f
+    private var pos = -1
+
+    constructor(image: Int) : this() {
+        reset(image)
+    }
+
+    fun reset(plant: Plant) {
+        revive()
+        reset(plant.image)
+        alpha(1f)
+        pos = plant.pos
+        x = pos % Level.WIDTH * DungeonTilemap.SIZE
+        y = pos / Level.WIDTH * DungeonTilemap.SIZE
+        state = State.GROWING
+        time = DELAY
+    }
+
+    fun reset(image: Int) {
+        frame(frames.get(image))
+    }
+
+    fun update() {
+        super.update()
+        visible = pos == -1 || Dungeon.visible.get(pos)
+        when (state) {
+            State.GROWING -> if (Game.elapsed.let { time -= it; time } <= 0) {
+                state = State.NORMAL
+                scale.set(1)
+            } else {
+                scale.set(1 - time / DELAY)
+            }
+            State.WITHERING -> if (Game.elapsed.let { time -= it; time } <= 0) {
+                super.kill()
+            } else {
+                alpha(time / DELAY)
+            }
+            else -> {
+            }
+        }
+    }
+
+    fun kill() {
+        state = State.WITHERING
+        time = DELAY
+    }
+
+    companion object {
+        private const val DELAY = 0.2f
+        private var frames: TextureFilm? = null
+    }
+
+    init {
+        if (frames == null) {
+            frames = TextureFilm(texture, 16, 16)
+        }
+        origin.set(8, 12)
+    }
 }

@@ -15,51 +15,40 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.ui;
+package com.watabou.pixeldungeon.ui
 
-import com.watabou.input.Touchscreen.Touch;
-import com.watabou.noosa.Image;
-import com.watabou.noosa.TouchArea;
-import com.watabou.noosa.ui.Component;
+import com.watabou.input.Touchscreen.Touch
 
-public class SimpleButton extends Component {
-			
-	private Image image;
-	
-	public SimpleButton( Image image ) {
-		super();
-		
-		this.image.copy( image );
-		width = image.width;
-		height = image.height;
-	}
-	
-	@Override
-	protected void createChildren() {
-		image = new Image();
-		add( image );
-		
-		add( new TouchArea( image ) {
-			@Override
-			protected void onTouchDown(Touch touch) {
-				image.brightness( 1.2f );
-			};
-			@Override
-			protected void onTouchUp(Touch touch) {
-				image.brightness( 1.0f );
-			};
-			@Override
-			protected void onClick( Touch touch ) {
-				SimpleButton.this.onClick();
-			};
-		} );
-	}
-	
-	@Override
-	protected void layout() {
-		image.x = x;
-		image.y = y;
-	}
-	
-	protected void onClick() {};
+class SimpleButton(image: Image) : Component() {
+    private var image: Image? = null
+    protected fun createChildren() {
+        image = Image()
+        add(image)
+        add(object : TouchArea(image) {
+            protected fun onTouchDown(touch: Touch?) {
+                image.brightness(1.2f)
+            }
+
+            protected fun onTouchUp(touch: Touch?) {
+                image.brightness(1.0f)
+            }
+
+            protected fun onClick(touch: Touch?) {
+                this@SimpleButton.onClick()
+            }
+        })
+    }
+
+    protected fun layout() {
+        image.x = x
+        image.y = y
+    }
+
+    protected fun onClick() {}
+
+    init {
+        this.image.copy(image)
+        width = image.width
+        height = image.height
+    }
 }

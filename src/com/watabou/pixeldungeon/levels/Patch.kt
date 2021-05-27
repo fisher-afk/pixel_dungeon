@@ -15,71 +15,61 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.levels;
+package com.watabou.pixeldungeon.levels
 
-import com.watabou.utils.Random;
+import com.watabou.utils.Random
 
-public class Patch {
-	
-	private static boolean[] cur = new boolean[Level.LENGTH];
-	private static boolean[] off = new boolean[Level.LENGTH];
-	
-	public static boolean[] generate( float seed, int nGen ) {
-		
-		int w = Level.WIDTH;
-		int h = Level.HEIGHT;
-		
-		for (int i=0; i < Level.LENGTH; i++) {
-			off[i] = Random.Float() < seed;
-		}
-		
-		for (int i=0; i < nGen; i++) {
-			
-			for (int y=1; y < h-1; y++) {
-				for (int x=1; x < w-1; x++) {
-					
-					int pos = x + y * w;
-					int count = 0;
-					if (off[pos-w-1]) {
-						count++;
-					}
-					if (off[pos-w]) {
-						count++;
-					}
-					if (off[pos-w+1]) {
-						count++;
-					}
-					if (off[pos-1]) {
-						count++;
-					}
-					if (off[pos+1]) {
-						count++;
-					}
-					if (off[pos+w-1]) {
-						count++;
-					}
-					if (off[pos+w]) {
-						count++;
-					}
-					if (off[pos+w+1]) {
-						count++;
-					}
-					
-					if (!off[pos] && count >= 5) {
-						cur[pos] = true;
-					} else if (off[pos] && count >= 4) {
-						cur[pos] = true;
-					} else {
-						cur[pos] = false;
-					}
-				}
-			}
-			
-			boolean[] tmp = cur;
-			cur = off;
-			off = tmp;
-		}
-		
-		return off;
-	}
+object Patch {
+    private var cur = BooleanArray(Level.LENGTH)
+    private var off = BooleanArray(Level.LENGTH)
+    fun generate(seed: Float, nGen: Int): BooleanArray {
+        val w: Int = Level.WIDTH
+        val h: Int = Level.HEIGHT
+        for (i in 0 until Level.LENGTH) {
+            off[i] = Random.Float() < seed
+        }
+        for (i in 0 until nGen) {
+            for (y in 1 until h - 1) {
+                for (x in 1 until w - 1) {
+                    val pos = x + y * w
+                    var count = 0
+                    if (off[pos - w - 1]) {
+                        count++
+                    }
+                    if (off[pos - w]) {
+                        count++
+                    }
+                    if (off[pos - w + 1]) {
+                        count++
+                    }
+                    if (off[pos - 1]) {
+                        count++
+                    }
+                    if (off[pos + 1]) {
+                        count++
+                    }
+                    if (off[pos + w - 1]) {
+                        count++
+                    }
+                    if (off[pos + w]) {
+                        count++
+                    }
+                    if (off[pos + w + 1]) {
+                        count++
+                    }
+                    if (!off[pos] && count >= 5) {
+                        cur[pos] = true
+                    } else if (off[pos] && count >= 4) {
+                        cur[pos] = true
+                    } else {
+                        cur[pos] = false
+                    }
+                }
+            }
+            val tmp = cur
+            cur = off
+            off = tmp
+        }
+        return off
+    }
 }

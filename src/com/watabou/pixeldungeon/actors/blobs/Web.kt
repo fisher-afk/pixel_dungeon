@@ -15,54 +15,39 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.blobs;
+package com.watabou.pixeldungeon.actors.blobs
 
-import com.watabou.pixeldungeon.actors.Actor;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.buffs.Buff;
-import com.watabou.pixeldungeon.actors.buffs.Roots;
-import com.watabou.pixeldungeon.effects.BlobEmitter;
-import com.watabou.pixeldungeon.effects.particles.WebParticle;
+import com.watabou.pixeldungeon.actors.Actor
 
-public class Web extends Blob {
-	
-	@Override
-	protected void evolve() {
-		
-		for (int i=0; i < LENGTH; i++) {
-			
-			int offv = cur[i] > 0 ? cur[i] - 1 : 0;
-			off[i] = offv;
-			
-			if (offv > 0) {
-				
-				volume += offv;
-				
-				Char ch = Actor.findChar( i );
-				if (ch != null) {
-					Buff.prolong( ch, Roots.class, TICK );
-				}
-			}
-		}
-	}
-	
-	@Override
-	public void use( BlobEmitter emitter ) {
-		super.use( emitter );
-		
-		emitter.pour( WebParticle.FACTORY, 0.4f );
-	}
-	
-	public void seed( int cell, int amount ) {
-		int diff = amount - cur[cell];
-		if (diff > 0) {
-			cur[cell] = amount;
-			volume += diff;
-		}
-	}
-	
-	@Override
-	public String tileDesc() {
-		return "Everything is covered with a thick web here.";
-	}
+class Web : Blob() {
+    protected override fun evolve() {
+        for (i in 0 until LENGTH) {
+            val offv = if (cur.get(i) > 0) cur.get(i) - 1 else 0
+            off.get(i) = offv
+            if (offv > 0) {
+                volume += offv
+                val ch: Char = Actor.findChar(i)
+                if (ch != null) {
+                    Buff.prolong(ch, Roots::class.java, TICK)
+                }
+            }
+        }
+    }
+
+    override fun use(emitter: BlobEmitter) {
+        super.use(emitter)
+        emitter.pour(WebParticle.FACTORY, 0.4f)
+    }
+
+    override fun seed(cell: Int, amount: Int) {
+        val diff: Int = amount - cur.get(cell)
+        if (diff > 0) {
+            cur.get(cell) = amount
+            volume += diff
+        }
+    }
+
+    override fun tileDesc(): String {
+        return "Everything is covered with a thick web here."
+    }
 }

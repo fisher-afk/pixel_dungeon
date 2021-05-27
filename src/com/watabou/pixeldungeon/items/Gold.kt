@@ -15,104 +15,69 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items;
+package com.watabou.pixeldungeon.items
 
-import java.util.ArrayList;
+import com.watabou.noosa.audio.Sample
 
-import com.watabou.noosa.audio.Sample;
-import com.watabou.pixeldungeon.Assets;
-import com.watabou.pixeldungeon.Badges;
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.Statistics;
-import com.watabou.pixeldungeon.actors.hero.Hero;
-import com.watabou.pixeldungeon.scenes.GameScene;
-import com.watabou.pixeldungeon.sprites.CharSprite;
-import com.watabou.pixeldungeon.sprites.ItemSpriteSheet;
-import com.watabou.pixeldungeon.utils.Utils;
-import com.watabou.utils.Bundle;
-import com.watabou.utils.Random;
+class Gold @JvmOverloads constructor(value: Int = 1) : Item() {
+    override fun actions(hero: Hero?): ArrayList<String> {
+        return ArrayList()
+    }
 
-public class Gold extends Item {
+    override fun doPickUp(hero: Hero): Boolean {
+        Dungeon.gold += quantity
+        Statistics.goldCollected += quantity
+        Badges.validateGoldCollected()
+        GameScene.pickUp(this)
+        hero.sprite.showStatus(CharSprite.NEUTRAL, TXT_VALUE, quantity)
+        hero.spendAndNext(TIME_TO_PICK_UP)
+        Sample.INSTANCE.play(Assets.SND_GOLD, 1, 1, Random.Float(0.9f, 1.1f))
+        return true
+    }
 
-	private static final String TXT_COLLECT	= "Collect gold coins to spend them later in a shop.";
-	private static final String TXT_INFO	= "A pile of %d gold coins. " + TXT_COLLECT;
-	private static final String TXT_INFO_1	= "One gold coin. " + TXT_COLLECT;
-	private static final String TXT_VALUE	= "%+d";
-	
-	{
-		name = "gold";
-		image = ItemSpriteSheet.GOLD;
-		stackable = true;
-	}
-	
-	public Gold() {
-		this( 1 );
-	}
-	
-	public Gold( int value ) {
-		this.quantity = value;
-	}
-	
-	@Override
-	public ArrayList<String> actions( Hero hero ) {
-		return new ArrayList<String>();
-	}
-	
-	@Override
-	public boolean doPickUp( Hero hero ) {
-		
-		Dungeon.gold += quantity;
-		Statistics.goldCollected += quantity;
-		Badges.validateGoldCollected();
-		
-		GameScene.pickUp( this );
-		hero.sprite.showStatus( CharSprite.NEUTRAL, TXT_VALUE, quantity );
-		hero.spendAndNext( TIME_TO_PICK_UP );
-		
-		Sample.INSTANCE.play( Assets.SND_GOLD, 1, 1, Random.Float( 0.9f, 1.1f ) );
-		
-		return true;
-	}
-	
-	@Override
-	public boolean isUpgradable() {
-		return false;
-	}
-	
-	@Override
-	public boolean isIdentified() {
-		return true;
-	}
-	
-	@Override
-	public String info() {
-		switch (quantity) {
-		case 0:
-			return TXT_COLLECT;
-		case 1:
-			return TXT_INFO_1;
-		default:
-			return Utils.format( TXT_INFO, quantity );
-		}
-	}
-	
-	@Override
-	public Item random() {
-		quantity = Random.Int( 20 + Dungeon.depth * 10, 40 + Dungeon.depth * 20 );
-		return this;
-	}
-	
-	private static final String VALUE	= "value";
-	
-	@Override
-	public void storeInBundle( Bundle bundle ) {
-		super.storeInBundle( bundle );
-		bundle.put( VALUE, quantity );
-	}
-	
-	@Override
-	public void restoreFromBundle( Bundle bundle ) {
-		super.restoreFromBundle(bundle);
-		quantity = bundle.getInt( VALUE );
-	}
+    override val isUpgradable: Boolean
+        get() = false
+    override val isIdentified: Boolean
+        get() = true
+
+    override fun info(): String {
+        return when (quantity) {
+            0 -> TXT_COLLECT
+            1 -> TXT_INFO_1
+            else -> Utils.format(TXT_INFO, quantity)
+        }
+    }
+
+    override fun random(): Item {
+        quantity = Random.Int(20 + Dungeon.depth * 10, 40 + Dungeon.depth * 20)
+        return this
+    }
+
+    override fun storeInBundle(bundle: Bundle) {
+        super.storeInBundle(bundle)
+        bundle.put(VALUE, quantity)
+    }
+
+    override fun restoreFromBundle(bundle: Bundle) {
+        super.restoreFromBundle(bundle)
+        quantity = bundle.getInt(VALUE)
+    }
+
+    companion object {
+        private const val TXT_COLLECT = "Collect gold coins to spend them later in a shop."
+        private const val TXT_INFO = "A pile of %d gold coins. " + TXT_COLLECT
+        private const val TXT_INFO_1 = "One gold coin. " + TXT_COLLECT
+        private const val TXT_VALUE = "%+d"
+        private const val VALUE = "value"
+    }
+
+    init {
+        name = "gold"
+        image = ItemSpriteSheet.GOLD
+        stackable = true
+    }
+
+    init {
+        this.quantity = value
+    }
 }

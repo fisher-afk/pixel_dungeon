@@ -15,25 +15,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.levels.painters;
+package com.watabou.pixeldungeon.levels.painters
 
-import com.watabou.pixeldungeon.levels.Level;
-import com.watabou.pixeldungeon.levels.Room;
-import com.watabou.pixeldungeon.levels.Terrain;
+import com.watabou.pixeldungeon.levels.Level
 
-public class ExitPainter extends Painter {
-
-	public static void paint( Level level, Room room ) {
-
-		fill( level, room, Terrain.WALL );
-		fill( level, room, 1, Terrain.EMPTY );
-		
-		for (Room.Door door : room.connected.values()) {
-			door.set( Room.Door.Type.REGULAR );
-		}
-		
-		level.exit = room.random( 1 );
-		set( level, level.exit, Terrain.EXIT );
-	}
-	
+object ExitPainter : Painter() {
+    fun paint(level: Level, room: Room) {
+        fill(level, room, Terrain.WALL)
+        fill(level, room, 1, Terrain.EMPTY)
+        for (door in room.connected.values()) {
+            door.set(Room.Door.Type.REGULAR)
+        }
+        level.exit = room.random(1)
+        set(level, level.exit, Terrain.EXIT)
+    }
 }

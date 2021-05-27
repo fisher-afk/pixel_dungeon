@@ -15,223 +15,157 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.sprites;
+package com.watabou.pixeldungeon.sprites
 
-import android.graphics.Bitmap;
+import com.watabou.gltextures.TextureCache
 
-import com.watabou.gltextures.TextureCache;
-import com.watabou.noosa.Game;
-import com.watabou.noosa.MovieClip;
-import com.watabou.noosa.TextureFilm;
-import com.watabou.noosa.audio.Sample;
-import com.watabou.pixeldungeon.Assets;
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.DungeonTilemap;
-import com.watabou.pixeldungeon.effects.CellEmitter;
-import com.watabou.pixeldungeon.effects.Speck;
-import com.watabou.pixeldungeon.items.Gold;
-import com.watabou.pixeldungeon.items.Heap;
-import com.watabou.pixeldungeon.items.Item;
-import com.watabou.pixeldungeon.levels.Level;
-import com.watabou.pixeldungeon.levels.Terrain;
-import com.watabou.pixeldungeon.scenes.GameScene;
-import com.watabou.utils.PointF;
-import com.watabou.utils.Random;
+class ItemSprite @JvmOverloads constructor(image: Int = ItemSpriteSheet.SMTH, glowing: Glowing? = null) :
+    MovieClip(Assets.ITEMS) {
+    var heap: Heap? = null
+    private var glowing: Glowing? = null
+    private var phase = 0f
+    private var glowUp = false
+    private var dropInterval = 0f
 
-public class ItemSprite extends MovieClip {
+    constructor(item: Item) : this(item.image(), item.glowing()) {}
 
-	public static final int SIZE	= 16;
-	
-	private static final float DROP_INTERVAL = 0.4f;
-	
-	protected static TextureFilm film;
-	
-	public Heap heap;
-	
-	private Glowing glowing;
-	private float phase;
-	private boolean glowUp;
-	
-	private float dropInterval;
-	
-	public ItemSprite() {
-		this( ItemSpriteSheet.SMTH, null );
-	}
-	
-	public ItemSprite( Item item ) {
-		this( item.image(), item.glowing() );
-	}
-	
-	public ItemSprite( int image, Glowing glowing ) {
-		super( Assets.ITEMS );
-		
-		if (film == null) {
-			film = new TextureFilm( texture, SIZE, SIZE );
-		}
-		
-		view( image, glowing );
-	}
-	
-	public void originToCenter() {
-		origin.set(SIZE / 2 );
-	}
-	
-	public void link() {
-		link( heap );
-	}
-	
-	public void link( Heap heap ) {
-		this.heap = heap;
-		view( heap.image(), heap.glowing() );
-		place( heap.pos );
-	}
-	
-	@Override
-	public void revive() {
-		super.revive();
-		
-		speed.set( 0 );
-		acc.set( 0 );
-		dropInterval = 0;
-		
-		heap = null;
-	}
-	
-	public PointF worldToCamera( int cell ) {
-		final int csize = DungeonTilemap.SIZE;
-		
-		return new PointF(
-			cell % Level.WIDTH * csize + (csize - SIZE) * 0.5f,
-			cell / Level.WIDTH * csize + (csize - SIZE) * 0.5f
-		);
-	}
-	
-	public void place( int p ) {
-		point( worldToCamera( p ) );
-	}
-	
-	public void drop() {
+    fun originToCenter() {
+        origin.set(SIZE / 2)
+    }
 
-		if (heap.isEmpty()) {
-			return;
-		}
-			
-		dropInterval = DROP_INTERVAL;
-		
-		speed.set( 0, -100 );
-		acc.set( 0, -speed.y / DROP_INTERVAL * 2 );
-		
-		if (visible && heap != null && heap.peek() instanceof Gold) {
-			CellEmitter.center( heap.pos ).burst( Speck.factory( Speck.COIN ), 5 );
-			Sample.INSTANCE.play( Assets.SND_GOLD, 1, 1, Random.Float( 0.9f, 1.1f ) );
-		}
-	}
-	
-	public void drop( int from ) {
+    @JvmOverloads
+    fun link(heap: Heap? = this.heap) {
+        this.heap = heap
+        view(heap.image(), heap.glowing())
+        place(heap.pos)
+    }
 
-		if (heap.pos == from) {
-			drop();
-		} else {
-			
-			float px = x;
-			float py = y;		
-			drop();
-			
-			place( from );
-	
-			speed.offset( (px-x) / DROP_INTERVAL, (py-y) / DROP_INTERVAL );
-		}
-	}
-	
-	public ItemSprite view( int image, Glowing glowing ) {
-		frame( film.get( image ) );
-		if ((this.glowing = glowing) == null) {
-			resetColor();
-		}
-		return this;
-	}
-	
-	@Override
-	public void update() {
-		super.update();
+    fun revive() {
+        super.revive()
+        speed.set(0)
+        acc.set(0)
+        dropInterval = 0f
+        heap = null
+    }
 
-		visible = (heap == null || Dungeon.visible[heap.pos]);
-		
-		if (dropInterval > 0 && (dropInterval -= Game.elapsed) <= 0) {
-			
-			speed.set( 0 );
-			acc.set( 0 );
-			place( heap.pos );
-			
-			if (visible) {
-				boolean water = Level.water[heap.pos];
-				
-				if (water) {
-					GameScene.ripple( heap.pos );
-				} else {
-					int cell = Dungeon.level.map[heap.pos];
-					water = (cell == Terrain.WELL || cell == Terrain.ALCHEMY);
-				}
-				
-				if (!(heap.peek() instanceof Gold)) {
-					Sample.INSTANCE.play( water ? Assets.SND_WATER : Assets.SND_STEP, 0.8f, 0.8f, 1.2f );
-				}
-			}
-		}
-		
-		if (visible && glowing != null) {
-			if (glowUp && (phase += Game.elapsed) > glowing.period) {
-				
-				glowUp = false;
-				phase = glowing.period;
-				
-			} else if (!glowUp && (phase -= Game.elapsed) < 0) {
-				
-				glowUp = true;
-				phase = 0;
-				
-			}
-			
-			float value = phase / glowing.period * 0.6f;
-			
-			rm = gm = bm = 1 - value;
-			ra = glowing.red * value;
-			ga = glowing.green * value;
-			ba = glowing.blue * value;
-		}
-	}
-	
-	public static int pick( int index, int x, int y ) {
-		Bitmap bmp = TextureCache.get( Assets.ITEMS ).bitmap;
-		int rows = bmp.getWidth() / SIZE;
-		int row = index / rows;
-		int col = index % rows;
-		return bmp.getPixel( col * SIZE + x, row * SIZE + y );
-	}
-	
-	public static class Glowing {
-		
-		public static final Glowing WHITE = new Glowing( 0xFFFFFF, 0.6f );
-		
-		public int color;
-		public float red;
-		public float green;
-		public float blue;
-		public float period;
-		
-		public Glowing( int color ) {
-			this( color, 1f );
-		}
-		
-		public Glowing( int color, float period ) {
-			
-			this.color = color;
-			
-			red = (color >> 16) / 255f;
-			green = ((color >> 8) & 0xFF) / 255f;
-			blue = (color & 0xFF) / 255f;
-			
-			this.period = period;
-		}
-	}
+    fun worldToCamera(cell: Int): PointF {
+        val csize: Int = DungeonTilemap.SIZE
+        return PointF(
+            cell % Level.WIDTH * csize + (csize - SIZE) * 0.5f,
+            cell / Level.WIDTH * csize + (csize - SIZE) * 0.5f
+        )
+    }
+
+    fun place(p: Int) {
+        point(worldToCamera(p))
+    }
+
+    fun drop() {
+        if (heap.isEmpty()) {
+            return
+        }
+        dropInterval = DROP_INTERVAL
+        speed.set(0, -100)
+        acc.set(0, -speed.y / DROP_INTERVAL * 2)
+        if (visible && heap != null && heap.peek() is Gold) {
+            CellEmitter.center(heap.pos).burst(Speck.factory(Speck.COIN), 5)
+            Sample.INSTANCE.play(Assets.SND_GOLD, 1, 1, Random.Float(0.9f, 1.1f))
+        }
+    }
+
+    fun drop(from: Int) {
+        if (heap.pos === from) {
+            drop()
+        } else {
+            val px: Float = x
+            val py: Float = y
+            drop()
+            place(from)
+            speed.offset((px - x) / DROP_INTERVAL, (py - y) / DROP_INTERVAL)
+        }
+    }
+
+    fun view(image: Int, glowing: Glowing?): ItemSprite {
+        frame(film.get(image))
+        if (glowing.also { this.glowing = it } == null) {
+            resetColor()
+        }
+        return this
+    }
+
+    fun update() {
+        super.update()
+        visible = heap == null || Dungeon.visible.get(heap.pos)
+        if (dropInterval > 0 && Game.elapsed.let { dropInterval -= it; dropInterval } <= 0) {
+            speed.set(0)
+            acc.set(0)
+            place(heap.pos)
+            if (visible) {
+                var water: Boolean = Level.water.get(heap.pos)
+                if (water) {
+                    GameScene.ripple(heap.pos)
+                } else {
+                    val cell: Int = Dungeon.level.map.get(heap.pos)
+                    water = cell == Terrain.WELL || cell == Terrain.ALCHEMY
+                }
+                if (heap.peek() !is Gold) {
+                    Sample.INSTANCE.play(if (water) Assets.SND_WATER else Assets.SND_STEP, 0.8f, 0.8f, 1.2f)
+                }
+            }
+        }
+        if (visible && glowing != null) {
+            if (glowUp && Game.elapsed.let { phase += it; phase } > glowing!!.period) {
+                glowUp = false
+                phase = glowing!!.period
+            } else if (!glowUp && Game.elapsed.let { phase -= it; phase } < 0) {
+                glowUp = true
+                phase = 0f
+            }
+            val value = phase / glowing!!.period * 0.6f
+            bm = 1 - value
+            gm = bm
+            rm = gm
+            ra = glowing!!.red * value
+            ga = glowing!!.green * value
+            ba = glowing!!.blue * value
+        }
+    }
+
+    class Glowing @JvmOverloads constructor(var color: Int, period: Float = 1f) {
+        var red: Float
+        var green: Float
+        var blue: Float
+        var period: Float
+
+        companion object {
+            val WHITE = Glowing(0xFFFFFF, 0.6f)
+        }
+
+        init {
+            red = (color shr 16) / 255f
+            green = (color shr 8 and 0xFF) / 255f
+            blue = (color and 0xFF) / 255f
+            this.period = period
+        }
+    }
+
+    companion object {
+        const val SIZE = 16
+        private const val DROP_INTERVAL = 0.4f
+        protected var film: TextureFilm? = null
+        fun pick(index: Int, x: Int, y: Int): Int {
+            val bmp: Bitmap = TextureCache.get(Assets.ITEMS).bitmap
+            val rows: Int = bmp.getWidth() / SIZE
+            val row = index / rows
+            val col = index % rows
+            return bmp.getPixel(col * SIZE + x, row * SIZE + y)
+        }
+    }
+
+    init {
+        if (film == null) {
+            film = TextureFilm(texture, SIZE, SIZE)
+        }
+        view(image, glowing)
+    }
 }

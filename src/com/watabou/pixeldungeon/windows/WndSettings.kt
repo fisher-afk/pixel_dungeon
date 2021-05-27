@@ -15,185 +15,138 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.windows;
+package com.watabou.pixeldungeon.windows
 
-import com.watabou.noosa.Camera;
-import com.watabou.noosa.audio.Sample;
-import com.watabou.pixeldungeon.Assets;
-import com.watabou.pixeldungeon.PixelDungeon;
-import com.watabou.pixeldungeon.scenes.PixelScene;
-import com.watabou.pixeldungeon.ui.CheckBox;
-import com.watabou.pixeldungeon.ui.RedButton;
-import com.watabou.pixeldungeon.ui.Toolbar;
-import com.watabou.pixeldungeon.ui.Window;
+import android.os.Build
+import com.watabou.noosa.Camera
 
-public class WndSettings extends Window {
-	
-	private static final String TXT_ZOOM_IN			= "+";
-	private static final String TXT_ZOOM_OUT		= "-";
-	private static final String TXT_ZOOM_DEFAULT	= "Default Zoom";
+class WndSettings(inGame: Boolean) : Window() {
+    private var btnZoomOut: RedButton? = null
+    private var btnZoomIn: RedButton? = null
+    private fun zoom(value: Float) {
+        Camera.main.zoom(value)
+        PixelDungeon.zoom((value - PixelScene.defaultZoom) as Int)
+        updateEnabled()
+    }
 
-	private static final String TXT_SCALE_UP		= "Scale up UI";
-	private static final String TXT_IMMERSIVE		= "Immersive mode";
-	
-	private static final String TXT_MUSIC	= "Music";
-	
-	private static final String TXT_SOUND	= "Sound FX";
-	
-	private static final String TXT_BRIGHTNESS	= "Brightness";
-	
-	private static final String TXT_QUICKSLOT	= "Second quickslot";
-	
-	private static final String TXT_SWITCH_PORT	= "Switch to portrait";
-	private static final String TXT_SWITCH_LAND	= "Switch to landscape";
-	
-	private static final int WIDTH		= 112;
-	private static final int BTN_HEIGHT	= 20;
-	private static final int GAP 		= 2;
-	
-	private RedButton btnZoomOut;
-	private RedButton btnZoomIn;
-	
-	public WndSettings( boolean inGame ) {
-		super();
-		
-		CheckBox btnImmersive = null;
-		
-		if (inGame) {
-			int w = BTN_HEIGHT;
-			
-			btnZoomOut = new RedButton( TXT_ZOOM_OUT ) {
-				@Override
-				protected void onClick() {
-					zoom( Camera.main.zoom - 1 );
-				}
-			};
-			add( btnZoomOut.setRect( 0, 0, w, BTN_HEIGHT) );
-			
-			btnZoomIn = new RedButton( TXT_ZOOM_IN ) {
-				@Override
-				protected void onClick() {
-					zoom( Camera.main.zoom + 1 );
-				}
-			};
-			add( btnZoomIn.setRect( WIDTH - w, 0, w, BTN_HEIGHT) );
-			
-			add( new RedButton( TXT_ZOOM_DEFAULT ) {
-				@Override
-				protected void onClick() {
-					zoom( PixelScene.defaultZoom );
-				}
-			}.setRect( btnZoomOut.right(), 0, WIDTH - btnZoomIn.width() - btnZoomOut.width(), BTN_HEIGHT ) );
-			
-			updateEnabled();
-			
-		} else {
-			
-			CheckBox btnScaleUp = new CheckBox( TXT_SCALE_UP ) {
-				@Override
-				protected void onClick() {
-					super.onClick();
-					PixelDungeon.scaleUp( checked() );
-				}
-			};
-			btnScaleUp.setRect( 0, 0, WIDTH, BTN_HEIGHT );
-			btnScaleUp.checked( PixelDungeon.scaleUp() );
-			add( btnScaleUp );
-			
-			btnImmersive = new CheckBox( TXT_IMMERSIVE ) {
-				@Override
-				protected void onClick() {
-					super.onClick();
-					PixelDungeon.immerse( checked() );
-				}
-			};
-			btnImmersive.setRect( 0, btnScaleUp.bottom() + GAP, WIDTH, BTN_HEIGHT );
-			btnImmersive.checked( PixelDungeon.immersed() );
-			btnImmersive.enable( android.os.Build.VERSION.SDK_INT >= 19 );
-			add( btnImmersive );
-			
-		}
-		
-		CheckBox btnMusic = new CheckBox( TXT_MUSIC ) {
-			@Override
-			protected void onClick() {
-				super.onClick();
-				PixelDungeon.music( checked() );
-			}
-		};
-		btnMusic.setRect( 0, (btnImmersive != null ? btnImmersive.bottom() : BTN_HEIGHT) + GAP, WIDTH, BTN_HEIGHT );
-		btnMusic.checked( PixelDungeon.music() );
-		add( btnMusic );
-		
-		CheckBox btnSound = new CheckBox( TXT_SOUND ) {
-			@Override
-			protected void onClick() {
-				super.onClick();
-				PixelDungeon.soundFx( checked() );
-				Sample.INSTANCE.play( Assets.SND_CLICK );
-			}
-		};
-		btnSound.setRect( 0, btnMusic.bottom() + GAP, WIDTH, BTN_HEIGHT );
-		btnSound.checked( PixelDungeon.soundFx() );
-		add( btnSound );
-		
-		if (inGame) {
-			
-			CheckBox btnBrightness = new CheckBox( TXT_BRIGHTNESS ) {
-				@Override
-				protected void onClick() {
-					super.onClick();
-					PixelDungeon.brightness( checked() );
-				}
-			};
-			btnBrightness.setRect( 0, btnSound.bottom() + GAP, WIDTH, BTN_HEIGHT );
-			btnBrightness.checked( PixelDungeon.brightness() );
-			add( btnBrightness );
-			
-			CheckBox btnQuickslot = new CheckBox( TXT_QUICKSLOT ) {
-				@Override
-				protected void onClick() {
-					super.onClick();
-					Toolbar.secondQuickslot( checked() );
-				}
-			};
-			btnQuickslot.setRect( 0, btnBrightness.bottom() + GAP, WIDTH, BTN_HEIGHT );
-			btnQuickslot.checked( Toolbar.secondQuickslot() );
-			add( btnQuickslot );
-			
-			resize( WIDTH, (int)btnQuickslot.bottom() );
-			
-		} else {
-			
-			RedButton btnOrientation = new RedButton( orientationText() ) {
-				@Override
-				protected void onClick() {
-					PixelDungeon.landscape( !PixelDungeon.landscape() );
-				}
-			};
-			btnOrientation.setRect( 0, btnSound.bottom() + GAP, WIDTH, BTN_HEIGHT );
-			add( btnOrientation );
-			
-			resize( WIDTH, (int)btnOrientation.bottom() );
-			
-		}
-	}
-	
-	private void zoom( float value ) {
+    private fun updateEnabled() {
+        val zoom: Float = Camera.main.zoom
+        btnZoomIn.enable(zoom < PixelScene.maxZoom)
+        btnZoomOut.enable(zoom > PixelScene.minZoom)
+    }
 
-		Camera.main.zoom( value );
-		PixelDungeon.zoom( (int)(value - PixelScene.defaultZoom) );
+    private fun orientationText(): String {
+        return if (PixelDungeon.landscape()) TXT_SWITCH_PORT else TXT_SWITCH_LAND
+    }
 
-		updateEnabled();
-	}
-	
-	private void updateEnabled() {
-		float zoom = Camera.main.zoom;
-		btnZoomIn.enable( zoom < PixelScene.maxZoom );
-		btnZoomOut.enable( zoom > PixelScene.minZoom );
-	}
-	
-	private String orientationText() {
-		return PixelDungeon.landscape() ? TXT_SWITCH_PORT : TXT_SWITCH_LAND;
-	}
+    companion object {
+        private const val TXT_ZOOM_IN = "+"
+        private const val TXT_ZOOM_OUT = "-"
+        private const val TXT_ZOOM_DEFAULT = "Default Zoom"
+        private const val TXT_SCALE_UP = "Scale up UI"
+        private const val TXT_IMMERSIVE = "Immersive mode"
+        private const val TXT_MUSIC = "Music"
+        private const val TXT_SOUND = "Sound FX"
+        private const val TXT_BRIGHTNESS = "Brightness"
+        private const val TXT_QUICKSLOT = "Second quickslot"
+        private const val TXT_SWITCH_PORT = "Switch to portrait"
+        private const val TXT_SWITCH_LAND = "Switch to landscape"
+        private const val WIDTH = 112
+        private const val BTN_HEIGHT = 20
+        private const val GAP = 2
+    }
+
+    init {
+        var btnImmersive: CheckBox? = null
+        if (inGame) {
+            val w = BTN_HEIGHT
+            btnZoomOut = object : RedButton(TXT_ZOOM_OUT) {
+                protected fun onClick() {
+                    zoom(Camera.main.zoom - 1)
+                }
+            }
+            add(btnZoomOut.setRect(0, 0, w, BTN_HEIGHT))
+            btnZoomIn = object : RedButton(TXT_ZOOM_IN) {
+                protected fun onClick() {
+                    zoom(Camera.main.zoom + 1)
+                }
+            }
+            add(btnZoomIn.setRect(WIDTH - w, 0, w, BTN_HEIGHT))
+            add(object : RedButton(TXT_ZOOM_DEFAULT) {
+                protected fun onClick() {
+                    zoom(PixelScene.defaultZoom)
+                }
+            }.setRect(btnZoomOut.right(), 0, WIDTH - btnZoomIn.width() - btnZoomOut.width(), BTN_HEIGHT))
+            updateEnabled()
+        } else {
+            val btnScaleUp: CheckBox = object : CheckBox(TXT_SCALE_UP) {
+                protected fun onClick() {
+                    super.onClick()
+                    PixelDungeon.scaleUp(checked())
+                }
+            }
+            btnScaleUp.setRect(0, 0, WIDTH, BTN_HEIGHT)
+            btnScaleUp.checked(PixelDungeon.scaleUp())
+            add(btnScaleUp)
+            btnImmersive = object : CheckBox(TXT_IMMERSIVE) {
+                protected fun onClick() {
+                    super.onClick()
+                    PixelDungeon.immerse(checked())
+                }
+            }
+            btnImmersive.setRect(0, btnScaleUp.bottom() + GAP, WIDTH, BTN_HEIGHT)
+            btnImmersive.checked(PixelDungeon.immersed())
+            btnImmersive.enable(Build.VERSION.SDK_INT >= 19)
+            add(btnImmersive)
+        }
+        val btnMusic: CheckBox = object : CheckBox(TXT_MUSIC) {
+            protected fun onClick() {
+                super.onClick()
+                PixelDungeon.music(checked())
+            }
+        }
+        btnMusic.setRect(0, (if (btnImmersive != null) btnImmersive.bottom() else BTN_HEIGHT) + GAP, WIDTH, BTN_HEIGHT)
+        btnMusic.checked(PixelDungeon.music())
+        add(btnMusic)
+        val btnSound: CheckBox = object : CheckBox(TXT_SOUND) {
+            protected fun onClick() {
+                super.onClick()
+                PixelDungeon.soundFx(checked())
+                Sample.INSTANCE.play(Assets.SND_CLICK)
+            }
+        }
+        btnSound.setRect(0, btnMusic.bottom() + GAP, WIDTH, BTN_HEIGHT)
+        btnSound.checked(PixelDungeon.soundFx())
+        add(btnSound)
+        if (inGame) {
+            val btnBrightness: CheckBox = object : CheckBox(TXT_BRIGHTNESS) {
+                protected fun onClick() {
+                    super.onClick()
+                    PixelDungeon.brightness(checked())
+                }
+            }
+            btnBrightness.setRect(0, btnSound.bottom() + GAP, WIDTH, BTN_HEIGHT)
+            btnBrightness.checked(PixelDungeon.brightness())
+            add(btnBrightness)
+            val btnQuickslot: CheckBox = object : CheckBox(TXT_QUICKSLOT) {
+                protected fun onClick() {
+                    super.onClick()
+                    Toolbar.secondQuickslot(checked())
+                }
+            }
+            btnQuickslot.setRect(0, btnBrightness.bottom() + GAP, WIDTH, BTN_HEIGHT)
+            btnQuickslot.checked(Toolbar.secondQuickslot())
+            add(btnQuickslot)
+            resize(WIDTH, btnQuickslot.bottom() as Int)
+        } else {
+            val btnOrientation: RedButton = object : RedButton(orientationText()) {
+                protected fun onClick() {
+                    PixelDungeon.landscape(!PixelDungeon.landscape())
+                }
+            }
+            btnOrientation.setRect(0, btnSound.bottom() + GAP, WIDTH, BTN_HEIGHT)
+            add(btnOrientation)
+            resize(WIDTH, btnOrientation.bottom() as Int)
+        }
+    }
 }

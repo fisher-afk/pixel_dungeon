@@ -15,57 +15,43 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.plants;
+package com.watabou.pixeldungeon.plants
 
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.blobs.Blob;
-import com.watabou.pixeldungeon.actors.blobs.Fire;
-import com.watabou.pixeldungeon.effects.CellEmitter;
-import com.watabou.pixeldungeon.effects.particles.FlameParticle;
-import com.watabou.pixeldungeon.items.potions.PotionOfLiquidFlame;
-import com.watabou.pixeldungeon.scenes.GameScene;
-import com.watabou.pixeldungeon.sprites.ItemSpriteSheet;
+import com.watabou.pixeldungeon.Dungeon
 
-public class Firebloom extends Plant {
+class Firebloom : Plant() {
+    override fun activate(ch: Char?) {
+        super.activate(ch)
+        GameScene.add(Blob.seed(pos, 2, Fire::class.java))
+        if (Dungeon.visible.get(pos)) {
+            CellEmitter.get(pos).burst(FlameParticle.FACTORY, 5)
+        }
+    }
 
-	private static final String TXT_DESC = "When something touches a Firebloom, it bursts into flames.";
-	
-	{
-		image = 0;
-		plantName = "Firebloom";
-	}
-	
-	@Override
-	public void activate( Char ch ) {
-		super.activate( ch );
-		
-		GameScene.add( Blob.seed( pos, 2, Fire.class ) );
-		
-		if (Dungeon.visible[pos]) {
-			CellEmitter.get( pos ).burst( FlameParticle.FACTORY, 5 );
-		}
-	}
-	
-	@Override
-	public String desc() {
-		return TXT_DESC;
-	}
-	
-	public static class Seed extends Plant.Seed {
-		{
-			plantName = "Firebloom";
-			
-			name = "seed of " + plantName;
-			image = ItemSpriteSheet.SEED_FIREBLOOM;
-			
-			plantClass = Firebloom.class;
-			alchemyClass = PotionOfLiquidFlame.class;
-		}
-		
-		@Override
-		public String desc() {
-			return TXT_DESC;
-		}
-	}
+    override fun desc(): String {
+        return TXT_DESC
+    }
+
+    class Seed : Plant.Seed() {
+        fun desc(): String {
+            return TXT_DESC
+        }
+
+        init {
+            plantName = "Firebloom"
+            name = "seed of $plantName"
+            image = ItemSpriteSheet.SEED_FIREBLOOM
+            plantClass = Firebloom::class.java
+            alchemyClass = PotionOfLiquidFlame::class.java
+        }
+    }
+
+    companion object {
+        private const val TXT_DESC = "When something touches a Firebloom, it bursts into flames."
+    }
+
+    init {
+        image = 0
+        plantName = "Firebloom"
+    }
 }

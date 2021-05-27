@@ -15,76 +15,55 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.sprites;
+package com.watabou.pixeldungeon.sprites
 
-import com.watabou.noosa.TextureFilm;
-import com.watabou.pixeldungeon.Assets;
-import com.watabou.pixeldungeon.items.weapon.missiles.Dart;
-import com.watabou.pixeldungeon.levels.Level;
-import com.watabou.utils.Callback;
+import com.watabou.noosa.TextureFilm
 
-public class ScorpioSprite extends MobSprite {
-	
-	private int cellToAttack;
-	
-	public ScorpioSprite() {
-		super();
-		
-		texture( Assets.SCORPIO );
-		
-		TextureFilm frames = new TextureFilm( texture, 18, 17 );
-		
-		idle = new Animation( 12, true );
-		idle.frames( frames, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 2, 1, 2 );
-		
-		run = new Animation( 8, true );
-		run.frames( frames, 5, 5, 6, 6 );
-		
-		attack = new Animation( 15, false );
-		attack.frames( frames, 0, 3, 4 );
-		
-		zap = attack.clone();
-		
-		die = new Animation( 12, false );
-		die.frames( frames, 0, 7, 8, 9, 10 );
-		
-		play( idle );
-	}
-	
-	@Override
-	public int blood() {
-		return 0xFF44FF22;
-	}
-	
-	@Override
-	public void attack( int cell ) {
-		if (!Level.adjacent( cell, ch.pos )) {
-			
-			cellToAttack = cell;
-			turnTo( ch.pos , cell );
-			play( zap );	
-			
-		} else {
-			
-			super.attack( cell );
-			
-		}
-	}
-	
-	@Override
-	public void onComplete( Animation anim ) {
-		if (anim == zap) {
-			idle();
-			
-			((MissileSprite)parent.recycle( MissileSprite.class )).
-			reset( ch.pos, cellToAttack, new Dart(), new Callback() {			
-				@Override
-				public void call() {
-					ch.onAttackComplete();
-				}
-			} );
-		} else {
-			super.onComplete( anim );
-		}
-	}
+class ScorpioSprite : MobSprite() {
+    private var cellToAttack = 0
+    override fun blood(): Int {
+        return -0xbb00de
+    }
+
+    override fun attack(cell: Int) {
+        if (!Level.adjacent(cell, ch.pos)) {
+            cellToAttack = cell
+            turnTo(ch.pos, cell)
+            play(zap)
+        } else {
+            super.attack(cell)
+        }
+    }
+
+    override fun onComplete(anim: Animation) {
+        if (anim === zap) {
+            idle()
+            (parent.recycle(MissileSprite::class.java) as MissileSprite).reset(
+                ch.pos,
+                cellToAttack,
+                Dart(),
+                object : Callback() {
+                    fun call() {
+                        ch.onAttackComplete()
+                    }
+                })
+        } else {
+            super.onComplete(anim)
+        }
+    }
+
+    init {
+        texture(Assets.SCORPIO)
+        val frames = TextureFilm(texture, 18, 17)
+        idle = Animation(12, true)
+        idle.frames(frames, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 2, 1, 2)
+        run = Animation(8, true)
+        run.frames(frames, 5, 5, 6, 6)
+        attack = Animation(15, false)
+        attack.frames(frames, 0, 3, 4)
+        zap = attack.clone()
+        die = Animation(12, false)
+        die.frames(frames, 0, 7, 8, 9, 10)
+        play(idle)
+    }
 }

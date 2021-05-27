@@ -15,115 +15,82 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.levels;
+package com.watabou.pixeldungeon.levels
 
-import java.util.Arrays;
+import com.watabou.noosa.Scene
 
-import com.watabou.noosa.Scene;
-import com.watabou.pixeldungeon.Assets;
-import com.watabou.pixeldungeon.items.Amulet;
-import com.watabou.pixeldungeon.levels.painters.Painter;
-import com.watabou.utils.Random;
+class LastLevel : Level() {
+    private var pedestal = 0
+    override fun tilesTex(): String {
+        return Assets.TILES_HALLS
+    }
 
-public class LastLevel extends Level {
+    override fun waterTex(): String {
+        return Assets.WATER_HALLS
+    }
 
-	private static final int SIZE = 7;
-	
-	{
-		color1 = 0x801500;
-		color2 = 0xa68521;
-	}
-	
-	private int pedestal;
-	
-	@Override
-	public String tilesTex() {
-		return Assets.TILES_HALLS;
-	}
-	
-	@Override
-	public String waterTex() {
-		return Assets.WATER_HALLS;
-	}
-	
-	@Override
-	protected boolean build() {
+    protected override fun build(): Boolean {
+        Arrays.fill(map, Terrain.WALL)
+        Painter.fill(this, 1, 1, SIZE, SIZE, Terrain.WATER)
+        Painter.fill(this, 2, 2, SIZE - 2, SIZE - 2, Terrain.EMPTY)
+        Painter.fill(this, SIZE / 2, SIZE / 2, 3, 3, Terrain.EMPTY_SP)
+        entrance = SIZE * WIDTH + SIZE / 2 + 1
+        map.get(entrance) = Terrain.ENTRANCE
+        exit = entrance - WIDTH * SIZE
+        map.get(exit) = Terrain.LOCKED_EXIT
+        pedestal = (SIZE / 2 + 1) * (WIDTH + 1)
+        map.get(pedestal) = Terrain.PEDESTAL
+        map.get(pedestal + 1) = Terrain.STATUE_SP
+        map.get(pedestal - 1) = map.get(pedestal + 1)
+        feeling = Feeling.NONE
+        return true
+    }
 
-		Arrays.fill( map, Terrain.WALL );
-		Painter.fill( this, 1, 1, SIZE, SIZE, Terrain.WATER );
-		Painter.fill( this, 2, 2, SIZE-2, SIZE-2, Terrain.EMPTY );
-		Painter.fill( this, SIZE/2, SIZE/2, 3, 3, Terrain.EMPTY_SP );
-		
-		entrance = SIZE * WIDTH + SIZE / 2 + 1;
-		map[entrance] = Terrain.ENTRANCE;
-		
-		exit = entrance - WIDTH * SIZE;
-		map[exit] = Terrain.LOCKED_EXIT;
-		
-		pedestal = (SIZE / 2 + 1) * (WIDTH + 1);
-		map[pedestal] = Terrain.PEDESTAL;
-		map[pedestal-1] = map[pedestal+1] = Terrain.STATUE_SP;
-		
-		feeling = Feeling.NONE;
-		
-		return true;
-	}
+    protected override fun decorate() {
+        for (i in 0 until LENGTH) {
+            if (map.get(i) === Terrain.EMPTY && Random.Int(10) === 0) {
+                map.get(i) = Terrain.EMPTY_DECO
+            }
+        }
+    }
 
-	@Override
-	protected void decorate() {
-		for (int i=0; i < LENGTH; i++) {
-			if (map[i] == Terrain.EMPTY && Random.Int( 10 ) == 0) { 
-				map[i] = Terrain.EMPTY_DECO;
-			}
-		}
-	}
+    protected override fun createMobs() {}
+    protected override fun createItems() {
+        drop(Amulet(), pedestal)
+    }
 
-	@Override
-	protected void createMobs() {
-	}
+    override fun randomRespawnCell(): Int {
+        return -1
+    }
 
-	@Override
-	protected void createItems() {
-		drop( new Amulet(), pedestal );
-	}
-	
-	@Override
-	public int randomRespawnCell() {
-		return -1;
-	}
+    override fun tileName(tile: Int): String {
+        return when (tile) {
+            Terrain.WATER -> "Cold lava"
+            Terrain.GRASS -> "Embermoss"
+            Terrain.HIGH_GRASS -> "Emberfungi"
+            Terrain.STATUE, Terrain.STATUE_SP -> "Pillar"
+            else -> super.tileName(tile)
+        }
+    }
 
-	@Override
-	public String tileName( int tile ) {
-		switch (tile) {
-		case Terrain.WATER:
-			return "Cold lava";
-		case Terrain.GRASS:
-			return "Embermoss";
-		case Terrain.HIGH_GRASS:
-			return "Emberfungi";
-		case Terrain.STATUE:
-		case Terrain.STATUE_SP:
-			return "Pillar";
-		default:
-			return super.tileName( tile );
-		}
-	}
-	
-	@Override
-	public String tileDesc(int tile) {
-		switch (tile) {
-		case Terrain.WATER:
-			return "It looks like lava, but it's cold and probably safe to touch.";
-		case Terrain.STATUE:
-		case Terrain.STATUE_SP:
-			return "The pillar is made of real humanoid skulls. Awesome."; 
-		default:
-			return super.tileDesc( tile );
-		}
-	}
-	
-	@Override
-	public void addVisuals( Scene scene ) {
-		HallsLevel.addVisuals( this, scene );
-	}
+    override fun tileDesc(tile: Int): String {
+        return when (tile) {
+            Terrain.WATER -> "It looks like lava, but it's cold and probably safe to touch."
+            Terrain.STATUE, Terrain.STATUE_SP -> "The pillar is made of real humanoid skulls. Awesome."
+            else -> super.tileDesc(tile)
+        }
+    }
+
+    override fun addVisuals(scene: Scene) {
+        HallsLevel.addVisuals(this, scene)
+    }
+
+    companion object {
+        private const val SIZE = 7
+    }
+
+    init {
+        color1 = 0x801500
+        color2 = 0xa68521
+    }
 }

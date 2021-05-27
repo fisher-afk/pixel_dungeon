@@ -15,40 +15,32 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.levels.painters;
+package com.watabou.pixeldungeon.levels.painters
 
-import com.watabou.pixeldungeon.levels.Level;
-import com.watabou.pixeldungeon.levels.Room;
-import com.watabou.pixeldungeon.levels.Terrain;
-import com.watabou.utils.Point;
-import com.watabou.utils.Random;
+import com.watabou.pixeldungeon.levels.Level
 
-public class WeakFloorPainter extends Painter {
-
-	public static void paint( Level level, Room room ) {
-		
-		fill( level, room, Terrain.WALL );
-		fill( level, room, 1, Terrain.CHASM );
-		
-		Room.Door door = room.entrance(); 
-		door.set( Room.Door.Type.REGULAR );
-		
-		if (door.x == room.left) {
-			for (int i=room.top + 1; i < room.bottom; i++) {
-				drawInside( level, room, new Point( room.left, i ), Random.IntRange( 1, room.width() - 2 ), Terrain.EMPTY_SP );
-			}
-		} else if (door.x == room.right) {
-			for (int i=room.top + 1; i < room.bottom; i++) {
-				drawInside( level, room, new Point( room.right, i ), Random.IntRange( 1, room.width() - 2 ), Terrain.EMPTY_SP );
-			}
-		} else if (door.y == room.top) {
-			for (int i=room.left + 1; i < room.right; i++) {
-				drawInside( level, room, new Point( i, room.top ), Random.IntRange( 1, room.height() - 2 ), Terrain.EMPTY_SP );
-			}
-		} else if (door.y == room.bottom) {
-			for (int i=room.left + 1; i < room.right; i++) {
-				drawInside( level, room, new Point( i, room.bottom ), Random.IntRange( 1, room.height() - 2 ), Terrain.EMPTY_SP );
-			}
-		}
-	}
+object WeakFloorPainter : Painter() {
+    fun paint(level: Level?, room: Room) {
+        fill(level, room, Terrain.WALL)
+        fill(level, room, 1, Terrain.CHASM)
+        val door: Room.Door = room.entrance()
+        door.set(Room.Door.Type.REGULAR)
+        if (door.x === room.left) {
+            for (i in room.top + 1 until room.bottom) {
+                drawInside(level, room, Point(room.left, i), Random.IntRange(1, room.width() - 2), Terrain.EMPTY_SP)
+            }
+        } else if (door.x === room.right) {
+            for (i in room.top + 1 until room.bottom) {
+                drawInside(level, room, Point(room.right, i), Random.IntRange(1, room.width() - 2), Terrain.EMPTY_SP)
+            }
+        } else if (door.y === room.top) {
+            for (i in room.left + 1 until room.right) {
+                drawInside(level, room, Point(i, room.top), Random.IntRange(1, room.height() - 2), Terrain.EMPTY_SP)
+            }
+        } else if (door.y === room.bottom) {
+            for (i in room.left + 1 until room.right) {
+                drawInside(level, room, Point(i, room.bottom), Random.IntRange(1, room.height() - 2), Terrain.EMPTY_SP)
+            }
+        }
+    }
 }

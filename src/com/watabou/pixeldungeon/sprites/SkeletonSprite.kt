@@ -15,47 +15,32 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.sprites;
+package com.watabou.pixeldungeon.sprites
 
-import com.watabou.noosa.TextureFilm;
-import com.watabou.pixeldungeon.Assets;
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.effects.Speck;
+import com.watabou.noosa.TextureFilm
+class SkeletonSprite : MobSprite() {
+    override fun die() {
+        super.die()
+        if (Dungeon.visible.get(ch.pos)) {
+            emitter().burst(Speck.factory(Speck.BONE), 6)
+        }
+    }
 
-public class SkeletonSprite extends MobSprite {
-	
-	public SkeletonSprite() {
-		super();
-		
-		texture( Assets.SKELETON );
-		
-		TextureFilm frames = new TextureFilm( texture, 12, 15 );
-		
-		idle = new Animation( 12, true );
-		idle.frames( frames, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3 );
-		
-		run = new Animation( 15, true );
-		run.frames( frames, 4, 5, 6, 7, 8, 9 );
-		
-		attack = new Animation( 15, false );
-		attack.frames( frames, 14, 15, 16 );
-		
-		die = new Animation( 12, false );
-		die.frames( frames, 10, 11, 12, 13 );
-		
-		play( idle );
-	}
-	
-	@Override
-	public void die() {
-		super.die();
-		if (Dungeon.visible[ch.pos]) {
-			emitter().burst( Speck.factory( Speck.BONE ), 6 );
-		}
-	}
-	
-	@Override
-	public int blood() {
-		return 0xFFcccccc;
-	}
+    override fun blood(): Int {
+        return -0x333334
+    }
+
+    init {
+        texture(Assets.SKELETON)
+        val frames = TextureFilm(texture, 12, 15)
+        idle = Animation(12, true)
+        idle.frames(frames, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3)
+        run = Animation(15, true)
+        run.frames(frames, 4, 5, 6, 7, 8, 9)
+        attack = Animation(15, false)
+        attack.frames(frames, 14, 15, 16)
+        die = Animation(12, false)
+        die.frames(frames, 10, 11, 12, 13)
+        play(idle)
+    }
 }

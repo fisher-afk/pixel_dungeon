@@ -15,56 +15,46 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.bags;
+package com.watabou.pixeldungeon.items.bags
 
-import com.watabou.pixeldungeon.items.Item;
-import com.watabou.pixeldungeon.items.wands.Wand;
-import com.watabou.pixeldungeon.sprites.ItemSpriteSheet;
+import com.watabou.pixeldungeon.items.Item
 
-public class WandHolster extends Bag {
+class WandHolster : Bag() {
+    override fun grab(item: Item?): Boolean {
+        return item is Wand
+    }
 
-	{
-		name = "wand holster";
-		image = ItemSpriteSheet.HOLSTER;
-		
-		size = 12;
-	}
-	
-	@Override
-	public boolean grab( Item item ) {
-		return item instanceof Wand;
-	}
-	
-	@Override
-	public boolean collect( Bag container ) {
-		if (super.collect( container )) {
-			if (owner != null) {
-				for (Item item : items) {
-					((Wand)item).charge( owner );
-				}
-			}
-			return true;
-		} else {
-			return false;
-		}
-	}
-	
-	@Override
-	public void onDetach( ) {
-		for (Item item : items) {
-			((Wand)item).stopCharging();
-		}
-	}
-	
-	@Override
-	public int price() {
-		return 50;
-	}
-	
-	@Override
-	public String info() {
-		return
-			"This slim holder is made of leather of some exotic animal. " +
-			"It allows to compactly carry up to " + size + " wands.";
-	}
+    override fun collect(container: Bag): Boolean {
+        return if (super.collect(container)) {
+            if (owner != null) {
+                for (item in items) {
+                    (item as Wand).charge(owner)
+                }
+            }
+            true
+        } else {
+            false
+        }
+    }
+
+    override fun onDetach() {
+        for (item in items) {
+            (item as Wand).stopCharging()
+        }
+    }
+
+    fun price(): Int {
+        return 50
+    }
+
+    fun info(): String {
+        return "This slim holder is made of leather of some exotic animal. " +
+                "It allows to compactly carry up to " + size + " wands."
+    }
+
+    init {
+        name = "wand holster"
+        image = ItemSpriteSheet.HOLSTER
+        size = 12
+    }
 }

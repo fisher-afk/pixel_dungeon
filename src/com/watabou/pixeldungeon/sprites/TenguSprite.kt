@@ -15,89 +15,62 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.sprites;
+package com.watabou.pixeldungeon.sprites
 
-import com.watabou.noosa.TextureFilm;
-import com.watabou.pixeldungeon.Assets;
-import com.watabou.pixeldungeon.items.weapon.missiles.Shuriken;
-import com.watabou.pixeldungeon.levels.Level;
-import com.watabou.pixeldungeon.scenes.GameScene;
-import com.watabou.utils.Callback;
+import com.watabou.noosa.TextureFilm
 
-public class TenguSprite extends MobSprite {
-	
-	private Animation cast;
-	
-	public TenguSprite() {
-		super();
-		
-		texture( Assets.TENGU );
-		
-		TextureFilm frames = new TextureFilm( texture, 14, 16 );
-		
-		idle = new Animation( 2, true );
-		idle.frames( frames, 0, 0, 0, 1 );
-		
-		run = new Animation( 15, false );
-		run.frames( frames, 2, 3, 4, 5, 0 );
-		
-		attack = new Animation( 15, false );
-		attack.frames( frames, 6, 7, 7, 0 );
-		
-		cast = attack.clone();
-		
-		die = new Animation( 8, false );
-		die.frames( frames, 8, 9, 10, 10, 10, 10, 10, 10 );
-		
-		play( run.clone() );
-	}
-	
-	@Override
-	public void move( int from, int to ) {
-		
-		place( to );
-		
-		play( run );
-		turnTo( from , to );
-		
-		isMoving = true;
-		
-		if (Level.water[to]) {
-			GameScene.ripple( to );
-		}
-		
-		ch.onMotionComplete();
-	}
-	
-	@Override
-	public void attack( int cell ) {
-		if (!Level.adjacent( cell, ch.pos )) {
-			
-			((MissileSprite)parent.recycle( MissileSprite.class )).
-				reset( ch.pos, cell, new Shuriken(), new Callback() {			
-					@Override
-					public void call() {
-						ch.onAttackComplete();
-					}
-				} );
-			
-			play( cast );
-			turnTo( ch.pos , cell );
-			
-		} else {
-			
-			super.attack( cell );
-			
-		}
-	}
-	
-	@Override
-	public void onComplete( Animation anim ) {
-		if (anim == run) {
-			isMoving = false;
-			idle();
-		} else {
-			super.onComplete( anim );
-		}
-	}
+class TenguSprite : MobSprite() {
+    private val cast: Animation
+    override fun move(from: Int, to: Int) {
+        place(to)
+        play(run)
+        turnTo(from, to)
+        isMoving = true
+        if (Level.water.get(to)) {
+            GameScene.ripple(to)
+        }
+        ch.onMotionComplete()
+    }
+
+    override fun attack(cell: Int) {
+        if (!Level.adjacent(cell, ch.pos)) {
+            (parent.recycle(MissileSprite::class.java) as MissileSprite).reset(
+                ch.pos,
+                cell,
+                Shuriken(),
+                object : Callback() {
+                    fun call() {
+                        ch.onAttackComplete()
+                    }
+                })
+            play(cast)
+            turnTo(ch.pos, cell)
+        } else {
+            super.attack(cell)
+        }
+    }
+
+    override fun onComplete(anim: Animation) {
+        if (anim === run) {
+            isMoving = false
+            idle()
+        } else {
+            super.onComplete(anim)
+        }
+    }
+
+    init {
+        texture(Assets.TENGU)
+        val frames = TextureFilm(texture, 14, 16)
+        idle = Animation(2, true)
+        idle.frames(frames, 0, 0, 0, 1)
+        run = Animation(15, false)
+        run.frames(frames, 2, 3, 4, 5, 0)
+        attack = Animation(15, false)
+        attack.frames(frames, 6, 7, 7, 0)
+        cast = attack.clone()
+        die = Animation(8, false)
+        die.frames(frames, 8, 9, 10, 10, 10, 10, 10, 10)
+        play(run.clone())
+    }
 }

@@ -15,83 +15,61 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.mobs;
+package com.watabou.pixeldungeon.actors.mobs
 
-import java.util.HashSet;
+import com.watabou.pixeldungeon.Dungeon
 
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.blobs.Blob;
-import com.watabou.pixeldungeon.actors.blobs.ParalyticGas;
-import com.watabou.pixeldungeon.actors.buffs.Paralysis;
-import com.watabou.pixeldungeon.items.quest.RatSkull;
-import com.watabou.pixeldungeon.scenes.GameScene;
-import com.watabou.pixeldungeon.sprites.FetidRatSprite;
-import com.watabou.utils.Random;
+class FetidRat : Mob() {
+    fun damageRoll(): Int {
+        return Random.NormalIntRange(2, 6)
+    }
 
-public class FetidRat extends Mob {
+    fun attackSkill(target: Char?): Int {
+        return 12
+    }
 
-	{
-		name = "fetid rat";
-		spriteClass = FetidRatSprite.class;
-		
-		HP = HT = 15;
-		defenseSkill = 5;
-		
-		EXP = 3;
-		maxLvl = 5;	
-		
-		state = WANDERING;
-	}
-	
-	@Override
-	public int damageRoll() {
-		return Random.NormalIntRange( 2, 6 );
-	}
-	
-	@Override
-	public int attackSkill( Char target ) {
-		return 12;
-	}
-	
-	@Override
-	public int dr() {
-		return 2;
-	}
-	
-	@Override
-	public String defenseVerb() {
-		return "evaded";
-	}
-	
-	@Override
-	public int defenseProc( Char enemy, int damage ) {
-		
-		GameScene.add( Blob.seed( pos, 20, ParalyticGas.class ) );
-		
-		return super.defenseProc(enemy, damage);
-	}
-	
-	@Override
-	public void die( Object cause ) {
-		super.die( cause );
-		
-		Dungeon.level.drop( new RatSkull(), pos ).sprite.drop();
-	}
-	
-	@Override
-	public String description() {
-		return
-			"This marsupial rat is much larger than a regular one. It is surrounded by a foul cloud.";
-	}
-	
-	private static final HashSet<Class<?>> IMMUNITIES = new HashSet<Class<?>>();
-	static {
-		IMMUNITIES.add( Paralysis.class );
-	}
-	
-	@Override
-	public HashSet<Class<?>> immunities() {
-		return IMMUNITIES;
-	}
+    fun dr(): Int {
+        return 2
+    }
+
+    fun defenseVerb(): String {
+        return "evaded"
+    }
+
+    override fun defenseProc(enemy: Char, damage: Int): Int {
+        GameScene.add(Blob.seed(pos, 20, ParalyticGas::class.java))
+        return super.defenseProc(enemy, damage)
+    }
+
+    override fun die(cause: Any?) {
+        super.die(cause)
+        Dungeon.level.drop(RatSkull(), pos).sprite.drop()
+    }
+
+    override fun description(): String {
+        return "This marsupial rat is much larger than a regular one. It is surrounded by a foul cloud."
+    }
+
+    companion object {
+        private val IMMUNITIES = HashSet<Class<*>>()
+
+        init {
+            IMMUNITIES.add(Paralysis::class.java)
+        }
+    }
+
+    fun immunities(): HashSet<Class<*>> {
+        return IMMUNITIES
+    }
+
+    init {
+        name = "fetid rat"
+        spriteClass = FetidRatSprite::class.java
+        HT = 15
+        HP = HT
+        defenseSkill = 5
+        EXP = 3
+        maxLvl = 5
+        state = WANDERING
+    }
 }

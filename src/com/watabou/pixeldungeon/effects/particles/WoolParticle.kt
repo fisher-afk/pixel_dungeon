@@ -15,40 +15,31 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.effects.particles;
+package com.watabou.pixeldungeon.effects.particles
 
-import com.watabou.noosa.particles.Emitter;
-import com.watabou.noosa.particles.PixelParticle;
-import com.watabou.noosa.particles.Emitter.Factory;
-import com.watabou.utils.ColorMath;
-import com.watabou.utils.Random;
+import com.watabou.noosa.particles.Emitter
 
-public class WoolParticle extends PixelParticle.Shrinking {
-	
-	public static final Emitter.Factory FACTORY = new Factory() {	
-		@Override
-		public void emit( Emitter emitter, int index, float x, float y ) {
-			((WoolParticle)emitter.recycle( WoolParticle.class )).reset( x, y );
-		}
-	};
-	
-	public WoolParticle() {
-		super();
-		
-		color( ColorMath.random( 0x999999, 0xEEEEE0 ) );
-		
-		acc.set( 0, -40 );
-	}
-	
-	public void reset( float x, float y ) {
-		revive();
-		
-		this.x = x;
-		this.y = y;
-		
-		left = lifespan = Random.Float( 0.6f, 1f );
-		size = 5;
-		
-		speed.set( Random.Float( -10, +10 ), Random.Float( -10, +10 ) );
-	}
+class WoolParticle : PixelParticle.Shrinking() {
+    fun reset(x: Float, y: Float) {
+        revive()
+        x = x
+        y = y
+        lifespan = Random.Float(0.6f, 1f)
+        left = lifespan
+        size = 5
+        speed.set(Random.Float(-10, +10), Random.Float(-10, +10))
+    }
+
+    companion object {
+        val FACTORY: Emitter.Factory = object : Factory() {
+            fun emit(emitter: Emitter, index: Int, x: Float, y: Float) {
+                (emitter.recycle(WoolParticle::class.java) as WoolParticle).reset(x, y)
+            }
+        }
+    }
+
+    init {
+        color(ColorMath.random(0x999999, 0xEEEEE0))
+        acc.set(0, -40)
+    }
 }

@@ -15,34 +15,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.bags;
+package com.watabou.pixeldungeon.items.bags
 
-import com.watabou.pixeldungeon.items.Item;
-import com.watabou.pixeldungeon.plants.Plant;
-import com.watabou.pixeldungeon.sprites.ItemSpriteSheet;
+import com.watabou.pixeldungeon.items.Item
 
-public class SeedPouch extends Bag {
+class SeedPouch : Bag() {
+    override fun grab(item: Item?): Boolean {
+        return item is Plant.Seed
+    }
 
-	{
-		name = "seed pouch";
-		image = ItemSpriteSheet.POUCH;
-		
-		size = 8;
-	}
-	
-	@Override
-	public boolean grab( Item item ) {
-		return item instanceof Plant.Seed;
-	}
-	
-	@Override
-	public int price() {
-		return 50;
-	}
-	
-	@Override
-	public String info() {
-		return
-			"This small velvet pouch allows you to store any number of seeds in it. Very convenient.";
-	}
+    fun price(): Int {
+        return 50
+    }
+
+    fun info(): String {
+        return "This small velvet pouch allows you to store any number of seeds in it. Very convenient."
+    }
+
+    init {
+        name = "seed pouch"
+        image = ItemSpriteSheet.POUCH
+        size = 8
+    }
 }

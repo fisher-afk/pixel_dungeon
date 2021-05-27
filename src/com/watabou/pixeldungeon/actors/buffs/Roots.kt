@@ -15,36 +15,28 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.buffs;
+package com.watabou.pixeldungeon.actors.buffs
 
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.ui.BuffIndicator;
+class Roots : FlavourBuff() {
+    fun attachTo(target: Char): Boolean {
+        return if (!target.flying && super.attachTo(target)) {
+            target.rooted = true
+            true
+        } else {
+            false
+        }
+    }
 
-public class Roots extends FlavourBuff {
-	
-	@Override
-	public boolean attachTo( Char target ) {
-		if (!target.flying && super.attachTo( target )) {
-			target.rooted = true;
-			return true;
-		} else {
-			return false;
-		}
-	}
-	
-	@Override
-	public void detach() {
-		target.rooted = false;
-		super.detach();
-	}
-	
-	@Override
-	public int icon() {
-		return BuffIndicator.ROOTS;
-	}
-	
-	@Override
-	public String toString() {
-		return "Rooted";
-	}
+    override fun detach() {
+        target.rooted = false
+        super.detach()
+    }
+
+    override fun icon(): Int {
+        return BuffIndicator.ROOTS
+    }
+
+    override fun toString(): String {
+        return "Rooted"
+    }
 }

@@ -15,61 +15,42 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.effects;
+package com.watabou.pixeldungeon.effects
 
-import javax.microedition.khronos.opengles.GL10;
+import com.watabou.noosa.Game
 
-import android.opengl.GLES20;
+class DeathRay(s: PointF, e: PointF) : Image(Effects.get(Effects.Type.RAY)) {
+    private var timeLeft: Float
+    fun update() {
+        super.update()
+        val p = timeLeft / DURATION
+        alpha(p)
+        scale.set(scale.x, p)
+        if (Game.elapsed.let { timeLeft -= it; timeLeft } <= 0) {
+            killAndErase()
+        }
+    }
 
-import com.watabou.noosa.Game;
-import com.watabou.noosa.Image;
-import com.watabou.noosa.audio.Sample;
-import com.watabou.pixeldungeon.Assets;
-import com.watabou.utils.PointF;
+    fun draw() {
+        GLES20.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE)
+        super.draw()
+        GLES20.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA)
+    }
 
-public class DeathRay extends Image {
-	
-	private static final double A = 180 / Math.PI;
-	
-	private static final float DURATION	= 0.5f;
-	
-	private float timeLeft;
-	
-	public DeathRay( PointF s, PointF e ) {
-		super( Effects.get( Effects.Type.RAY ) );
-		
-		origin.set( 0, height / 2 );
-		
-		x = s.x - origin.x;
-		y = s.y - origin.y;
-		
-		float dx = e.x - s.x;
-		float dy = e.y - s.y;
-		angle = (float)(Math.atan2( dy, dx ) * A);
-		scale.x = (float)Math.sqrt( dx * dx + dy * dy ) / width;
-		
-		Sample.INSTANCE.play( Assets.SND_RAY );
-		
-		timeLeft = DURATION;
-	}
-	
-	@Override
-	public void update() {
-		super.update();
-		
-		float p = timeLeft / DURATION;
-		alpha( p );
-		scale.set( scale.x, p );
-		
-		if ((timeLeft -= Game.elapsed) <= 0) {
-			killAndErase();
-		}
-	}
-	
-	@Override
-	public void draw() {
-		GLES20.glBlendFunc( GL10.GL_SRC_ALPHA, GL10.GL_ONE );
-		super.draw();
-		GLES20.glBlendFunc( GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA );
-	}
+    companion object {
+        private const val A = 180 / Math.PI
+        private const val DURATION = 0.5f
+    }
+
+    init {
+        origin.set(0, height / 2)
+        x = s.x - origin.x
+        y = s.y - origin.y
+        val dx: Float = e.x - s.x
+        val dy: Float = e.y - s.y
+        angle = (Math.atan2(dy.toDouble(), dx.toDouble()) * A).toFloat()
+        scale.x = Math.sqrt((dx * dx + dy * dy).toDouble()).toFloat() / width
+        Sample.INSTANCE.play(Assets.SND_RAY)
+        timeLeft = DURATION
+    }
 }

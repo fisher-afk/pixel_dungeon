@@ -15,23 +15,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.levels.traps;
+package com.watabou.pixeldungeon.levels.traps
 
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.blobs.Blob;
-import com.watabou.pixeldungeon.actors.blobs.Fire;
-import com.watabou.pixeldungeon.effects.CellEmitter;
-import com.watabou.pixeldungeon.effects.particles.FlameParticle;
-import com.watabou.pixeldungeon.scenes.GameScene;
-
-public class FireTrap {
-
-	// 0xFF7708
-	
-	public static void trigger( int pos, Char ch ) {
-		
-		GameScene.add( Blob.seed( pos, 2, Fire.class ) );
-		CellEmitter.get( pos ).burst( FlameParticle.FACTORY, 5 );
-		
-	}
+object FireTrap {
+    // 0xFF7708
+    fun trigger(pos: Int, ch: Char?) {
+        GameScene.add(Blob.seed(pos, 2, Fire::class.java))
+        CellEmitter.get(pos).burst(FlameParticle.FACTORY, 5)
+    }
 }

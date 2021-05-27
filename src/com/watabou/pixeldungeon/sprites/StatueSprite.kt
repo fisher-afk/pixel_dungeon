@@ -15,37 +15,25 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.sprites;
+package com.watabou.pixeldungeon.sprites
 
-import com.watabou.noosa.TextureFilm;
-import com.watabou.pixeldungeon.Assets;
+import com.watabou.noosa.TextureFilm
+class StatueSprite : MobSprite() {
+    override fun blood(): Int {
+        return -0x323249
+    }
 
-public class StatueSprite extends MobSprite {
-	
-	public StatueSprite() {
-		super();
-		
-		texture( Assets.STATUE );
-		
-		TextureFilm frames = new TextureFilm( texture, 12, 15 );
-		
-		idle = new Animation( 2, true );
-		idle.frames( frames, 0, 0, 0, 0, 0, 1, 1 );
-		
-		run = new Animation( 15, true );
-		run.frames( frames, 2, 3, 4, 5, 6, 7 );
-		
-		attack = new Animation( 12, false );
-		attack.frames( frames, 8, 9, 10 );
-		
-		die = new Animation( 5, false );
-		die.frames( frames, 11, 12, 13, 14, 15, 15 );
-		
-		play( idle );
-	}
-	
-	@Override
-	public int blood() {
-		return 0xFFcdcdb7;
-	}
+    init {
+        texture(Assets.STATUE)
+        val frames = TextureFilm(texture, 12, 15)
+        idle = Animation(2, true)
+        idle.frames(frames, 0, 0, 0, 0, 0, 1, 1)
+        run = Animation(15, true)
+        run.frames(frames, 2, 3, 4, 5, 6, 7)
+        attack = Animation(12, false)
+        attack.frames(frames, 8, 9, 10)
+        die = Animation(5, false)
+        die.frames(frames, 11, 12, 13, 14, 15, 15)
+        play(idle)
+    }
 }

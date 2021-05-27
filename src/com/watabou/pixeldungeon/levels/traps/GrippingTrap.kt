@@ -15,28 +15,19 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.levels.traps;
+package com.watabou.pixeldungeon.levels.traps
 
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.buffs.Bleeding;
-import com.watabou.pixeldungeon.actors.buffs.Buff;
-import com.watabou.pixeldungeon.actors.buffs.Cripple;
-import com.watabou.pixeldungeon.effects.Wound;
-import com.watabou.utils.Random;
+import com.watabou.pixeldungeon.Dungeon
 
-public class GrippingTrap {
-	
-	public static void trigger( int pos, Char c ) {
-		
-		if (c != null) {
-			int damage = Math.max( 0,  (Dungeon.depth + 3) - Random.IntRange( 0, c.dr() / 2 ) );
-			Buff.affect( c, Bleeding.class ).set( damage );
-			Buff.prolong( c, Cripple.class, Cripple.DURATION );
-			Wound.hit( c );
-		} else {
-			Wound.hit( pos );
-		}
-		
-	}
+object GrippingTrap {
+    fun trigger(pos: Int, c: Char?) {
+        if (c != null) {
+            val damage = Math.max(0, Dungeon.depth + 3 - Random.IntRange(0, c.dr() / 2))
+            Buff.affect(c, Bleeding::class.java).set(damage)
+            Buff.prolong(c, Cripple::class.java, Cripple.DURATION)
+            Wound.hit(c)
+        } else {
+            Wound.hit(pos)
+        }
+    }
 }

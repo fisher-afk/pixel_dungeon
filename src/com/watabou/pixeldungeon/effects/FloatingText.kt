@@ -15,124 +15,97 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.effects;
+package com.watabou.pixeldungeon.effects
 
-import java.util.ArrayList;
+import com.watabou.noosa.BitmapText
 
-import com.watabou.noosa.BitmapText;
-import com.watabou.noosa.Camera;
-import com.watabou.noosa.Game;
-import com.watabou.pixeldungeon.DungeonTilemap;
-import com.watabou.pixeldungeon.scenes.GameScene;
-import com.watabou.pixeldungeon.scenes.PixelScene;
-import com.watabou.utils.SparseArray;
+class FloatingText : BitmapText() {
+    private var timeLeft = 0f
+    private var key = -1
+    private var cameraZoom = -1f
+    fun update() {
+        super.update()
+        if (timeLeft > 0) {
+            if (Game.elapsed.let { timeLeft -= it; timeLeft } <= 0) {
+                kill()
+            } else {
+                val p = timeLeft / LIFESPAN
+                alpha(if (p > 0.5f) 1 else p * 2)
+            }
+        }
+    }
 
-public class FloatingText extends BitmapText {
+    fun kill() {
+        if (key != -1) {
+            stacks.get(key).remove(this)
+            key = -1
+        }
+        super.kill()
+    }
 
-	private static final float LIFESPAN	= 1f;
-	private static final float DISTANCE	= DungeonTilemap.SIZE;
+    fun destroy() {
+        kill()
+        super.destroy()
+    }
 
-	private float timeLeft;
-	
-	private int key = -1;
-	
-	private float cameraZoom = -1;
-	
-	private static SparseArray<ArrayList<FloatingText>> stacks = new SparseArray<ArrayList<FloatingText>>();
-	
-	public FloatingText() {
-		super();
-		speed.y = - DISTANCE / LIFESPAN;
-	}
-	
-	@Override
-	public void update() {
-		super.update();
-		
-		if (timeLeft > 0) {
-			if ((timeLeft -= Game.elapsed) <= 0) {
-				kill();
-			} else {
-				float p = timeLeft / LIFESPAN;
-				alpha( p > 0.5f ? 1 : p * 2 );
-			}
-		}
-	}
-	
-	@Override
-	public void kill() {
-		if (key != -1) {
-			stacks.get( key ).remove( this );
-			key = -1;
-		}
-		super.kill();
-	}
-	
-	@Override
-	public void destroy() {
-		kill();
-		super.destroy();
-	}
-	
-	public void reset( float x, float y, String text, int color ) {
-		
-		revive();
-		
-		if (cameraZoom != Camera.main.zoom) {
-			cameraZoom = Camera.main.zoom;
-			PixelScene.chooseFont( 9, cameraZoom );
-			font = PixelScene.font;
-			scale.set( PixelScene.scale );
-		}
+    fun reset(x: Float, y: Float, text: String?, color: Int) {
+        revive()
+        if (cameraZoom != Camera.main.zoom) {
+            cameraZoom = Camera.main.zoom
+            PixelScene.chooseFont(9, cameraZoom)
+            font = PixelScene.font
+            scale.set(PixelScene.scale)
+        }
+        text(text)
+        hardlight(color)
+        measure()
+        x = PixelScene.align(x - width() / 2)
+        y = y - height()
+        timeLeft = LIFESPAN
+    }
 
-		text( text );
-		hardlight( color );
-		
-		measure();
-		this.x = PixelScene.align( x - width() / 2 );
-		this.y = y - height();
-		
-		timeLeft = LIFESPAN;
-	}
-	
-	/* STATIC METHODS */
-	
-	public static void show( float x, float y, String text, int color ) {
-		GameScene.status().reset( x,  y,  text, color );
-	}
-	
-	public static void show( float x, float y, int key, String text, int color ) {
-		FloatingText txt = GameScene.status();
-		txt.reset( x,  y,  text, color );
-		push( txt, key );
-	}
-	
-	private static void push( FloatingText txt, int key ) {
-		
-		txt.key = key;
-		
-		ArrayList<FloatingText> stack = stacks.get( key );
-		if (stack == null) {
-			stack = new ArrayList<FloatingText>();
-			stacks.put( key, stack );
-		}
-		
-		if (stack.size() > 0) {
-			FloatingText below = txt;
-			int aboveIndex = stack.size() - 1;
-			while (aboveIndex >= 0) {
-				FloatingText above = stack.get( aboveIndex );
-				if (above.y + above.height() > below.y) {
-					above.y = below.y - above.height();
-					
-					below = above;
-					aboveIndex--;
-				} else {
-					break;
-				}
-			}
-		}
-		
-		stack.add( txt );
-	}
+    companion object {
+        private const val LIFESPAN = 1f
+        private val DISTANCE: Float = DungeonTilemap.SIZE
+        private val stacks: SparseArray<ArrayList<FloatingText>> = SparseArray<ArrayList<FloatingText>>()
+
+        /* STATIC METHODS */
+        fun show(x: Float, y: Float, text: String?, color: Int) {
+            GameScene.status().reset(x, y, text, color)
+        }
+
+        fun show(x: Float, y: Float, key: Int, text: String?, color: Int) {
+            val txt: FloatingText = GameScene.status()
+            txt.reset(x, y, text, color)
+            push(txt, key)
+        }
+
+        private fun push(txt: FloatingText, key: Int) {
+            txt.key = key
+            var stack: ArrayList<FloatingText> = stacks.get(key)
+            if (stack == null) {
+                stack = ArrayList()
+                stacks.put(key, stack)
+            }
+            if (stack.size > 0) {
+                var below = txt
+                var aboveIndex = stack.size - 1
+                while (aboveIndex >= 0) {
+                    val above = stack[aboveIndex]
+                    if (above.y + above.height() > below.y) {
+                        above.y = below.y - above.height()
+                        below = above
+                        aboveIndex--
+                    } else {
+                        break
+                    }
+                }
+            }
+            stack.add(txt)
+        }
+    }
+
+    init {
+        speed.y = -DISTANCE / LIFESPAN
+    }
 }

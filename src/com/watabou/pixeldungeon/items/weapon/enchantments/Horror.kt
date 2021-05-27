@@ -15,53 +15,38 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.weapon.enchantments;
+package com.watabou.pixeldungeon.items.weapon.enchantments
 
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.buffs.Buff;
-import com.watabou.pixeldungeon.actors.buffs.Terror;
-import com.watabou.pixeldungeon.actors.buffs.Vertigo;
-import com.watabou.pixeldungeon.items.weapon.Weapon;
-import com.watabou.pixeldungeon.sprites.ItemSprite;
-import com.watabou.pixeldungeon.sprites.ItemSprite.Glowing;
-import com.watabou.utils.Random;
+import com.watabou.pixeldungeon.Dungeon
 
-public class Horror extends Weapon.Enchantment {
+class Horror : Weapon.Enchantment() {
+    fun proc(weapon: Weapon, attacker: Char, defender: Char, damage: Int): Boolean {
+        // lvl 0 - 20%
+        // lvl 1 - 33%
+        // lvl 2 - 43%
+        val level = Math.max(0, weapon.effectiveLevel())
+        return if (Random.Int(level + 5) >= 4) {
+            if (defender === Dungeon.hero) {
+                Buff.affect(defender, Vertigo::class.java, Vertigo.duration(defender))
+            } else {
+                Buff.affect(defender, Terror::class.java, Terror.DURATION).`object` = attacker.id()
+            }
+            true
+        } else {
+            false
+        }
+    }
 
-	private static final String TXT_ELDRITCH	= "eldritch %s";
-	
-	private static ItemSprite.Glowing GREY = new ItemSprite.Glowing( 0x222222 );
-	
-	@Override
-	public boolean proc( Weapon weapon, Char attacker, Char defender, int damage ) {
-		// lvl 0 - 20%
-		// lvl 1 - 33%
-		// lvl 2 - 43%
-		int level = Math.max( 0, weapon.effectiveLevel() );
-		
-		if (Random.Int( level + 5 ) >= 4) {
-			
-			if (defender == Dungeon.hero) {
-				Buff.affect( defender, Vertigo.class, Vertigo.duration( defender ) );
-			} else {
-				Buff.affect( defender, Terror.class, Terror.DURATION ).object = attacker.id();
-			}
-			
-			return true;
-		} else {
-			return false;
-		}
-	}
-	
-	@Override
-	public Glowing glowing() {
-		return GREY;
-	}
-	
-	@Override
-	public String name( String weaponName) {
-		return String.format( TXT_ELDRITCH, weaponName );
-	}
+    fun glowing(): Glowing {
+        return GREY
+    }
 
+    fun name(weaponName: String?): String {
+        return String.format(TXT_ELDRITCH, weaponName)
+    }
+
+    companion object {
+        private const val TXT_ELDRITCH = "eldritch %s"
+        private val GREY: ItemSprite.Glowing = Glowing(0x222222)
+    }
 }

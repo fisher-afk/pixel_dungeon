@@ -15,76 +15,50 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.quest;
+package com.watabou.pixeldungeon.items.quest
 
-import java.util.ArrayList;
+import com.watabou.noosa.audio.Sample
 
-import com.watabou.noosa.audio.Sample;
-import com.watabou.pixeldungeon.Assets;
-import com.watabou.pixeldungeon.actors.buffs.Buff;
-import com.watabou.pixeldungeon.actors.buffs.Invisibility;
-import com.watabou.pixeldungeon.actors.hero.Hero;
-import com.watabou.pixeldungeon.items.Item;
-import com.watabou.pixeldungeon.sprites.ItemSpriteSheet;
-import com.watabou.pixeldungeon.utils.GLog;
+class PhantomFish : Item() {
+    fun actions(hero: Hero?): ArrayList<String> {
+        val actions: ArrayList<String> = super.actions(hero)
+        actions.add(AC_EAT)
+        return actions
+    }
 
-public class PhantomFish extends Item {
-	
-	private static final String AC_EAT	= "EAT";
-	
-	private static final float TIME_TO_EAT	= 2f;
-	
-	{
-		name = "phantom fish";
-		image = ItemSpriteSheet.PHANTOM;
+    fun execute(hero: Hero, action: String) {
+        if (action == AC_EAT) {
+            detach(hero.belongings.backpack)
+            hero.sprite.operate(hero.pos)
+            hero.busy()
+            Sample.INSTANCE.play(Assets.SND_EAT)
+            Sample.INSTANCE.play(Assets.SND_MELD)
+            GLog.i("You see your hands turn invisible!")
+            Buff.affect(hero, Invisibility::class.java, Invisibility.DURATION)
+            hero.spend(TIME_TO_EAT)
+        } else {
+            super.execute(hero, action)
+        }
+    }
 
-		unique = true;
-	}
-	
-	@Override
-	public ArrayList<String> actions( Hero hero ) {
-		ArrayList<String> actions = super.actions( hero );
-		actions.add( AC_EAT );
-		return actions;
-	}
-	
-	@Override
-	public void execute( final Hero hero, String action ) {
-		if (action.equals( AC_EAT )) {
-			
-			detach( hero.belongings.backpack );
-			
-			hero.sprite.operate( hero.pos );
-			hero.busy();
-			Sample.INSTANCE.play( Assets.SND_EAT );
-			Sample.INSTANCE.play( Assets.SND_MELD );
-			
-			GLog.i( "You see your hands turn invisible!" );
-			Buff.affect( hero, Invisibility.class, Invisibility.DURATION );
-			
-			hero.spend( TIME_TO_EAT );
-			
-		} else {
-			
-			super.execute( hero, action );
-			
-		}
-	}
-	
-	@Override
-	public boolean isUpgradable() {
-		return false;
-	}
-	
-	@Override
-	public boolean isIdentified() {
-		return true;
-	}
-	
-	@Override
-	public String info() {
-		return
-			"You can barely see this tiny translucent fish in the air. " +
-			"In the water it becomes effectively invisible.";
-	}
+    val isUpgradable: Boolean
+        get() = false
+    val isIdentified: Boolean
+        get() = true
+
+    fun info(): String {
+        return "You can barely see this tiny translucent fish in the air. " +
+                "In the water it becomes effectively invisible."
+    }
+
+    companion object {
+        private const val AC_EAT = "EAT"
+        private const val TIME_TO_EAT = 2f
+    }
+
+    init {
+        name = "phantom fish"
+        image = ItemSpriteSheet.PHANTOM
+        unique = true
+    }
 }

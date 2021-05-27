@@ -15,100 +15,67 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.effects.particles;
+package com.watabou.pixeldungeon.effects.particles
 
-import com.watabou.noosa.Game;
-import com.watabou.noosa.Group;
-import com.watabou.noosa.particles.Emitter;
-import com.watabou.noosa.particles.PixelParticle;
-import com.watabou.noosa.particles.Emitter.Factory;
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.DungeonTilemap;
-import com.watabou.utils.PointF;
-import com.watabou.utils.Random;
+import com.watabou.noosa.Game
 
-public class WindParticle extends PixelParticle {
+class WindParticle : PixelParticle() {
+    private var size = 0f
+    fun reset(x: Float, y: Float) {
+        revive()
+        left = lifespan
+        super.speed.set(speed)
+        super.speed.scale(size)
+        x = x - super.speed.x * lifespan / 2
+        y = y - super.speed.y * lifespan / 2
+        angle += Random.Float(-0.1f, +0.1f)
+        speed = PointF().polar(angle, 5)
+        am = 0
+    }
 
-	public static final Emitter.Factory FACTORY = new Factory() {	
-		@Override
-		public void emit( Emitter emitter, int index, float x, float y ) {
-			((WindParticle)emitter.recycle( WindParticle.class )).reset( x, y );
-		}
-	};
-	
-	private static float angle = Random.Float( PointF.PI2 );
-	private static PointF speed = new PointF().polar( angle, 5 );
-	
-	private float size;
-	
-	public WindParticle() {
-		super();
-		
-		lifespan = Random.Float( 1, 2 );
-		scale.set( size = Random.Float( 3 ) );
-	}
-	
-	public void reset( float x, float y ) {
-		revive();
-		
-		left = lifespan;
-		
-		super.speed.set( WindParticle.speed );
-		super.speed.scale( size );
-		
-		this.x = x - super.speed.x * lifespan / 2;
-		this.y = y - super.speed.y * lifespan / 2;
-		
-		angle += Random.Float( -0.1f, +0.1f );
-		speed = new PointF().polar( angle, 5 );
-		
-		am = 0;
-	}
-	
-	@Override
-	public void update() {
-		super.update();
-		
-		float p = left / lifespan;
-		am = (p < 0.5f ? p : 1 - p) * size * 0.2f;
-	}
-	
-	public static class Wind extends Group {
-		
-		private int pos;
-		
-		private float x;
-		private float y;
-		
-		private float delay;
-		
-		public Wind( int pos ) {
-			super();
-			
-			this.pos = pos;
-			PointF p = DungeonTilemap.tileToWorld( pos );
-			x = p.x;
-			y = p.y;
-			
-			delay = Random.Float( 5 );
-		}
-		
-		@Override
-		public void update() {
-			
-			if (visible = Dungeon.visible[pos]) {
-				
-				super.update();
-				
-				if ((delay -= Game.elapsed) <= 0) {
-					
-					delay = Random.Float( 5 );
-					
-					((WindParticle)recycle( WindParticle.class )).reset( 
-						x + Random.Float( DungeonTilemap.SIZE ), 
-						y + Random.Float( DungeonTilemap.SIZE ) );
-				}
-			}
-		}
-	}
+    fun update() {
+        super.update()
+        val p: Float = left / lifespan
+        am = (if (p < 0.5f) p else 1 - p) * size * 0.2f
+    }
+
+    class Wind(private val pos: Int) : Group() {
+        private val x: Float
+        private val y: Float
+        private var delay: Float
+        fun update() {
+            if (Dungeon.visible.get(pos).also { visible = it }) {
+                super.update()
+                if (Game.elapsed.let { delay -= it; delay } <= 0) {
+                    delay = Random.Float(5)
+                    (recycle(WindParticle::class.java) as WindParticle).reset(
+                        x + Random.Float(DungeonTilemap.SIZE),
+                        y + Random.Float(DungeonTilemap.SIZE)
+                    )
+                }
+            }
+        }
+
+        init {
+            val p: PointF = DungeonTilemap.tileToWorld(pos)
+            x = p.x
+            y = p.y
+            delay = Random.Float(5)
+        }
+    }
+
+    companion object {
+        val FACTORY: Emitter.Factory = object : Factory() {
+            fun emit(emitter: Emitter, index: Int, x: Float, y: Float) {
+                (emitter.recycle(WindParticle::class.java) as WindParticle).reset(x, y)
+            }
+        }
+        private var angle: Float = Random.Float(PointF.PI2)
+        private var speed: PointF = PointF().polar(angle, 5)
+    }
+
+    init {
+        lifespan = Random.Float(1, 2)
+        scale.set(Random.Float(3).also { size = it })
+    }
 }

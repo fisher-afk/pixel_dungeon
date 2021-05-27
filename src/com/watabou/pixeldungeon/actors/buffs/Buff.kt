@@ -15,86 +15,74 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.buffs;
+package com.watabou.pixeldungeon.actors.buffs
 
-import com.watabou.pixeldungeon.actors.Actor;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.ui.BuffIndicator;
+import com.watabou.pixeldungeon.actors.Actor
 
-public class Buff extends Actor {
+class Buff : Actor() {
+    var target: Char? = null
+    fun attachTo(target: Char): Boolean {
+        if (target.immunities().contains(javaClass)) {
+            return false
+        }
+        this.target = target
+        target.add(this)
+        return true
+    }
 
-	public Char target;
-	
-	public boolean attachTo( Char target ) {
+    fun detach() {
+        target.remove(this)
+    }
 
-		if (target.immunities().contains( getClass() )) {
-			return false;
-		}
-		
-		this.target = target;
-		target.add( this );
-		
-		return true;
-	}
-	
-	public void detach() {
-		target.remove( this );
-	}
-	
-	@Override
-	public boolean act() {
-		diactivate();
-		return true;
-	}
-	
-	public int icon() {
-		return BuffIndicator.NONE;
-	}
-	
-	public static<T extends Buff> T append( Char target, Class<T> buffClass ) {
-		try {
-			T buff = buffClass.newInstance();
-			buff.attachTo( target );
-			return buff;
-		} catch (Exception e) {
-			return null;
-		}
-	}
-	
-	public static<T extends FlavourBuff> T append( Char target, Class<T> buffClass, float duration ) {
-		T buff = append( target, buffClass );
-		buff.spend( duration );
-		return buff;
-	}
-	
-	public static<T extends Buff> T affect( Char target, Class<T> buffClass ) {
-		T buff = target.buff( buffClass );
-		if (buff != null) {
-			return buff;
-		} else {
-			return append( target, buffClass );
-		}
-	}
-	
-	public static<T extends FlavourBuff> T affect( Char target, Class<T> buffClass, float duration ) {
-		T buff = affect( target, buffClass );
-		buff.spend( duration );
-		return buff;
-	}
-	
-	public static<T extends FlavourBuff> T prolong( Char target, Class<T> buffClass, float duration ) {
-		T buff = affect( target, buffClass );
-		buff.postpone( duration );
-		return buff;
-	}
-	
-	public static void detach( Buff buff ) {
-		if (buff != null) {
-			buff.detach();
-		}
-	}
-	
-	public static void detach( Char target, Class<? extends Buff> cl ) {
-		detach( target.buff( cl ) );
-	}
+    override fun act(): Boolean {
+        diactivate()
+        return true
+    }
+
+    fun icon(): Int {
+        return BuffIndicator.NONE
+    }
+
+    companion object {
+        fun <T : Buff?> append(target: Char, buffClass: Class<T>): T? {
+            return try {
+                val buff = buffClass.newInstance()
+                buff.attachTo(target)
+                buff
+            } catch (e: Exception) {
+                null
+            }
+        }
+
+        fun <T : FlavourBuff?> append(target: Char, buffClass: Class<T>, duration: Float): T {
+            val buff: T = append(target, buffClass)
+            buff!!.spend(duration)
+            return buff
+        }
+
+        fun <T : Buff?> affect(target: Char, buffClass: Class<T>): T {
+            val buff: T = target.buff(buffClass)
+            return buff ?: append(target, buffClass)
+        }
+
+        fun <T : FlavourBuff?> affect(target: Char, buffClass: Class<T>, duration: Float): T {
+            val buff = affect(target, buffClass)
+            buff!!.spend(duration)
+            return buff
+        }
+
+        fun <T : FlavourBuff?> prolong(target: Char, buffClass: Class<T>, duration: Float): T {
+            val buff = affect(target, buffClass)
+            buff!!.postpone(duration)
+            return buff
+        }
+
+        fun detach(buff: Buff?) {
+            buff?.detach()
+        }
+
+        fun detach(target: Char, cl: Class<out Buff?>?) {
+            detach(target.buff(cl))
+        }
+    }
 }

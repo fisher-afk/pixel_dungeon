@@ -15,41 +15,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.windows;
+package com.watabou.pixeldungeon.windows
 
-import com.watabou.noosa.Image;
-import com.watabou.noosa.ui.Component;
-import com.watabou.pixeldungeon.PixelDungeon;
-import com.watabou.pixeldungeon.ui.HighlightedText;
-import com.watabou.pixeldungeon.ui.Window;
+import com.watabou.noosa.Image
 
-public class WndTitledMessage extends Window {
+class WndTitledMessage(titlebar: Component, message: String?) : Window() {
+    constructor(icon: Image?, title: String?, message: String?) : this(IconTitle(icon, title), message) {}
 
-	private static final int WIDTH_P	= 120;
-	private static final int WIDTH_L	= 144;
-	
-	private static final int GAP	= 2;
-	
-	public WndTitledMessage( Image icon, String title, String message ) {
-		
-		this( new IconTitle( icon, title ), message );
+    companion object {
+        private const val WIDTH_P = 120
+        private const val WIDTH_L = 144
+        private const val GAP = 2
+    }
 
-	}
-	
-	public WndTitledMessage( Component titlebar, String message ) {
-		
-		super();
-		
-		int width = PixelDungeon.landscape() ? WIDTH_L : WIDTH_P;
-		
-		titlebar.setRect( 0, 0, width, 0 );
-		add( titlebar );
-		
-		HighlightedText text = new HighlightedText( 6 );
-		text.text( message, width );
-		text.setPos( titlebar.left(), titlebar.bottom() + GAP );
-		add( text );
-		
-		resize( width, (int)text.bottom() );
-	}
+    init {
+        val width = if (PixelDungeon.landscape()) WIDTH_L else WIDTH_P
+        titlebar.setRect(0, 0, width, 0)
+        add(titlebar)
+        val text = HighlightedText(6)
+        text.text(message, width)
+        text.setPos(titlebar.left(), titlebar.bottom() + GAP)
+        add(text)
+        resize(width, text.bottom() as Int)
+    }
 }

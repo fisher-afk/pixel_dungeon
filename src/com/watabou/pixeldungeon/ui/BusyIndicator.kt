@@ -15,24 +15,19 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.ui;
+package com.watabou.pixeldungeon.ui
 
-import com.watabou.noosa.Image;
-import com.watabou.pixeldungeon.Dungeon;
+import com.watabou.noosa.Image
 
-public class BusyIndicator extends Image {
-	
-	public BusyIndicator() {
-		super();
-		copy( Icons.BUSY.get() );
-		
-		origin.set( width / 2, height / 2 );
-		angularSpeed = 720;
-	}
-	
-	@Override
-	public void update() {
-		super.update();
-		visible = Dungeon.hero.isAlive() && !Dungeon.hero.ready;
-	}
+class BusyIndicator : Image() {
+    fun update() {
+        super.update()
+        visible = Dungeon.hero.isAlive() && !Dungeon.hero.ready
+    }
+
+    init {
+        copy(Icons.BUSY.get())
+        origin.set(width / 2, height / 2)
+        angularSpeed = 720
+    }
 }

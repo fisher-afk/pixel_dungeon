@@ -15,31 +15,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.sprites;
+package com.watabou.pixeldungeon.sprites
 
-import com.watabou.noosa.TextureFilm;
-import com.watabou.pixeldungeon.Assets;
-
-public class BanditSprite extends MobSprite {
-	
-	public BanditSprite() {
-		super();
-		
-		texture( Assets.THIEF );
-		TextureFilm film = new TextureFilm( texture, 12, 13 );
-		
-		idle = new Animation( 1, true );
-		idle.frames( film, 21, 21, 21, 22, 21, 21, 21, 21, 22 );
-		
-		run = new Animation( 15, true );
-		run.frames( film, 21, 21, 23, 24, 24, 25 );
-		
-		die = new Animation( 10, false );
-		die.frames( film, 25, 27, 28, 29, 30 );
-		
-		attack = new Animation( 12, false );
-		attack.frames( film, 31, 32, 33 );
-		
-		idle();
-	}
+import com.watabou.noosa.TextureFilm
+class BanditSprite : MobSprite() {
+    init {
+        texture(Assets.THIEF)
+        val film = TextureFilm(texture, 12, 13)
+        idle = Animation(1, true)
+        idle.frames(film, 21, 21, 21, 22, 21, 21, 21, 21, 22)
+        run = Animation(15, true)
+        run.frames(film, 21, 21, 23, 24, 24, 25)
+        die = Animation(10, false)
+        die.frames(film, 25, 27, 28, 29, 30)
+        attack = Animation(12, false)
+        attack.frames(film, 31, 32, 33)
+        idle()
+    }
 }

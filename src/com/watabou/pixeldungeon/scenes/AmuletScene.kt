@@ -15,121 +15,87 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.scenes;
+package com.watabou.pixeldungeon.scenes
 
-import com.watabou.noosa.BitmapTextMultiline;
-import com.watabou.noosa.Camera;
-import com.watabou.noosa.Game;
-import com.watabou.noosa.Image;
-import com.watabou.pixeldungeon.Assets;
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.ResultDescriptions;
-import com.watabou.pixeldungeon.effects.Flare;
-import com.watabou.pixeldungeon.effects.Speck;
-import com.watabou.pixeldungeon.ui.RedButton;
-import com.watabou.utils.Random;
+import com.watabou.noosa.BitmapTextMultiline
 
-public class AmuletScene extends PixelScene {
+class AmuletScene : PixelScene() {
+    private var amulet: Image? = null
+    override fun create() {
+        super.create()
+        var text: BitmapTextMultiline? = null
+        if (!noText) {
+            text = createMultiline(TXT, 8)
+            text.maxWidth = WIDTH
+            text.measure()
+            add(text)
+        }
+        amulet = Image(Assets.AMULET)
+        add(amulet)
+        val btnExit: RedButton = object : RedButton(TXT_EXIT) {
+            protected fun onClick() {
+                Dungeon.win(ResultDescriptions.WIN)
+                Dungeon.deleteGame(Dungeon.hero.heroClass, true)
+                Game.switchScene(if (noText) TitleScene::class.java else RankingsScene::class.java)
+            }
+        }
+        btnExit.setSize(WIDTH, BTN_HEIGHT)
+        add(btnExit)
+        val btnStay: RedButton = object : RedButton(TXT_STAY) {
+            protected fun onClick() {
+                onBackPressed()
+            }
+        }
+        btnStay.setSize(WIDTH, BTN_HEIGHT)
+        add(btnStay)
+        val height: Float
+        if (noText) {
+            height = amulet.height + LARGE_GAP + btnExit.height() + SMALL_GAP + btnStay.height()
+            amulet.x = align((Camera.main.width - amulet.width) / 2)
+            amulet.y = align((Camera.main.height - height) / 2)
+            btnExit.setPos((Camera.main.width - btnExit.width()) / 2, amulet.y + amulet.height + LARGE_GAP)
+            btnStay.setPos(btnExit.left(), btnExit.bottom() + SMALL_GAP)
+        } else {
+            height =
+                amulet.height + LARGE_GAP + text.height() + LARGE_GAP + btnExit.height() + SMALL_GAP + btnStay.height()
+            amulet.x = align((Camera.main.width - amulet.width) / 2)
+            amulet.y = align((Camera.main.height - height) / 2)
+            text.x = align((Camera.main.width - text.width()) / 2)
+            text.y = amulet.y + amulet.height + LARGE_GAP
+            btnExit.setPos((Camera.main.width - btnExit.width()) / 2, text.y + text.height() + LARGE_GAP)
+            btnStay.setPos(btnExit.left(), btnExit.bottom() + SMALL_GAP)
+        }
+        Flare(8, 48).color(0xFFDDBB, true).show(amulet, 0).angularSpeed = +30
+        fadeIn()
+    }
 
-	private static final String TXT_EXIT	= "Let's call it a day";
-	private static final String TXT_STAY	= "I'm not done yet";
-	
-	private static final int WIDTH			= 120;
-	private static final int BTN_HEIGHT		= 18;
-	private static final float SMALL_GAP	= 2;
-	private static final float LARGE_GAP	= 8;
-	
-	private static final String TXT = 
-		"You finally hold it in your hands, the Amulet of Yendor. Using its power " +
-		"you can take over the world or bring peace and prosperity to people or whatever. " +
-		"Anyway, your life will change forever and this game will end here. " +
-		"Or you can stay a mere mortal a little longer.";
-	
-	public static boolean noText = false;
-	
-	private Image amulet;
-	
-	@Override
-	public void create() {
-		super.create();
-		
-		BitmapTextMultiline text = null;
-		if (!noText) {
-			text = createMultiline( TXT, 8 );
-			text.maxWidth = WIDTH;
-			text.measure();
-			add( text );
-		}
-		
-		amulet = new Image( Assets.AMULET );
-		add( amulet );
-		
-		RedButton btnExit = new RedButton( TXT_EXIT ) {
-			@Override
-			protected void onClick() {
-				Dungeon.win( ResultDescriptions.WIN );
-				Dungeon.deleteGame( Dungeon.hero.heroClass, true );
-				Game.switchScene( noText ? TitleScene.class : RankingsScene.class );
-			}
-		};
-		btnExit.setSize( WIDTH, BTN_HEIGHT );
-		add( btnExit );
-		
-		RedButton btnStay = new RedButton( TXT_STAY ) {
-			@Override
-			protected void onClick() {
-				onBackPressed();
-			}
-		};
-		btnStay.setSize( WIDTH, BTN_HEIGHT );
-		add( btnStay );
-		
-		float height;
-		if (noText) {
-			height = amulet.height + LARGE_GAP + btnExit.height() + SMALL_GAP + btnStay.height();
-			
-			amulet.x = align( (Camera.main.width - amulet.width) / 2 );
-			amulet.y = align( (Camera.main.height - height) / 2 );
-			
-			btnExit.setPos( (Camera.main.width - btnExit.width()) / 2, amulet.y + amulet.height + LARGE_GAP );
-			btnStay.setPos( btnExit.left(), btnExit.bottom() + SMALL_GAP );
-			
-		} else {
-			height = amulet.height + LARGE_GAP + text.height() + LARGE_GAP + btnExit.height() + SMALL_GAP + btnStay.height();
-			
-			amulet.x = align( (Camera.main.width - amulet.width) / 2 );
-			amulet.y = align( (Camera.main.height - height) / 2 );
-			
-			text.x =  align( (Camera.main.width - text.width()) / 2 );
-			text.y = amulet.y + amulet.height + LARGE_GAP;
-			
-			btnExit.setPos( (Camera.main.width - btnExit.width()) / 2, text.y + text.height() + LARGE_GAP );
-			btnStay.setPos( btnExit.left(), btnExit.bottom() + SMALL_GAP );
-		}
+    protected fun onBackPressed() {
+        InterlevelScene.mode = InterlevelScene.Mode.CONTINUE
+        Game.switchScene(InterlevelScene::class.java)
+    }
 
-		new Flare( 8, 48 ).color( 0xFFDDBB, true ).show( amulet, 0 ).angularSpeed = +30;
-		
-		fadeIn();
-	}
-	
-	@Override
-	protected void onBackPressed() {
-		InterlevelScene.mode = InterlevelScene.Mode.CONTINUE;
-		Game.switchScene( InterlevelScene.class );
-	}
-	
-	private float timer = 0;
-	
-	@Override
-	public void update() {
-		super.update();
-		
-		if ((timer -= Game.elapsed) < 0) {
-			timer = Random.Float( 0.5f, 5f );
-			
-			Speck star = (Speck)recycle( Speck.class );
-			star.reset( 0, amulet.x + 10.5f, amulet.y + 5.5f, Speck.DISCOVER );
-			add( star );
-		}
-	}
+    private var timer = 0f
+    fun update() {
+        super.update()
+        if (Game.elapsed.let { timer -= it; timer } < 0) {
+            timer = Random.Float(0.5f, 5f)
+            val star: Speck = recycle(Speck::class.java) as Speck
+            star.reset(0, amulet.x + 10.5f, amulet.y + 5.5f, Speck.DISCOVER)
+            add(star)
+        }
+    }
+
+    companion object {
+        private const val TXT_EXIT = "Let's call it a day"
+        private const val TXT_STAY = "I'm not done yet"
+        private const val WIDTH = 120
+        private const val BTN_HEIGHT = 18
+        private const val SMALL_GAP = 2f
+        private const val LARGE_GAP = 8f
+        private const val TXT = "You finally hold it in your hands, the Amulet of Yendor. Using its power " +
+                "you can take over the world or bring peace and prosperity to people or whatever. " +
+                "Anyway, your life will change forever and this game will end here. " +
+                "Or you can stay a mere mortal a little longer."
+        var noText = false
+    }
 }

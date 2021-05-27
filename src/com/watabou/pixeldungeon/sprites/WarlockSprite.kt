@@ -15,61 +15,42 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.sprites;
+package com.watabou.pixeldungeon.sprites
 
-import com.watabou.noosa.TextureFilm;
-import com.watabou.noosa.audio.Sample;
-import com.watabou.pixeldungeon.Assets;
-import com.watabou.pixeldungeon.actors.mobs.Warlock;
-import com.watabou.pixeldungeon.effects.MagicMissile;
-import com.watabou.utils.Callback;
+import com.watabou.noosa.TextureFilm
 
-public class WarlockSprite extends MobSprite {
-	
-	public WarlockSprite() {
-		super();
-		
-		texture( Assets.WARLOCK );
-		
-		TextureFilm frames = new TextureFilm( texture, 12, 15 );
-		
-		idle = new Animation( 2, true );
-		idle.frames( frames, 0, 0, 0, 1, 0, 0, 1, 1 );
-		
-		run = new Animation( 15, true );
-		run.frames( frames, 0, 2, 3, 4 );
-		
-		attack = new Animation( 12, false );
-		attack.frames( frames, 0, 5, 6 );
-		
-		zap = attack.clone();
-		
-		die = new Animation( 15, false );
-		die.frames( frames, 0, 7, 8, 8, 9, 10 );
-		
-		play( idle );
-	}
-	
-	public void zap( int cell ) {
-		
-		turnTo( ch.pos , cell );
-		play( zap );
-		
-		MagicMissile.shadow( parent, ch.pos, cell, 
-			new Callback() {			
-				@Override
-				public void call() {
-					((Warlock)ch).onZapComplete();
-				}
-			} );
-		Sample.INSTANCE.play( Assets.SND_ZAP );
-	}
-	
-	@Override
-	public void onComplete( Animation anim ) {
-		if (anim == zap) {
-			idle();
-		}
-		super.onComplete( anim );
-	}
+class WarlockSprite : MobSprite() {
+    override fun zap(cell: Int) {
+        turnTo(ch.pos, cell)
+        play(zap)
+        MagicMissile.shadow(parent, ch.pos, cell,
+            object : Callback() {
+                fun call() {
+                    (ch as Warlock).onZapComplete()
+                }
+            })
+        Sample.INSTANCE.play(Assets.SND_ZAP)
+    }
+
+    override fun onComplete(anim: Animation) {
+        if (anim === zap) {
+            idle()
+        }
+        super.onComplete(anim)
+    }
+
+    init {
+        texture(Assets.WARLOCK)
+        val frames = TextureFilm(texture, 12, 15)
+        idle = Animation(2, true)
+        idle.frames(frames, 0, 0, 0, 1, 0, 0, 1, 1)
+        run = Animation(15, true)
+        run.frames(frames, 0, 2, 3, 4)
+        attack = Animation(12, false)
+        attack.frames(frames, 0, 5, 6)
+        zap = attack.clone()
+        die = Animation(15, false)
+        die.frames(frames, 0, 7, 8, 8, 9, 10)
+        play(idle)
+    }
 }

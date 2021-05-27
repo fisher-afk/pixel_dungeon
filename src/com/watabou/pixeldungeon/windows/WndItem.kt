@@ -15,85 +15,64 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.windows;
+package com.watabou.pixeldungeon.windows
 
-import com.watabou.noosa.BitmapTextMultiline;
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.items.Item;
-import com.watabou.pixeldungeon.scenes.PixelScene;
-import com.watabou.pixeldungeon.sprites.ItemSprite;
-import com.watabou.pixeldungeon.ui.ItemSlot;
-import com.watabou.pixeldungeon.ui.RedButton;
-import com.watabou.pixeldungeon.ui.Window;
-import com.watabou.pixeldungeon.utils.Utils;
+import com.watabou.noosa.BitmapTextMultiline
 
-public class WndItem extends Window {
+class WndItem(owner: WndBag?, item: Item) : Window() {
+    companion object {
+        private const val BUTTON_WIDTH = 36f
+        private const val BUTTON_HEIGHT = 16f
+        private const val GAP = 2f
+        private const val WIDTH = 120
+    }
 
-	private static final float BUTTON_WIDTH		= 36;
-	private static final float BUTTON_HEIGHT	= 16;
-	
-	private static final float GAP	= 2;
-	
-	private static final int WIDTH = 120;
-	
-	public WndItem( final WndBag owner, final Item item ) {	
-		
-		super();
-		
-		IconTitle titlebar = new IconTitle();
-		titlebar.icon( new ItemSprite( item.image(), item.glowing() ) );
-		titlebar.label( Utils.capitalize( item.toString() ) );
-		if (item.isUpgradable() && item.levelKnown) {
-			titlebar.health( (float)item.durability() / item.maxDurability() );
-		}
-		titlebar.setRect( 0, 0, WIDTH, 0 );
-		add( titlebar );
-		
-		if (item.levelKnown) {
-			if (item.level() < 0) {
-				titlebar.color( ItemSlot.DEGRADED );				
-			} else if (item.level() > 0) {
-				titlebar.color( item.isBroken() ? ItemSlot.WARNING : ItemSlot.UPGRADED );				
-			}
-		}
-		
-		BitmapTextMultiline info = PixelScene.createMultiline( item.info(), 6 );
-		info.maxWidth = WIDTH;
-		info.measure();
-		info.x = titlebar.left();
-		info.y = titlebar.bottom() + GAP;
-		add( info );
-	
-		float y = info.y + info.height() + GAP;
-		float x = 0;
-		
-		if (Dungeon.hero.isAlive() && owner != null) {
-			for (final String action:item.actions( Dungeon.hero )) {
-				
-				RedButton btn = new RedButton( action ) {
-					@Override
-					protected void onClick() {
-						item.execute( Dungeon.hero, action );
-						hide();
-						owner.hide();
-					};
-				};
-				btn.setSize( Math.max( BUTTON_WIDTH, btn.reqWidth() ), BUTTON_HEIGHT );
-				if (x + btn.width() > WIDTH) {
-					x = 0;
-					y += BUTTON_HEIGHT + GAP;
-				}
-				btn.setPos( x, y );
-				add( btn );
-				
-				if (action == item.defaultAction) {
-					btn.textColor( TITLE_COLOR );
-				}
-				
-				x += btn.width() + GAP;
-			}
-		}
-		
-		resize( WIDTH, (int)(y + (x > 0 ? BUTTON_HEIGHT : 0)) );
-	}
+    init {
+        val titlebar = IconTitle()
+        titlebar.icon(ItemSprite(item.image(), item.glowing()))
+        titlebar.label(Utils.capitalize(item.toString()))
+        if (item.isUpgradable() && item.levelKnown) {
+            titlebar.health(item.durability() as Float / item.maxDurability())
+        }
+        titlebar.setRect(0, 0, WIDTH, 0)
+        add(titlebar)
+        if (item.levelKnown) {
+            if (item.level() < 0) {
+                titlebar.color(ItemSlot.DEGRADED)
+            } else if (item.level() > 0) {
+                titlebar.color(if (item.isBroken()) ItemSlot.WARNING else ItemSlot.UPGRADED)
+            }
+        }
+        val info: BitmapTextMultiline = PixelScene.createMultiline(item.info(), 6)
+        info.maxWidth = WIDTH
+        info.measure()
+        info.x = titlebar.left()
+        info.y = titlebar.bottom() + GAP
+        add(info)
+        var y: Float = info.y + info.height() + GAP
+        var x = 0f
+        if (Dungeon.hero.isAlive() && owner != null) {
+            for (action in item.actions(Dungeon.hero)) {
+                val btn: RedButton = object : RedButton(action) {
+                    protected fun onClick() {
+                        item.execute(Dungeon.hero, action)
+                        hide()
+                        owner.hide()
+                    }
+                }
+                btn.setSize(Math.max(BUTTON_WIDTH, btn.reqWidth()), BUTTON_HEIGHT)
+                if (x + btn.width() > WIDTH) {
+                    x = 0f
+                    y += BUTTON_HEIGHT + GAP
+                }
+                btn.setPos(x, y)
+                add(btn)
+                if (action === item.defaultAction) {
+                    btn.textColor(TITLE_COLOR)
+                }
+                x += btn.width() + GAP
+            }
+        }
+        resize(WIDTH, (y + if (x > 0) BUTTON_HEIGHT else 0) as Int)
+    }
 }

@@ -15,95 +15,63 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.levels.features;
+package com.watabou.pixeldungeon.levels.features
 
-import com.watabou.noosa.Camera;
-import com.watabou.noosa.Game;
-import com.watabou.noosa.audio.Sample;
-import com.watabou.pixeldungeon.Assets;
-import com.watabou.pixeldungeon.Badges;
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.ResultDescriptions;
-import com.watabou.pixeldungeon.actors.buffs.Buff;
-import com.watabou.pixeldungeon.actors.buffs.Cripple;
-import com.watabou.pixeldungeon.actors.hero.Hero;
-import com.watabou.pixeldungeon.actors.mobs.Mob;
-import com.watabou.pixeldungeon.levels.RegularLevel;
-import com.watabou.pixeldungeon.levels.Room;
-import com.watabou.pixeldungeon.scenes.GameScene;
-import com.watabou.pixeldungeon.scenes.InterlevelScene;
-import com.watabou.pixeldungeon.sprites.MobSprite;
-import com.watabou.pixeldungeon.utils.GLog;
-import com.watabou.pixeldungeon.utils.Utils;
-import com.watabou.pixeldungeon.windows.WndOptions;
-import com.watabou.utils.Random;
+import com.watabou.noosa.Camera
 
-public class Chasm {
-	
-	private static final String TXT_CHASM	= "Chasm";
-	private static final String TXT_YES		= "Yes, I know what I'm doing";
-	private static final String TXT_NO		= "No, I changed my mind";
-	private static final String TXT_JUMP 	= 
-		"Do you really want to jump into the chasm? You can probably die.";
-	
-	public static boolean jumpConfirmed = false;
-	
-	public static void heroJump( final Hero hero ) {
-		GameScene.show( 
-			new WndOptions( TXT_CHASM, TXT_JUMP, TXT_YES, TXT_NO ) {
-				@Override
-				protected void onSelect( int index ) {
-					if (index == 0) {
-						jumpConfirmed = true;
-						hero.resume();
-					}
-				};
-			}
-		);
-	}
-	
-	public static void heroFall( int pos ) {
-		
-		jumpConfirmed = false;
-				
-		Sample.INSTANCE.play( Assets.SND_FALLING );
-		
-		if (Dungeon.hero.isAlive()) {
-			Dungeon.hero.interrupt();
-			InterlevelScene.mode = InterlevelScene.Mode.FALL;
-			if (Dungeon.level instanceof RegularLevel) {
-				Room room = ((RegularLevel)Dungeon.level).room( pos );
-				InterlevelScene.fallIntoPit = room != null && room.type == Room.Type.WEAK_FLOOR;
-			} else {
-				InterlevelScene.fallIntoPit = false;
-			}
-			Game.switchScene( InterlevelScene.class );
-		} else {
-			Dungeon.hero.sprite.visible = false;
-		}
-	}
-	
-	public static void heroLand() {
-		
-		Hero hero = Dungeon.hero;
-		
-		hero.sprite.burst( hero.sprite.blood(), 10 );
-		Camera.main.shake( 4, 0.2f );
-		
-		Buff.prolong( hero, Cripple.class, Cripple.DURATION );
-		hero.damage( Random.IntRange( hero.HT / 3, hero.HT / 2 ), new Hero.Doom() {
-			@Override
-			public void onDeath() {
-				Badges.validateDeathFromFalling();
-				
-				Dungeon.fail( Utils.format( ResultDescriptions.FALL, Dungeon.depth ) );
-				GLog.n( "You fell to death..." );
-			}
-		} );
-	}
+object Chasm {
+    private const val TXT_CHASM = "Chasm"
+    private const val TXT_YES = "Yes, I know what I'm doing"
+    private const val TXT_NO = "No, I changed my mind"
+    private const val TXT_JUMP = "Do you really want to jump into the chasm? You can probably die."
+    var jumpConfirmed = false
+    fun heroJump(hero: Hero) {
+        GameScene.show(
+            object : WndOptions(TXT_CHASM, TXT_JUMP, TXT_YES, TXT_NO) {
+                protected fun onSelect(index: Int) {
+                    if (index == 0) {
+                        jumpConfirmed = true
+                        hero.resume()
+                    }
+                }
+            }
+        )
+    }
 
-	public static void mobFall( Mob mob ) {
-		mob.destroy();
-		((MobSprite)mob.sprite).fall();
-	}
+    fun heroFall(pos: Int) {
+        jumpConfirmed = false
+        Sample.INSTANCE.play(Assets.SND_FALLING)
+        if (Dungeon.hero.isAlive()) {
+            Dungeon.hero.interrupt()
+            InterlevelScene.mode = InterlevelScene.Mode.FALL
+            if (Dungeon.level is RegularLevel) {
+                val room: Room = (Dungeon.level as RegularLevel).room(pos)
+                InterlevelScene.fallIntoPit = room != null && room.type === Room.Type.WEAK_FLOOR
+            } else {
+                InterlevelScene.fallIntoPit = false
+            }
+            Game.switchScene(InterlevelScene::class.java)
+        } else {
+            Dungeon.hero.sprite.visible = false
+        }
+    }
+
+    fun heroLand() {
+        val hero: Hero = Dungeon.hero
+        hero.sprite.burst(hero.sprite.blood(), 10)
+        Camera.main.shake(4, 0.2f)
+        Buff.prolong(hero, Cripple::class.java, Cripple.DURATION)
+        hero.damage(Random.IntRange(hero.HT / 3, hero.HT / 2), object : Doom() {
+            fun onDeath() {
+                Badges.validateDeathFromFalling()
+                Dungeon.fail(Utils.format(ResultDescriptions.FALL, Dungeon.depth))
+                GLog.n("You fell to death...")
+            }
+        })
+    }
+
+    fun mobFall(mob: Mob) {
+        mob.destroy()
+        (mob.sprite as MobSprite).fall()
+    }
 }

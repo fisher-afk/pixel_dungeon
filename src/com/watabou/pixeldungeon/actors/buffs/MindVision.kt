@@ -15,30 +15,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.buffs;
+package com.watabou.pixeldungeon.actors.buffs
 
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.ui.BuffIndicator;
+import com.watabou.pixeldungeon.Dungeon
 
-public class MindVision extends FlavourBuff {
+class MindVision : FlavourBuff() {
+    var distance = 2
+    override fun icon(): Int {
+        return BuffIndicator.MIND_VISION
+    }
 
-	public static final float DURATION = 20f;
-	
-	public int distance = 2;
-	
-	@Override
-	public int icon() {
-		return BuffIndicator.MIND_VISION;
-	}
-	
-	@Override
-	public String toString() {
-		return "Mind vision";
-	}
+    override fun toString(): String {
+        return "Mind vision"
+    }
 
-	@Override
-	public void detach() {
-		super.detach();
-		Dungeon.observe();
-	}
+    override fun detach() {
+        super.detach()
+        Dungeon.observe()
+    }
+
+    companion object {
+        const val DURATION = 20f
+    }
 }

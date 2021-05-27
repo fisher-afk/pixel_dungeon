@@ -15,47 +15,35 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.windows;
+package com.watabou.pixeldungeon.windows
 
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.hero.Hero;
-import com.watabou.pixeldungeon.actors.mobs.npcs.Ghost;
-import com.watabou.pixeldungeon.items.Item;
-import com.watabou.pixeldungeon.utils.GLog;
+import com.watabou.pixeldungeon.Dungeon
 
-public class WndSadGhost extends WndQuest {
-	
-	private static final String TXT_WEAPON	= "Ghost's weapon";
-	private static final String TXT_ARMOR	= "Ghost's armor";
-	
-	private Ghost ghost;
-	private Item questItem;
-	
-	public WndSadGhost( final Ghost ghost, final Item item, String text ) {
-		
-		super( ghost, text, TXT_WEAPON, TXT_ARMOR );
-		
-		this.ghost = ghost;
-		questItem = item;
-	}
-	
-	@Override
-	protected void onSelect( int index ) {
+class WndSadGhost(ghost: Ghost, item: Item?, text: String?) : WndQuest(ghost, text, TXT_WEAPON, TXT_ARMOR) {
+    private val ghost: Ghost
+    private val questItem: Item?
+    protected override fun onSelect(index: Int) {
+        if (questItem != null) {
+            questItem.detach(Dungeon.hero.belongings.backpack)
+        }
+        val reward: Item = if (index == 0) Ghost.Quest.weapon else Ghost.Quest.armor
+        if (reward.doPickUp(Dungeon.hero)) {
+            GLog.i(Hero.TXT_YOU_NOW_HAVE, reward.name())
+        } else {
+            Dungeon.level.drop(reward, ghost.pos).sprite.drop()
+        }
+        ghost.yell("Farewell, adventurer!")
+        ghost.die(null)
+        Ghost.Quest.complete()
+    }
 
-		if (questItem != null) {
-			questItem.detach( Dungeon.hero.belongings.backpack );
-		}
-		
-		Item reward = index == 0 ? Ghost.Quest.weapon : Ghost.Quest.armor;
-		if (reward.doPickUp( Dungeon.hero )) {
-			GLog.i( Hero.TXT_YOU_NOW_HAVE, reward.name() );
-		} else {
-			Dungeon.level.drop( reward, ghost.pos ).sprite.drop();
-		}
-		
-		ghost.yell( "Farewell, adventurer!" );
-		ghost.die( null );
-		
-		Ghost.Quest.complete();
-	}
+    companion object {
+        private const val TXT_WEAPON = "Ghost's weapon"
+        private const val TXT_ARMOR = "Ghost's armor"
+    }
+
+    init {
+        this.ghost = ghost
+        questItem = item
+    }
 }

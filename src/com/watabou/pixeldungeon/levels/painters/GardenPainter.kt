@@ -15,46 +15,35 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.levels.painters;
+package com.watabou.pixeldungeon.levels.painters
 
-import com.watabou.pixeldungeon.actors.blobs.Foliage;
-import com.watabou.pixeldungeon.items.Honeypot;
-import com.watabou.pixeldungeon.levels.Level;
-import com.watabou.pixeldungeon.levels.Room;
-import com.watabou.pixeldungeon.levels.Terrain;
-import com.watabou.pixeldungeon.plants.Sungrass;
-import com.watabou.utils.Random;
+import com.watabou.pixeldungeon.actors.blobs.Foliage
 
-public class GardenPainter extends Painter {
-
-	public static void paint( Level level, Room room ) {
-		
-		fill( level, room, Terrain.WALL );
-		fill( level, room, 1, Terrain.HIGH_GRASS );
-		fill( level, room, 2, Terrain.GRASS );
-		
-		room.entrance().set( Room.Door.Type.REGULAR );
-		
-		if (Random.Int( 2 ) == 0) {
-			level.drop( new Honeypot(), room.random() );
-		} else {
-			int bushes = (Random.Int( 5 ) == 0 ? 2 : 1);
-			for (int i=0; i < bushes; i++) {
-				int pos = room.random();
-				set( level, pos, Terrain.GRASS );
-				level.plant( new Sungrass.Seed(), pos );
-			}
-		}
-		
-		Foliage light = (Foliage)level.blobs.get( Foliage.class );
-		if (light == null) {
-			light = new Foliage();
-		}
-		for (int i=room.top + 1; i < room.bottom; i++) {
-			for (int j=room.left + 1; j < room.right; j++) {
-				light.seed( j + Level.WIDTH * i, 1 );
-			}
-		}
-		level.blobs.put( Foliage.class, light );
-	}
+object GardenPainter : Painter() {
+    fun paint(level: Level, room: Room) {
+        fill(level, room, Terrain.WALL)
+        fill(level, room, 1, Terrain.HIGH_GRASS)
+        fill(level, room, 2, Terrain.GRASS)
+        room.entrance().set(Room.Door.Type.REGULAR)
+        if (Random.Int(2) === 0) {
+            level.drop(Honeypot(), room.random())
+        } else {
+            val bushes = if (Random.Int(5) === 0) 2 else 1
+            for (i in 0 until bushes) {
+                val pos: Int = room.random()
+                set(level, pos, Terrain.GRASS)
+                level.plant(Seed(), pos)
+            }
+        }
+        var light: Foliage? = level.blobs.get(Foliage::class.java)
+        if (light == null) {
+            light = Foliage()
+        }
+        for (i in room.top + 1 until room.bottom) {
+            for (j in room.left + 1 until room.right) {
+                light.seed(j + Level.WIDTH * i, 1)
+            }
+        }
+        level.blobs.put(Foliage::class.java, light)
+    }
 }

@@ -15,50 +15,39 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.ui;
+package com.watabou.pixeldungeon.ui
 
-import com.watabou.noosa.Camera;
-import com.watabou.noosa.Image;
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.DungeonTilemap;
-import com.watabou.utils.PointF;
+import com.watabou.noosa.Camera
 
-public class Compass extends Image {
+class Compass(cell: Int) : Image() {
+    private val cell: Int
+    private val cellCenter: PointF
+    private val lastScroll: PointF = PointF()
+    fun update() {
+        super.update()
+        if (!visible) {
+            visible = Dungeon.level.visited.get(cell) || Dungeon.level.mapped.get(cell)
+        }
+        if (visible) {
+            val scroll: PointF = Camera.main.scroll
+            if (!scroll.equals(lastScroll)) {
+                lastScroll.set(scroll)
+                val center: PointF = Camera.main.center().offset(scroll)
+                angle = Math.atan2(cellCenter.x - center.x, center.y - cellCenter.y).toFloat() * RAD_2_G
+            }
+        }
+    }
 
-	private static final float RAD_2_G	= 180f / 3.1415926f;
-	private static final float RADIUS	= 12;
-	
-	private int cell;
-	private PointF cellCenter;
-	
-	private PointF lastScroll = new PointF();
-	
-	public Compass( int cell ) {
-		
-		super();
-		copy( Icons.COMPASS.get() );
-		origin.set( width / 2, RADIUS );
-		
-		this.cell = cell;
-		cellCenter = DungeonTilemap.tileCenterToWorld( cell );
-		visible = false;
-	}
-	
-	@Override
-	public void update() {
-		super.update();
-		
-		if (!visible) {
-			visible = Dungeon.level.visited[cell] || Dungeon.level.mapped[cell]; 
-		}
-		
-		if (visible) {			
-			PointF scroll = Camera.main.scroll;
-			if (!scroll.equals( lastScroll )) {
-				lastScroll.set( scroll );
-				PointF center = Camera.main.center().offset( scroll );
-				angle = (float)Math.atan2( cellCenter.x - center.x, center.y - cellCenter.y ) * RAD_2_G;
-			}
-		}
-	}
+    companion object {
+        private const val RAD_2_G = 180f / 3.1415926f
+        private const val RADIUS = 12f
+    }
+
+    init {
+        copy(Icons.COMPASS.get())
+        origin.set(width / 2, RADIUS)
+        this.cell = cell
+        cellCenter = DungeonTilemap.tileCenterToWorld(cell)
+        visible = false
+    }
 }

@@ -15,82 +15,58 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.buffs;
+package com.watabou.pixeldungeon.actors.buffs
 
-import com.watabou.pixeldungeon.Badges;
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.ResultDescriptions;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.hero.Hero;
-import com.watabou.pixeldungeon.items.rings.RingOfElements.Resistance;
-import com.watabou.pixeldungeon.ui.BuffIndicator;
-import com.watabou.pixeldungeon.utils.GLog;
-import com.watabou.pixeldungeon.utils.Utils;
-import com.watabou.utils.Bundle;
+import com.watabou.pixeldungeon.Badges
 
-public class Poison extends Buff implements Hero.Doom {
-	
-	protected float left;
-	
-	private static final String LEFT	= "left";
-	
-	@Override
-	public void storeInBundle( Bundle bundle ) {
-		super.storeInBundle( bundle );
-		bundle.put( LEFT, left );
-		
-	}
-	
-	@Override
-	public void restoreFromBundle( Bundle bundle ) {
-		super.restoreFromBundle( bundle );
-		left = bundle.getFloat( LEFT );
-	}
-	
-	public void set( float duration ) {
-		this.left = duration;
-	};
-	
-	@Override
-	public int icon() {
-		return BuffIndicator.POISON;
-	}
-	
-	@Override
-	public String toString() {
-		return "Poisoned";
-	}
-	
-	@Override
-	public boolean act() {
-		if (target.isAlive()) {
-			
-			target.damage( (int)(left / 3) + 1, this );
-			spend( TICK );
-			
-			if ((left -= TICK) <= 0) {
-				detach();
-			}
-			
-		} else {
-			
-			detach();
-			
-		}
+class Poison : Buff(), Hero.Doom {
+    protected var left = 0f
+    override fun storeInBundle(bundle: Bundle) {
+        super.storeInBundle(bundle)
+        bundle.put(LEFT, left)
+    }
 
-		return true;
-	}
+    override fun restoreFromBundle(bundle: Bundle) {
+        super.restoreFromBundle(bundle)
+        left = bundle.getFloat(LEFT)
+    }
 
-	public static float durationFactor( Char ch ) {
-		Resistance r = ch.buff( Resistance.class );
-		return r != null ? r.durationFactor() : 1;
-	}
+    fun set(duration: Float) {
+        left = duration
+    }
 
-	@Override
-	public void onDeath() {
-		Badges.validateDeathFromPoison();
-		
-		Dungeon.fail( Utils.format( ResultDescriptions.POISON, Dungeon.depth ) );
-		GLog.n( "You died from poison..." );
-	}
+    override fun icon(): Int {
+        return BuffIndicator.POISON
+    }
+
+    override fun toString(): String {
+        return "Poisoned"
+    }
+
+    override fun act(): Boolean {
+        if (target.isAlive()) {
+            target.damage((left / 3).toInt() + 1, this)
+            spend(TICK)
+            if (TICK.let { left -= it; left } <= 0) {
+                detach()
+            }
+        } else {
+            detach()
+        }
+        return true
+    }
+
+    fun onDeath() {
+        Badges.validateDeathFromPoison()
+        Dungeon.fail(Utils.format(ResultDescriptions.POISON, Dungeon.depth))
+        GLog.n("You died from poison...")
+    }
+
+    companion object {
+        private const val LEFT = "left"
+        fun durationFactor(ch: Char): Float {
+            val r: Resistance = ch.buff(Resistance::class.java)
+            return if (r != null) r.durationFactor() else 1
+        }
+    }
 }

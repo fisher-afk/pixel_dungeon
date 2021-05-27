@@ -15,45 +15,33 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.effects;
+package com.watabou.pixeldungeon.effects
 
-import com.watabou.noosa.Game;
-import com.watabou.noosa.Image;
-import com.watabou.pixeldungeon.DungeonTilemap;
-import com.watabou.pixeldungeon.levels.Level;
+import com.watabou.noosa.Game
 
-public class Ripple extends Image {
+class Ripple : Image(Effects.get(Effects.Type.RIPPLE)) {
+    private var time = 0f
+    fun reset(p: Int) {
+        revive()
+        x = p % Level.WIDTH * DungeonTilemap.SIZE
+        y = p / Level.WIDTH * DungeonTilemap.SIZE
+        origin.set(width / 2, height / 2)
+        scale.set(0)
+        time = TIME_TO_FADE
+    }
 
-	private static final float TIME_TO_FADE = 0.5f;
-	
-	private float time;
-	
-	public Ripple() {
-		super( Effects.get( Effects.Type.RIPPLE ) );
-	}
-	
-	public void reset( int p ) {
-		revive();
-		
-		x = (p % Level.WIDTH) * DungeonTilemap.SIZE;
-		y = (p / Level.WIDTH) * DungeonTilemap.SIZE;
-		
-		origin.set( width / 2, height / 2 );
-		scale.set( 0 );
-		
-		time = TIME_TO_FADE;
-	}
-	
-	@Override
-	public void update() {
-		super.update();
-		
-		if ((time -= Game.elapsed) <= 0) {
-			kill();
-		} else {
-			float p = time / TIME_TO_FADE;
-			scale.set( 1 - p );
-			alpha( p );
-		}
-	}
+    fun update() {
+        super.update()
+        if (Game.elapsed.let { time -= it; time } <= 0) {
+            kill()
+        } else {
+            val p = time / TIME_TO_FADE
+            scale.set(1 - p)
+            alpha(p)
+        }
+    }
+
+    companion object {
+        private const val TIME_TO_FADE = 0.5f
+    }
 }

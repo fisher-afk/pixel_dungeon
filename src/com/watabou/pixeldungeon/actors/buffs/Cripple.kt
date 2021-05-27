@@ -15,21 +15,20 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.buffs;
+package com.watabou.pixeldungeon.actors.buffs
 
-import com.watabou.pixeldungeon.ui.BuffIndicator;
+import com.watabou.pixeldungeon.ui.BuffIndicator
 
-public class Cripple extends FlavourBuff {
+class Cripple : FlavourBuff() {
+    override fun icon(): Int {
+        return BuffIndicator.CRIPPLE
+    }
 
-	public static final float DURATION	= 10f;
-	
-	@Override
-	public int icon() {
-		return BuffIndicator.CRIPPLE;
-	}
-	
-	@Override
-	public String toString() {
-		return "Crippled";
-	}
+    override fun toString(): String {
+        return "Crippled"
+    }
+
+    companion object {
+        const val DURATION = 10f
+    }
 }

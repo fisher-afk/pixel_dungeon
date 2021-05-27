@@ -15,26 +15,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.armor;
+package com.watabou.pixeldungeon.items.armor
 
-import com.watabou.pixeldungeon.sprites.ItemSpriteSheet;
+import com.watabou.pixeldungeon.sprites.ItemSpriteSheet
 
+class PlateArmor : Armor(5) {
+    fun desc(): String {
+        return "Enormous plates of metal are joined together into a suit that provides " +
+                "unmatched protection to any adventurer strong enough to bear its staggering weight."
+    }
 
-public class PlateArmor extends Armor {
-
-	{
-		name = "plate armor";
-		image = ItemSpriteSheet.ARMOR_PLATE;
-	}
-	
-	public PlateArmor() {
-		super( 5 );
-	}
-	
-	@Override
-	public String desc() {
-		return 
-			"Enormous plates of metal are joined together into a suit that provides " +
-			"unmatched protection to any adventurer strong enough to bear its staggering weight.";
-	}
+    init {
+        name = "plate armor"
+        image = ItemSpriteSheet.ARMOR_PLATE
+    }
 }

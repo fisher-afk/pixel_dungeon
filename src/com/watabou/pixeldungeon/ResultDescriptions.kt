@@ -15,30 +15,89 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon;
+package com.watabou.pixeldungeon
 
-public class ResultDescriptions {
+import com.watabou.pixeldungeon.actors.hero.HeroClass.storeInBundle
+import com.watabou.pixeldungeon.actors.hero.HeroClass.title
+import com.watabou.pixeldungeon.actors.hero.HeroClass.masteryBadge
+import com.watabou.pixeldungeon.actors.hero.HeroClass.spritesheet
+import com.watabou.pixeldungeon.actors.hero.HeroClass.perks
+import com.watabou.pixeldungeon.actors.hero.HeroClass
+import com.watabou.pixeldungeon.ui.Toast
+import kotlin.jvm.JvmOverloads
+import java.util.ArrayList
+import com.watabou.pixeldungeon.ui.Toolbar
+import java.lang.ClassNotFoundException
+import com.watabou.pixeldungeon.ui.BadgesList.ListItem
+import java.lang.Exception
+import java.lang.StringBuilder
+import java.util.HashMap
+import java.util.HashSet
+import java.util.LinkedList
+import com.watabou.pixeldungeon.items.Item
+import java.util.Collections
+import java.util.Comparator
+import java.io.IOException
+import kotlin.Throws
+import java.util.Arrays
+import android.util.Log
+import java.util.Locale
+import GamesInProgress.Info
+import com.watabou.pixeldungeon.actors.mobs.Spinner
+import com.watabou.pixeldungeon.actors.blobs.Blob
+import android.util.SparseArray
+import Graph.Node
+import android.opengl.GLES20
+import javax.microedition.khronos.opengles.GL10
+import com.watabou.pixeldungeon.levels.HallsLevel.Stream
+import kotlin.jvm.Synchronized
+import android.content.Intent
+import android.net.Uri
+import java.nio.FloatBuffer
+import java.lang.Thread
+import java.io.FileNotFoundException
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.annotation.SuppressLint
+import java.nio.ShortBuffer
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
+import android.util.FloatMath
+import android.graphics.RectF
+import com.watabou.pixeldungeon.windows.WndTabbed.Tab
+import com.watabou.pixeldungeon.windows.WndJournal.ListItem
+import com.watabou.pixeldungeon.windows.WndCatalogus.ListItem
+import java.io.OutputStream
+import java.io.InputStream
+import android.content.SharedPreferences
+import android.os.Bundle
+import android.util.DisplayMetrics
+import android.content.pm.ActivityInfo
+import java.lang.Runnable
+import android.view.View
+import com.watabou.pixeldungeon.GamesInProgress.Info
 
-	// Mobs 
-	public static final String MOB	= "Killed by %s on level %d";
-	public static final String BOSS	= "Killed by the %s on level %d";
-	
-	// Items
-	public static final String WAND		= "Killed by your own %s on level %d";
-	public static final String GLYPH	= "Killed by the %s on level %d";
-	public static final String BOMB		= "Killed by an explosion of a bomb on level %d";
-	
-	// Dungeon features
-	public static final String TRAP	= "Killed by discharge of %s on level %d";
-	
-	// Debuffs & blobs
-	public static final String BURNING	= "Burned to death on level %d";
-	public static final String HUNGER	= "Starved to death on level %d";
-	public static final String POISON	= "Died from poison on level %d";
-	public static final String GAS		= "Died from toxic gas on level %d";
-	public static final String BLEEDING	= "Bled to death on level %d";
-	public static final String OOZE		= "Killed by a caustic ooze on level %d";
-	public static final String FALL		= "Fell to death on level %d";
-	
-	public static final String WIN	= "Obtained the Amulet of Yendor";
+object ResultDescriptions {
+    // Mobs 
+    const val MOB = "Killed by %s on level %d"
+    const val BOSS = "Killed by the %s on level %d"
+
+    // Items
+    const val WAND = "Killed by your own %s on level %d"
+    const val GLYPH = "Killed by the %s on level %d"
+    const val BOMB = "Killed by an explosion of a bomb on level %d"
+
+    // Dungeon features
+    const val TRAP = "Killed by discharge of %s on level %d"
+
+    // Debuffs & blobs
+    const val BURNING = "Burned to death on level %d"
+    const val HUNGER = "Starved to death on level %d"
+    const val POISON = "Died from poison on level %d"
+    const val GAS = "Died from toxic gas on level %d"
+    const val BLEEDING = "Bled to death on level %d"
+    const val OOZE = "Killed by a caustic ooze on level %d"
+    const val FALL = "Fell to death on level %d"
+    const val WIN = "Obtained the Amulet of Yendor"
 }

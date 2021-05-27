@@ -15,111 +15,77 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon;
+package com.watabou.pixeldungeon
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import com.watabou.noosa.Game
 
-import com.watabou.noosa.Game;
-import com.watabou.pixeldungeon.items.Gold;
-import com.watabou.pixeldungeon.items.Item;
-import com.watabou.pixeldungeon.items.rings.Ring;
-import com.watabou.utils.Bundle;
-import com.watabou.utils.Random;
+object Bones {
+    private const val BONES_FILE = "bones.dat"
+    private const val LEVEL = "level"
+    private const val ITEM = "item"
+    private var depth = -1
+    private var item: Item? = null
+    fun leave() {
+        item = null
+        when (Random.Int(4)) {
+            0 -> item = Dungeon.hero.belongings.weapon
+            1 -> item = Dungeon.hero.belongings.armor
+            2 -> item = Dungeon.hero.belongings.ring1
+            3 -> item = Dungeon.hero.belongings.ring2
+        }
+        if (item == null) {
+            if (Dungeon.gold > 0) {
+                item = Gold(Random.IntRange(1, Dungeon.gold))
+            } else {
+                item = Gold(1)
+            }
+        }
+        depth = Dungeon.depth
+        val bundle = Bundle()
+        bundle.put(LEVEL, depth)
+        bundle.put(ITEM, item)
+        try {
+            val output: OutputStream = Game.instance.openFileOutput(BONES_FILE, Game.MODE_PRIVATE)
+            Bundle.write(bundle, output)
+            output.close()
+        } catch (e: IOException) {
+        }
+    }
 
-public class Bones {
-
-	private static final String BONES_FILE	= "bones.dat";
-	
-	private static final String LEVEL	= "level";
-	private static final String ITEM	= "item";
-	
-	private static int depth = -1;
-	private static Item item;
-	
-	public static void leave() {
-		
-		item = null;
-		switch (Random.Int( 4 )) {
-		case 0:
-			item = Dungeon.hero.belongings.weapon;
-			break;
-		case 1:
-			item = Dungeon.hero.belongings.armor;
-			break;
-		case 2:
-			item = Dungeon.hero.belongings.ring1;
-			break;
-		case 3:
-			item = Dungeon.hero.belongings.ring2;
-			break;
-		}
-		if (item == null) {
-			if (Dungeon.gold > 0) {
-				item = new Gold( Random.IntRange( 1, Dungeon.gold ) );
-			} else {
-				item = new Gold( 1 );
-			}
-		}
-		
-		depth = Dungeon.depth;
-		
-		Bundle bundle = new Bundle();
-		bundle.put( LEVEL, depth );
-		bundle.put( ITEM, item );
-		
-		try {
-			OutputStream output = Game.instance.openFileOutput( BONES_FILE, Game.MODE_PRIVATE );
-			Bundle.write( bundle, output );
-			output.close();
-		} catch (IOException e) {
-
-		}
-	}
-	
-	public static Item get() {
-		if (depth == -1) {
-			
-			try {
-				InputStream input = Game.instance.openFileInput( BONES_FILE ) ;
-				Bundle bundle = Bundle.read( input );
-				input.close();
-				
-				depth = bundle.getInt( LEVEL );
-				item = (Item)bundle.get( ITEM );
-				
-				return get();
-				
-			} catch (IOException e) {
-				return null;
-			}
-			
-		} else {
-			if (depth == Dungeon.depth) {
-				Game.instance.deleteFile( BONES_FILE );
-				depth = 0;
-				
-				if (!item.stackable) {
-					item.cursed = true;
-					item.cursedKnown = true;
-					if (item.isUpgradable()) {
-						int lvl = (Dungeon.depth - 1) * 3 / 5 + 1;
-						if (lvl < item.level()) {
-							item.degrade( item.level() - lvl );
-						}
-						item.levelKnown = false;
-					}
-				}
-				
-				if (item instanceof Ring) {
-					((Ring)item).syncGem();
-				}
-				
-				return item;
-			} else {
-				return null;
-			}
-		}
-	}
+    fun get(): Item? {
+        return if (depth == -1) {
+            try {
+                val input: InputStream = Game.instance.openFileInput(BONES_FILE)
+                val bundle: Bundle = Bundle.read(input)
+                input.close()
+                depth = bundle.getInt(LEVEL)
+                item = bundle.get(ITEM) as Item
+                get()
+            } catch (e: IOException) {
+                null
+            }
+        } else {
+            if (depth == Dungeon.depth) {
+                Game.instance.deleteFile(BONES_FILE)
+                depth = 0
+                if (!item.stackable) {
+                    item.cursed = true
+                    item.cursedKnown = true
+                    if (item.isUpgradable()) {
+                        val lvl: Int = (Dungeon.depth - 1) * 3 / 5 + 1
+                        if (lvl < item.level()) {
+                            item.degrade(item.level() - lvl)
+                        }
+                        item.levelKnown = false
+                    }
+                }
+                if (item is Ring) {
+                    (item as Ring?).syncGem()
+                }
+                item
+            } else {
+                null
+            }
+        }
+    }
 }

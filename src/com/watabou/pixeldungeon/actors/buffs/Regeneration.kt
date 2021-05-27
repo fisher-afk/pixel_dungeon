@@ -15,36 +15,28 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.buffs;
+package com.watabou.pixeldungeon.actors.buffs
 
-import com.watabou.pixeldungeon.actors.hero.Hero;
-import com.watabou.pixeldungeon.items.rings.RingOfMending;
+import com.watabou.pixeldungeon.actors.hero.Hero
 
-public class Regeneration extends Buff {
-	
-	private static final float REGENERATION_DELAY = 10;
-	
-	@Override
-	public boolean act() {
-		if (target.isAlive()) {
+class Regeneration : Buff() {
+    override fun act(): Boolean {
+        if (target.isAlive()) {
+            if (target.HP < target.HT && !(target as Hero).isStarving()) {
+                target.HP += 1
+            }
+            var bonus = 0
+            for (buff in target.buffs(RingOfMending.Rejuvenation::class.java)) {
+                bonus += (buff as RingOfMending.Rejuvenation).level
+            }
+            spend((REGENERATION_DELAY / Math.pow(1.2, bonus.toDouble())).toFloat())
+        } else {
+            diactivate()
+        }
+        return true
+    }
 
-			if (target.HP < target.HT && !((Hero)target).isStarving()) {
-				target.HP += 1;
-			}
-			
-			int bonus = 0;
-			for (Buff buff : target.buffs( RingOfMending.Rejuvenation.class )) {
-				bonus += ((RingOfMending.Rejuvenation)buff).level;
-			}
-			
-			spend( (float)(REGENERATION_DELAY / Math.pow( 1.2, bonus )) );
-			
-		} else {
-			
-			diactivate();
-			
-		}
-
-		return true;
-	}
+    companion object {
+        private const val REGENERATION_DELAY = 10f
+    }
 }

@@ -15,26 +15,20 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.rings;
+package com.watabou.pixeldungeon.items.rings
 
-public class RingOfHaste extends Ring {
+class RingOfHaste : Ring() {
+    protected override fun buff(): RingBuff {
+        return Haste()
+    }
 
-	{
-		name = "Ring of Haste";
-	}
-	
-	@Override
-	protected RingBuff buff( ) {
-		return new Haste();
-	}
-	
-	@Override
-	public String desc() {
-		return isKnown() ?
-			"This ring accelerates the wearer's flow of time, allowing one to perform all actions a little faster." :
-			super.desc();
-	}
-	
-	public class Haste extends RingBuff {
-	}
+    override fun desc(): String {
+        return if (isKnown()) "This ring accelerates the wearer's flow of time, allowing one to perform all actions a little faster." else super.desc()
+    }
+
+    inner class Haste : RingBuff()
+
+    init {
+        name = "Ring of Haste"
+    }
 }

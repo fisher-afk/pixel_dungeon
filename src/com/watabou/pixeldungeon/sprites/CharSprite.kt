@@ -15,447 +15,357 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.sprites;
+package com.watabou.pixeldungeon.sprites
 
-import com.watabou.noosa.Game;
-import com.watabou.noosa.MovieClip;
-import com.watabou.noosa.Visual;
-import com.watabou.noosa.audio.Sample;
-import com.watabou.noosa.particles.Emitter;
-import com.watabou.noosa.tweeners.PosTweener;
-import com.watabou.noosa.tweeners.Tweener;
-import com.watabou.pixeldungeon.Assets;
-import com.watabou.pixeldungeon.DungeonTilemap;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.effects.EmoIcon;
-import com.watabou.pixeldungeon.effects.FloatingText;
-import com.watabou.pixeldungeon.effects.IceBlock;
-import com.watabou.pixeldungeon.effects.Speck;
-import com.watabou.pixeldungeon.effects.Splash;
-import com.watabou.pixeldungeon.effects.TorchHalo;
-import com.watabou.pixeldungeon.effects.particles.FlameParticle;
-import com.watabou.pixeldungeon.items.potions.PotionOfInvisibility;
-import com.watabou.pixeldungeon.levels.Level;
-import com.watabou.pixeldungeon.scenes.GameScene;
-import com.watabou.pixeldungeon.utils.Utils;
-import com.watabou.utils.Callback;
-import com.watabou.utils.PointF;
-import com.watabou.utils.Random;
+import com.watabou.noosa.Game
 
-public class CharSprite extends MovieClip implements Tweener.Listener, MovieClip.Listener {
-	
-	public static final int DEFAULT		= 0xFFFFFF;
-	public static final int POSITIVE	= 0x00FF00;
-	public static final int NEGATIVE	= 0xFF0000;
-	public static final int WARNING		= 0xFF8800;
-	public static final int NEUTRAL		= 0xFFFF00;
-	
-	private static final float MOVE_INTERVAL	= 0.1f;
-	private static final float FLASH_INTERVAL	= 0.05f;	
-	
-	public enum State {
-		BURNING, LEVITATING, INVISIBLE, PARALYSED, FROZEN, ILLUMINATED
-	}
-	
-	protected Animation idle;
-	protected Animation run;
-	protected Animation attack;
-	protected Animation operate;
-	protected Animation zap;
-	protected Animation die;
-	
-	protected Callback animCallback;
-	
-	protected Tweener motion;
-	
-	protected Emitter burning;
-	protected Emitter levitation;
-	
-	protected IceBlock iceBlock;
-	protected TorchHalo halo;
-	
-	protected EmoIcon emo;
-	
-	private Tweener jumpTweener;
-	private Callback jumpCallback;
-	
-	private float flashTime = 0;
-	
-	protected boolean sleeping = false;
-	
-	public Char ch;
-	
-	public boolean isMoving = false;
-	
-	public CharSprite() {
-		super();
-		listener = this;
-	}
-	
-	public void link( Char ch ) {
-		this.ch = ch;
-		ch.sprite = this;
-		
-		place( ch.pos );
-		turnTo( ch.pos, Random.Int( Level.LENGTH ) );
-		
-		ch.updateSpriteState();
-	}
-	
-	public PointF worldToCamera( int cell ) {
-		
-		final int csize = DungeonTilemap.SIZE;
-		
-		return new PointF(
-			((cell % Level.WIDTH) + 0.5f) * csize - width * 0.5f,
-			((cell / Level.WIDTH) + 1.0f) * csize - height
-		);
-	}
-	
-	public void place( int cell ) {
-		point( worldToCamera( cell ) );
-	}
-	
-	public void showStatus( int color, String text, Object... args ) {
-		if (visible) {
-			if (args.length > 0) {
-				text = Utils.format( text, args );
-			}
-			if (ch != null) {
-				FloatingText.show( x + width * 0.5f, y, ch.pos, text, color );
-			} else {
-				FloatingText.show( x + width * 0.5f, y, text, color );
-			}
-		}
-	}
-	
-	public void idle() {
-		play( idle );
-	}
-	
-	public void move( int from, int to ) {
-		play( run );
-		
-		motion = new PosTweener( this, worldToCamera( to ), MOVE_INTERVAL );
-		motion.listener = this;
-		parent.add( motion );
+class CharSprite : MovieClip(), Tweener.Listener, MovieClip.Listener {
+    enum class State {
+        BURNING, LEVITATING, INVISIBLE, PARALYSED, FROZEN, ILLUMINATED
+    }
 
-		isMoving = true;
-		
-		turnTo( from , to );
-		
-		if (visible && Level.water[from] && !ch.flying) {
-			GameScene.ripple( from );
-		}
-		
-		ch.onMotionComplete();
-	}
-	
-	public void interruptMotion() {
-		if (motion != null) {
-			onComplete( motion );
-		}
-	}
-	
-	public void attack( int cell ) {
-		turnTo( ch.pos, cell );
-		play( attack );
-	}
-	
-	public void attack( int cell, Callback callback ) {
-		animCallback = callback;
-		turnTo( ch.pos, cell );
-		play( attack );
-	}
-	
-	public void operate( int cell ) {
-		turnTo( ch.pos, cell );
-		play( operate );
-	}
-	
-	public void zap( int cell ) {
-		turnTo( ch.pos, cell );
-		play( zap );
-	}
-	
-	public void turnTo( int from, int to ) {
-		int fx = from % Level.WIDTH;
-		int tx = to % Level.WIDTH;
-		if (tx > fx) {
-			flipHorizontal = false;
-		} else if (tx < fx) {
-			flipHorizontal = true;
-		}
-	}
-	
-	public void jump( int from, int to, Callback callback ) {	
-		jumpCallback = callback;
-		
-		int distance = Level.distance( from, to );
-		jumpTweener = new JumpTweener( this, worldToCamera( to ), distance * 4, distance * 0.1f );
-		jumpTweener.listener = this;
-		parent.add( jumpTweener );
-		
-		turnTo( from, to );
-	}
-	
-	public void die() {
-		sleeping = false;
-		play( die );
-		
-		if (emo != null) {
-			emo.killAndErase();
-		}
-	}
-	
-	public Emitter emitter() {
-		Emitter emitter = GameScene.emitter();
-		emitter.pos( this );
-		return emitter;
-	}
-	
-	public Emitter centerEmitter() {
-		Emitter emitter = GameScene.emitter();
-		emitter.pos( center() );
-		return emitter;
-	}
-	
-	public Emitter bottomEmitter() {
-		Emitter emitter = GameScene.emitter();
-		emitter.pos( x, y + height, width, 0 );
-		return emitter;
-	}
-	
-	public void burst( final int color, int n ) {
-		if (visible) {
-			Splash.at( center(), color, n );
-		}
-	}
-	
-	public void bloodBurstA( PointF from, int damage ) {
-		if (visible) {
-			PointF c = center();
-			int n = (int)Math.min( 9 * Math.sqrt( (double)damage / ch.HT ), 9 );
-			Splash.at( c, PointF.angle( from, c ), 3.1415926f / 2, blood(), n );
-		}
-	}
-	
-	public int blood() {
-		return 0xFFBB0000;
-	}
-	
-	public void flash() {
-		ra = ba = ga = 1f;
-		flashTime = FLASH_INTERVAL;
-	}
-	
-	public void add( State state ) {
-		switch (state) {
-		case BURNING:
-			burning = emitter();
-			burning.pour( FlameParticle.FACTORY, 0.06f );
-			if (visible) {
-				Sample.INSTANCE.play( Assets.SND_BURNING );
-			}
-			break;
-		case LEVITATING:
-			levitation = emitter();
-			levitation.pour( Speck.factory( Speck.JET ), 0.02f );
-			break;
-		case INVISIBLE:
-			PotionOfInvisibility.melt( ch );
-			break;
-		case PARALYSED:
-			paused = true;
-			break;
-		case FROZEN:
-			iceBlock = IceBlock.freeze( this );
-			paused = true;
-			break;
-		case ILLUMINATED:
-			GameScene.effect( halo = new TorchHalo( this ) );
-			break;
-		}
-	}
-	
-	public void remove( State state ) {
-		switch (state) {
-		case BURNING:
-			if (burning != null) {
-				burning.on = false;
-				burning = null;
-			}
-			break;
-		case LEVITATING:
-			if (levitation != null) {
-				levitation.on = false;
-				levitation = null;
-			}
-			break;
-		case INVISIBLE:
-			alpha( 1f );
-			break;
-		case PARALYSED:
-			paused = false;
-			break;
-		case FROZEN:
-			if (iceBlock != null) {
-				iceBlock.melt();
-				iceBlock = null;
-			}
-			paused = false;
-			break;
-		case ILLUMINATED:
-			if (halo != null) {
-				halo.putOut();
-			}
-			break;
-		}
-	}
-	
-	@Override
-	public void update() {
-		
-		super.update();
-		
-		if (paused && listener != null) {
-			listener.onComplete( curAnim );
-		}
-		
-		if (flashTime > 0 && (flashTime -= Game.elapsed) <= 0) {
-			resetColor();
-		}
-		
-		if (burning != null) {
-			burning.visible = visible;
-		}
-		if (levitation != null) {
-			levitation.visible = visible;
-		}
-		if (iceBlock != null) {
-			iceBlock.visible = visible;
-		}
-		if (sleeping) {
-			showSleep();
-		} else {
-			hideSleep();
-		}
-		if (emo != null) {
-			emo.visible = visible;
-		}
-	}
-	
-	public void showSleep() {
-		if (emo instanceof EmoIcon.Sleep) {
-			
-		} else {
-			if (emo != null) {
-				emo.killAndErase();
-			}
-			emo = new EmoIcon.Sleep( this );
-		}
-	}
-	
-	public void hideSleep() {
-		if (emo instanceof EmoIcon.Sleep) {
-			emo.killAndErase();
-			emo = null;
-		}
-	}
-	
-	public void showAlert() {
-		if (emo instanceof EmoIcon.Alert) {
-			
-		} else {
-			if (emo != null) {
-				emo.killAndErase();
-			}
-			emo = new EmoIcon.Alert( this );
-		}
-	}
-	
-	public void hideAlert() {
-		if (emo instanceof EmoIcon.Alert) {
-			emo.killAndErase();
-			emo = null;
-		}
-	}
-	
-	@Override
-	public void kill() {
-		super.kill();
-		
-		if (emo != null) {
-			emo.killAndErase();
-			emo = null;
-		}
-	}
-	
-	@Override
-	public void onComplete( Tweener tweener ) {
-		if (tweener == jumpTweener) {
-			
-			if (visible && Level.water[ch.pos] && !ch.flying) {
-				GameScene.ripple( ch.pos );
-			}
-			if (jumpCallback != null) {
-				jumpCallback.call();
-			}
-			
-		} else if (tweener == motion) {
-			
-			isMoving = false;
-			
-			motion.killAndErase();
-			motion = null;
-		}
-	}
+    protected var idle: Animation? = null
+    protected var run: Animation? = null
+    protected var attack: Animation? = null
+    protected var operate: Animation? = null
+    protected var zap: Animation? = null
+    protected var die: Animation? = null
+    protected var animCallback: Callback? = null
+    protected var motion: Tweener? = null
+    protected var burning: Emitter? = null
+    protected var levitation: Emitter? = null
+    protected var iceBlock: IceBlock? = null
+    protected var halo: TorchHalo? = null
+    protected var emo: EmoIcon? = null
+    private var jumpTweener: Tweener? = null
+    private var jumpCallback: Callback? = null
+    private var flashTime = 0f
+    protected var sleeping = false
+    var ch: Char? = null
+    var isMoving = false
+    fun link(ch: Char) {
+        this.ch = ch
+        ch.sprite = this
+        place(ch.pos)
+        turnTo(ch.pos, Random.Int(Level.LENGTH))
+        ch.updateSpriteState()
+    }
 
-	@Override
-	public void onComplete( Animation anim ) {
-		
-		if (animCallback != null) {
-			animCallback.call();
-			animCallback = null;
-		} else {
-			
-			if (anim == attack) {
-				
-				idle();
-				ch.onAttackComplete();
-				
-			} else if (anim == operate) {
-				
-				idle();
-				ch.onOperateComplete();
-				
-			}
-			
-		}
-	}
-	
-	private static class JumpTweener extends Tweener {
+    fun worldToCamera(cell: Int): PointF {
+        val csize: Int = DungeonTilemap.SIZE
+        return PointF(
+            (cell % Level.WIDTH + 0.5f) * csize - width * 0.5f,
+            (cell / Level.WIDTH + 1.0f) * csize - height
+        )
+    }
 
-		public Visual visual;
-		
-		public PointF start;
-		public PointF end;
-		
-		public float height;
-		
-		public JumpTweener( Visual visual, PointF pos, float height, float time ) {
-			super( visual, time );
-			
-			this.visual = visual;
-			start = visual.point();
-			end = pos;
+    fun place(cell: Int) {
+        point(worldToCamera(cell))
+    }
 
-			this.height = height;
-		}
+    fun showStatus(color: Int, text: String?, vararg args: Any?) {
+        var text = text
+        if (visible) {
+            if (args.size > 0) {
+                text = Utils.format(text, args)
+            }
+            if (ch != null) {
+                FloatingText.show(x + width * 0.5f, y, ch.pos, text, color)
+            } else {
+                FloatingText.show(x + width * 0.5f, y, text, color)
+            }
+        }
+    }
 
-		@Override
-		protected void updateValues( float progress ) {
-			visual.point( PointF.inter( start, end, progress ).offset( 0, -height * 4 * progress * (1 - progress) ) );
-		}
-	}
+    fun idle() {
+        play(idle)
+    }
+
+    fun move(from: Int, to: Int) {
+        play(run)
+        motion = PosTweener(this, worldToCamera(to), MOVE_INTERVAL)
+        motion.listener = this
+        parent.add(motion)
+        isMoving = true
+        turnTo(from, to)
+        if (visible && Level.water.get(from) && !ch.flying) {
+            GameScene.ripple(from)
+        }
+        ch.onMotionComplete()
+    }
+
+    fun interruptMotion() {
+        if (motion != null) {
+            onComplete(motion)
+        }
+    }
+
+    fun attack(cell: Int) {
+        turnTo(ch.pos, cell)
+        play(attack)
+    }
+
+    fun attack(cell: Int, callback: Callback?) {
+        animCallback = callback
+        turnTo(ch.pos, cell)
+        play(attack)
+    }
+
+    fun operate(cell: Int) {
+        turnTo(ch.pos, cell)
+        play(operate)
+    }
+
+    fun zap(cell: Int) {
+        turnTo(ch.pos, cell)
+        play(zap)
+    }
+
+    fun turnTo(from: Int, to: Int) {
+        val fx: Int = from % Level.WIDTH
+        val tx: Int = to % Level.WIDTH
+        if (tx > fx) {
+            flipHorizontal = false
+        } else if (tx < fx) {
+            flipHorizontal = true
+        }
+    }
+
+    fun jump(from: Int, to: Int, callback: Callback?) {
+        jumpCallback = callback
+        val distance: Int = Level.distance(from, to)
+        jumpTweener = JumpTweener(this, worldToCamera(to), (distance * 4).toFloat(), distance * 0.1f)
+        jumpTweener.listener = this
+        parent.add(jumpTweener)
+        turnTo(from, to)
+    }
+
+    fun die() {
+        sleeping = false
+        play(die)
+        if (emo != null) {
+            emo.killAndErase()
+        }
+    }
+
+    fun emitter(): Emitter {
+        val emitter: Emitter = GameScene.emitter()
+        emitter.pos(this)
+        return emitter
+    }
+
+    fun centerEmitter(): Emitter {
+        val emitter: Emitter = GameScene.emitter()
+        emitter.pos(center())
+        return emitter
+    }
+
+    fun bottomEmitter(): Emitter {
+        val emitter: Emitter = GameScene.emitter()
+        emitter.pos(x, y + height, width, 0)
+        return emitter
+    }
+
+    fun burst(color: Int, n: Int) {
+        if (visible) {
+            Splash.at(center(), color, n)
+        }
+    }
+
+    fun bloodBurstA(from: PointF?, damage: Int) {
+        if (visible) {
+            val c: PointF = center()
+            val n = Math.min(9 * Math.sqrt(damage.toDouble() / ch.HT), 9.0).toInt()
+            Splash.at(c, PointF.angle(from, c), 3.1415926f / 2, blood(), n)
+        }
+    }
+
+    fun blood(): Int {
+        return -0x450000
+    }
+
+    fun flash() {
+        ga = 1f
+        ba = ga
+        ra = ba
+        flashTime = FLASH_INTERVAL
+    }
+
+    fun add(state: State?) {
+        when (state) {
+            State.BURNING -> {
+                burning = emitter()
+                burning.pour(FlameParticle.FACTORY, 0.06f)
+                if (visible) {
+                    Sample.INSTANCE.play(Assets.SND_BURNING)
+                }
+            }
+            State.LEVITATING -> {
+                levitation = emitter()
+                levitation.pour(Speck.factory(Speck.JET), 0.02f)
+            }
+            State.INVISIBLE -> PotionOfInvisibility.melt(ch)
+            State.PARALYSED -> paused = true
+            State.FROZEN -> {
+                iceBlock = IceBlock.freeze(this)
+                paused = true
+            }
+            State.ILLUMINATED -> GameScene.effect(TorchHalo(this).also { halo = it })
+        }
+    }
+
+    fun remove(state: State?) {
+        when (state) {
+            State.BURNING -> if (burning != null) {
+                burning.on = false
+                burning = null
+            }
+            State.LEVITATING -> if (levitation != null) {
+                levitation.on = false
+                levitation = null
+            }
+            State.INVISIBLE -> alpha(1f)
+            State.PARALYSED -> paused = false
+            State.FROZEN -> {
+                if (iceBlock != null) {
+                    iceBlock.melt()
+                    iceBlock = null
+                }
+                paused = false
+            }
+            State.ILLUMINATED -> if (halo != null) {
+                halo.putOut()
+            }
+        }
+    }
+
+    fun update() {
+        super.update()
+        if (paused && listener != null) {
+            listener.onComplete(curAnim)
+        }
+        if (flashTime > 0 && Game.elapsed.let { flashTime -= it; flashTime } <= 0) {
+            resetColor()
+        }
+        if (burning != null) {
+            burning.visible = visible
+        }
+        if (levitation != null) {
+            levitation.visible = visible
+        }
+        if (iceBlock != null) {
+            iceBlock.visible = visible
+        }
+        if (sleeping) {
+            showSleep()
+        } else {
+            hideSleep()
+        }
+        if (emo != null) {
+            emo.visible = visible
+        }
+    }
+
+    fun showSleep() {
+        if (emo is EmoIcon.Sleep) {
+        } else {
+            if (emo != null) {
+                emo.killAndErase()
+            }
+            emo = Sleep(this)
+        }
+    }
+
+    fun hideSleep() {
+        if (emo is EmoIcon.Sleep) {
+            emo.killAndErase()
+            emo = null
+        }
+    }
+
+    fun showAlert() {
+        if (emo is EmoIcon.Alert) {
+        } else {
+            if (emo != null) {
+                emo.killAndErase()
+            }
+            emo = Alert(this)
+        }
+    }
+
+    fun hideAlert() {
+        if (emo is EmoIcon.Alert) {
+            emo.killAndErase()
+            emo = null
+        }
+    }
+
+    fun kill() {
+        super.kill()
+        if (emo != null) {
+            emo.killAndErase()
+            emo = null
+        }
+    }
+
+    fun onComplete(tweener: Tweener) {
+        if (tweener === jumpTweener) {
+            if (visible && Level.water.get(ch.pos) && !ch.flying) {
+                GameScene.ripple(ch.pos)
+            }
+            if (jumpCallback != null) {
+                jumpCallback.call()
+            }
+        } else if (tweener === motion) {
+            isMoving = false
+            motion.killAndErase()
+            motion = null
+        }
+    }
+
+    fun onComplete(anim: Animation) {
+        if (animCallback != null) {
+            animCallback.call()
+            animCallback = null
+        } else {
+            if (anim === attack) {
+                idle()
+                ch.onAttackComplete()
+            } else if (anim === operate) {
+                idle()
+                ch.onOperateComplete()
+            }
+        }
+    }
+
+    private class JumpTweener(visual: Visual, pos: PointF, height: Float, time: Float) : Tweener(visual, time) {
+        var visual: Visual
+        var start: PointF
+        var end: PointF
+        var height: Float
+        protected fun updateValues(progress: Float) {
+            visual.point(PointF.inter(start, end, progress).offset(0, -height * 4 * progress * (1 - progress)))
+        }
+
+        init {
+            this.visual = visual
+            start = visual.point()
+            end = pos
+            this.height = height
+        }
+    }
+
+    companion object {
+        const val DEFAULT = 0xFFFFFF
+        const val POSITIVE = 0x00FF00
+        const val NEGATIVE = 0xFF0000
+        const val WARNING = 0xFF8800
+        const val NEUTRAL = 0xFFFF00
+        private const val MOVE_INTERVAL = 0.1f
+        private const val FLASH_INTERVAL = 0.05f
+    }
+
+    init {
+        listener = this
+    }
 }

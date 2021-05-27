@@ -15,10 +15,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.buffs;
+package com.watabou.pixeldungeon.actors.buffs
 
-public class Sleep extends FlavourBuff {
-	
-	public static final float SWS	= 1.5f;
-	
+object Sleep : FlavourBuff() {
+    const val SWS = 1.5f
 }

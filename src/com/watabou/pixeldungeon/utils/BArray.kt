@@ -15,126 +15,165 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.utils;
+package com.watabou.pixeldungeon.utils
 
-public class BArray {
+import com.watabou.pixeldungeon.actors.hero.HeroClass.storeInBundle
+import com.watabou.pixeldungeon.actors.hero.HeroClass.title
+import com.watabou.pixeldungeon.actors.hero.HeroClass.masteryBadge
+import com.watabou.pixeldungeon.actors.hero.HeroClass.spritesheet
+import com.watabou.pixeldungeon.actors.hero.HeroClass.perks
+import com.watabou.pixeldungeon.actors.hero.HeroClass
+import com.watabou.pixeldungeon.ui.Toast
+import kotlin.jvm.JvmOverloads
+import java.util.ArrayList
+import com.watabou.pixeldungeon.ui.Toolbar
+import java.lang.ClassNotFoundException
+import com.watabou.pixeldungeon.ui.BadgesList.ListItem
+import java.lang.Exception
+import java.lang.StringBuilder
+import java.util.HashMap
+import java.util.HashSet
+import java.util.LinkedList
+import com.watabou.pixeldungeon.items.Item
+import java.util.Collections
+import java.util.Comparator
+import java.io.IOException
+import kotlin.Throws
+import java.util.Arrays
+import android.util.Log
+import java.util.Locale
+import GamesInProgress.Info
+import com.watabou.pixeldungeon.actors.mobs.Spinner
+import com.watabou.pixeldungeon.actors.blobs.Blob
+import android.util.SparseArray
+import Graph.Node
+import android.opengl.GLES20
+import javax.microedition.khronos.opengles.GL10
+import com.watabou.pixeldungeon.levels.HallsLevel.Stream
+import kotlin.jvm.Synchronized
+import android.content.Intent
+import android.net.Uri
+import java.nio.FloatBuffer
+import java.lang.Thread
+import java.io.FileNotFoundException
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.annotation.SuppressLint
+import java.nio.ShortBuffer
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
+import android.util.FloatMath
+import android.graphics.RectF
+import com.watabou.pixeldungeon.windows.WndTabbed.Tab
+import com.watabou.pixeldungeon.windows.WndJournal.ListItem
+import com.watabou.pixeldungeon.windows.WndCatalogus.ListItem
+import java.io.OutputStream
+import java.io.InputStream
+import android.content.SharedPreferences
+import android.os.Bundle
+import android.util.DisplayMetrics
+import android.content.pm.ActivityInfo
+import java.lang.Runnable
+import android.view.View
+import com.watabou.pixeldungeon.GamesInProgress.Info
 
-	public static boolean[] and( boolean[] a, boolean[] b, boolean[] result ) {
-		
-		int length = a.length;
-		
-		if (result == null) {
-			result = new boolean[length];
-		}
-		
-		for (int i=0; i < length; i++) {
-			result[i] = a[i] && b[i];
-		}
-		
-		return result;
-	}
-	
-	public static boolean[] or( boolean[] a, boolean[] b, boolean[] result ) {
-		
-		int length = a.length;
-		
-		if (result == null) {
-			result = new boolean[length];
-		}
-		
-		for (int i=0; i < length; i++) {
-			result[i] = a[i] || b[i];
-		}
-		
-		return result;
-	}
-	
-	public static boolean[] not( boolean[] a, boolean[] result ) {
-		
-		int length = a.length;
-		
-		if (result == null) {
-			result = new boolean[length];
-		}
-		
-		for (int i=0; i < length; i++) {
-			result[i] = !a[i];
-		}
-		
-		return result;
-	}
-	
-	public static boolean[] is( int[] a, boolean[] result, int v1 ) {
-		
-		int length = a.length;
-		
-		if (result == null) {
-			result = new boolean[length];
-		}
-		
-		for (int i=0; i < length; i++) {
-			result[i] = a[i] == v1;
-		}
-		
-		return result;
-	}
-	
-	public static boolean[] isOneOf( int[] a, boolean[] result, int... v ) {
-		
-		int length = a.length;
-		int nv = v.length;
-		
-		if (result == null) {
-			result = new boolean[length];
-		}
-		
-		for (int i=0; i < length; i++) {
-			result[i] = false;
-			for (int j=0; j < nv; j++) {
-				if (a[i] == v[j]) {
-					result[i] = true;
-					break;
-				}
-			}
-		}
-		
-		return result;
-	}
-	
-	public static boolean[] isNot( int[] a, boolean[] result, int v1 ) {
-		
-		int length = a.length;
-		
-		if (result == null) {
-			result = new boolean[length];
-		}
-		
-		for (int i=0; i < length; i++) {
-			result[i] = a[i] != v1;
-		}
-		
-		return result;
-	}
-	
-	public static boolean[] isNotOneOf( int[] a, boolean[] result, int... v ) {
-		
-		int length = a.length;
-		int nv = v.length;
-		
-		if (result == null) {
-			result = new boolean[length];
-		}
-		
-		for (int i=0; i < length; i++) {
-			result[i] = true;
-			for (int j=0; j < nv; j++) {
-				if (a[i] == v[j]) {
-					result[i] = false;
-					break;
-				}
-			}
-		}
-		
-		return result;
-	}
+object BArray {
+    fun and(a: BooleanArray, b: BooleanArray, result: BooleanArray?): BooleanArray {
+        var result = result
+        val length = a.size
+        if (result == null) {
+            result = BooleanArray(length)
+        }
+        for (i in 0 until length) {
+            result[i] = a[i] && b[i]
+        }
+        return result
+    }
+
+    fun or(a: BooleanArray, b: BooleanArray, result: BooleanArray?): BooleanArray {
+        var result = result
+        val length = a.size
+        if (result == null) {
+            result = BooleanArray(length)
+        }
+        for (i in 0 until length) {
+            result[i] = a[i] || b[i]
+        }
+        return result
+    }
+
+    fun not(a: BooleanArray, result: BooleanArray?): BooleanArray {
+        var result = result
+        val length = a.size
+        if (result == null) {
+            result = BooleanArray(length)
+        }
+        for (i in 0 until length) {
+            result[i] = !a[i]
+        }
+        return result
+    }
+
+    fun `is`(a: IntArray, result: BooleanArray?, v1: Int): BooleanArray {
+        var result = result
+        val length = a.size
+        if (result == null) {
+            result = BooleanArray(length)
+        }
+        for (i in 0 until length) {
+            result[i] = a[i] == v1
+        }
+        return result
+    }
+
+    fun isOneOf(a: IntArray, result: BooleanArray?, vararg v: Int): BooleanArray {
+        var result = result
+        val length = a.size
+        val nv = v.size
+        if (result == null) {
+            result = BooleanArray(length)
+        }
+        for (i in 0 until length) {
+            result[i] = false
+            for (j in 0 until nv) {
+                if (a[i] == v[j]) {
+                    result[i] = true
+                    break
+                }
+            }
+        }
+        return result
+    }
+
+    fun isNot(a: IntArray, result: BooleanArray?, v1: Int): BooleanArray {
+        var result = result
+        val length = a.size
+        if (result == null) {
+            result = BooleanArray(length)
+        }
+        for (i in 0 until length) {
+            result[i] = a[i] != v1
+        }
+        return result
+    }
+
+    fun isNotOneOf(a: IntArray, result: BooleanArray?, vararg v: Int): BooleanArray {
+        var result = result
+        val length = a.size
+        val nv = v.size
+        if (result == null) {
+            result = BooleanArray(length)
+        }
+        for (i in 0 until length) {
+            result[i] = true
+            for (j in 0 until nv) {
+                if (a[i] == v[j]) {
+                    result[i] = false
+                    break
+                }
+            }
+        }
+        return result
+    }
 }

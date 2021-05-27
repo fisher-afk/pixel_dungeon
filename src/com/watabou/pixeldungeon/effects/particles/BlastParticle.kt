@@ -15,48 +15,40 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.effects.particles;
+package com.watabou.pixeldungeon.effects.particles
 
-import com.watabou.noosa.particles.Emitter;
-import com.watabou.noosa.particles.PixelParticle;
-import com.watabou.noosa.particles.Emitter.Factory;
-import com.watabou.utils.Random;
+import com.watabou.noosa.particles.Emitter
 
-public class BlastParticle extends PixelParticle.Shrinking {
-	
-	public static final Emitter.Factory FACTORY = new Factory() {	
-		@Override
-		public void emit( Emitter emitter, int index, float x, float y ) {
-			((BlastParticle)emitter.recycle( BlastParticle.class )).reset( x, y );
-		}
-		@Override
-		public boolean lightMode() {
-			return true;
-		};
-	};
-	
-	public BlastParticle() {
-		super();
-		
-		color( 0xEE7722 );		
-		acc.set( 0, +50 );
-	}
-	
-	public void reset( float x, float y ) {
-		revive();
-		
-		this.x = x;
-		this.y = y;
-		
-		left = lifespan = Random.Float();
-		
-		size = 8;
-		speed.polar( -Random.Float( 3.1415926f ), Random.Float( 32, 64 ) );
-	}
-	
-	@Override
-	public void update() {
-		super.update();
-		am = left > 0.8f ? (1 - left) * 5 : 1;
-	}
+class BlastParticle : PixelParticle.Shrinking() {
+    fun reset(x: Float, y: Float) {
+        revive()
+        x = x
+        y = y
+        lifespan = Random.Float()
+        left = lifespan
+        size = 8
+        speed.polar(-Random.Float(3.1415926f), Random.Float(32, 64))
+    }
+
+    fun update() {
+        super.update()
+        am = if (left > 0.8f) (1 - left) * 5 else 1
+    }
+
+    companion object {
+        val FACTORY: Emitter.Factory = object : Factory() {
+            fun emit(emitter: Emitter, index: Int, x: Float, y: Float) {
+                (emitter.recycle(BlastParticle::class.java) as BlastParticle).reset(x, y)
+            }
+
+            fun lightMode(): Boolean {
+                return true
+            }
+        }
+    }
+
+    init {
+        color(0xEE7722)
+        acc.set(0, +50)
+    }
 }

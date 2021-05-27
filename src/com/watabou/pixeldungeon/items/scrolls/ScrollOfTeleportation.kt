@@ -15,77 +15,54 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.scrolls;
+package com.watabou.pixeldungeon.items.scrolls
 
-import com.watabou.noosa.audio.Sample;
-import com.watabou.pixeldungeon.Assets;
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.buffs.Invisibility;
-import com.watabou.pixeldungeon.actors.hero.Hero;
-import com.watabou.pixeldungeon.items.wands.WandOfBlink;
-import com.watabou.pixeldungeon.utils.GLog;
+import com.watabou.noosa.audio.Sample
 
-public class ScrollOfTeleportation extends Scroll {
+class ScrollOfTeleportation : Scroll() {
+    protected override fun doRead() {
+        Sample.INSTANCE.play(Assets.SND_READ)
+        Invisibility.dispel()
+        teleportHero(curUser)
+        setKnown()
+        readAnimation()
+    }
 
-	public static final String TXT_TELEPORTED = 
-		"In a blink of an eye you were teleported to another location of the level.";
-	
-	public static final String TXT_NO_TELEPORT = 
-		"Strong magic aura of this place prevents you from teleporting!";
-	
-	{
-		name = "Scroll of Teleportation";
-	}
-	
-	@Override
-	protected void doRead() {
+    fun desc(): String {
+        return "The spell on this parchment instantly transports the reader " +
+                "to a random location on the dungeon level. It can be used " +
+                "to escape a dangerous situation, but the unlucky reader might " +
+                "find himself in an even more dangerous place."
+    }
 
-		Sample.INSTANCE.play( Assets.SND_READ );
-		Invisibility.dispel();
-		
-		teleportHero( curUser );
-		setKnown();
-		
-		readAnimation();
-	}
-	
-	public static void teleportHero( Hero  hero ) {
+    override fun price(): Int {
+        return if (isKnown()) 40 * quantity else super.price()
+    }
 
-		int count = 10;
-		int pos;
-		do {
-			pos = Dungeon.level.randomRespawnCell();
-			if (count-- <= 0) {
-				break;
-			}
-		} while (pos == -1);
-		
-		if (pos == -1) {
-			
-			GLog.w( TXT_NO_TELEPORT );
-			
-		} else {
+    companion object {
+        const val TXT_TELEPORTED = "In a blink of an eye you were teleported to another location of the level."
+        const val TXT_NO_TELEPORT = "Strong magic aura of this place prevents you from teleporting!"
+        fun teleportHero(hero: Hero?) {
+            var count = 10
+            var pos: Int
+            do {
+                pos = Dungeon.level.randomRespawnCell()
+                if (count-- <= 0) {
+                    break
+                }
+            } while (pos == -1)
+            if (pos == -1) {
+                GLog.w(TXT_NO_TELEPORT)
+            } else {
+                WandOfBlink.appear(hero, pos)
+                Dungeon.level.press(pos, hero)
+                Dungeon.observe()
+                GLog.i(TXT_TELEPORTED)
+            }
+        }
+    }
 
-			WandOfBlink.appear( hero, pos );
-			Dungeon.level.press( pos, hero );
-			Dungeon.observe();
-			
-			GLog.i( TXT_TELEPORTED );
-			
-		}
-	}
-	
-	@Override
-	public String desc() {
-		return
-			"The spell on this parchment instantly transports the reader " +
-			"to a random location on the dungeon level. It can be used " +
-			"to escape a dangerous situation, but the unlucky reader might " +
-			"find himself in an even more dangerous place.";
-	}
-	
-	@Override
-	public int price() {
-		return isKnown() ? 40 * quantity : super.price();
-	}
+    init {
+        name = "Scroll of Teleportation"
+    }
 }

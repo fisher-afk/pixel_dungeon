@@ -15,41 +15,29 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.scrolls;
+package com.watabou.pixeldungeon.items.scrolls
 
-import com.watabou.pixeldungeon.Badges;
-import com.watabou.pixeldungeon.effects.Identification;
-import com.watabou.pixeldungeon.items.Item;
-import com.watabou.pixeldungeon.utils.GLog;
-import com.watabou.pixeldungeon.windows.WndBag;
+import com.watabou.pixeldungeon.Badges
 
-public class ScrollOfIdentify extends InventoryScroll {
+class ScrollOfIdentify : InventoryScroll() {
+    protected override fun onItemSelected(item: Item) {
+        curUser.sprite.parent.add(Identification(curUser.sprite.center().offset(0, -16)))
+        item.identify()
+        GLog.i("It is $item")
+        Badges.validateItemLevelAquired(item)
+    }
 
-	{
-		name = "Scroll of Identify";
-		inventoryTitle = "Select an item to identify";
-		mode = WndBag.Mode.UNIDENTIFED;
-	}
-	
-	@Override
-	protected void onItemSelected( Item item ) {
-		
-		curUser.sprite.parent.add( new Identification( curUser.sprite.center().offset( 0, -16 ) ) );
-		
-		item.identify();
-		GLog.i( "It is " + item );
-		
-		Badges.validateItemLevelAquired( item );
-	}
-	
-	@Override
-	public String desc() {
-		return
-			"Permanently reveals all of the secrets of a single item.";
-	}
-	
-	@Override
-	public int price() {
-		return isKnown() ? 30 * quantity : super.price();
-	}
+    fun desc(): String {
+        return "Permanently reveals all of the secrets of a single item."
+    }
+
+    override fun price(): Int {
+        return if (isKnown()) 30 * quantity else super.price()
+    }
+
+    init {
+        name = "Scroll of Identify"
+        inventoryTitle = "Select an item to identify"
+        mode = WndBag.Mode.UNIDENTIFED
+    }
 }

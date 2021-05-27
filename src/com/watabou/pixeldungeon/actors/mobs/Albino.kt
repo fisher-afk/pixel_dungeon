@@ -15,36 +15,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.mobs;
+package com.watabou.pixeldungeon.actors.mobs
 
-import com.watabou.pixeldungeon.Badges;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.buffs.Bleeding;
-import com.watabou.pixeldungeon.actors.buffs.Buff;
-import com.watabou.pixeldungeon.sprites.AlbinoSprite;
-import com.watabou.utils.Random;
+import com.watabou.pixeldungeon.Badges
 
-public class Albino extends Rat {
+class Albino : Rat() {
+    override fun die(cause: Any?) {
+        super.die(cause)
+        Badges.validateRare(this)
+    }
 
-	{
-		name = "albino rat";
-		spriteClass = AlbinoSprite.class;
-		
-		HP = HT = 15;
-	}
-	
-	@Override
-	public void die( Object cause ) {
-		super.die( cause );
-		Badges.validateRare( this );
-	}
-	
-	@Override
-	public int attackProc( Char enemy, int damage ) {
-		if (Random.Int( 2 ) == 0) {
-			Buff.affect( enemy, Bleeding.class ).set( damage );
-		}
-		
-		return damage;
-	}
+    fun attackProc(enemy: Char?, damage: Int): Int {
+        if (Random.Int(2) === 0) {
+            Buff.affect(enemy, Bleeding::class.java).set(damage)
+        }
+        return damage
+    }
+
+    init {
+        name = "albino rat"
+        spriteClass = AlbinoSprite::class.java
+        HT = 15
+        HP = HT
+    }
 }

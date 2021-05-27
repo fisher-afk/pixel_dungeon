@@ -15,95 +15,66 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items;
+package com.watabou.pixeldungeon.items
 
-import java.util.ArrayList;
+abstract class KindOfWeapon : EquipableItem() {
+    override fun actions(hero: Hero): ArrayList<String> {
+        val actions: ArrayList<String> = super.actions(hero)
+        actions.add(if (isEquipped(hero)) AC_UNEQUIP else AC_EQUIP)
+        return actions
+    }
 
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.hero.Hero;
-import com.watabou.pixeldungeon.ui.QuickSlot;
-import com.watabou.pixeldungeon.utils.GLog;
-import com.watabou.utils.Random;
+    override fun isEquipped(hero: Hero): Boolean {
+        return hero.belongings.weapon === this
+    }
 
-abstract public class KindOfWeapon extends EquipableItem {
+    override fun doEquip(hero: Hero): Boolean {
+        detachAll(hero.belongings.backpack)
+        return if (hero.belongings.weapon == null || hero.belongings.weapon.doUnequip(hero, true)) {
+            hero.belongings.weapon = this
+            activate(hero)
+            QuickSlot.refresh()
+            cursedKnown = true
+            if (cursed) {
+                equipCursed(hero)
+                GLog.n(TXT_EQUIP_CURSED, name())
+            }
+            hero.spendAndNext(TIME_TO_EQUIP)
+            true
+        } else {
+            collect(hero.belongings.backpack)
+            false
+        }
+    }
 
-	private static final String TXT_EQUIP_CURSED	= "you wince as your grip involuntarily tightens around your %s";
-	
-	protected static final float TIME_TO_EQUIP = 1f;
-	
-	@Override
-	public ArrayList<String> actions( Hero hero ) {
-		ArrayList<String> actions = super.actions( hero );
-		actions.add( isEquipped( hero ) ? AC_UNEQUIP : AC_EQUIP );
-		return actions;
-	}
-	
-	@Override
-	public boolean isEquipped( Hero hero ) {
-		return hero.belongings.weapon == this;
-	}
-	
-	@Override
-	public boolean doEquip( Hero hero ) {
-		
-		detachAll( hero.belongings.backpack );
-		
-		if (hero.belongings.weapon == null || hero.belongings.weapon.doUnequip( hero, true )) {
-			
-			hero.belongings.weapon = this;
-			activate( hero );
-			
-			QuickSlot.refresh();
-			
-			cursedKnown = true;
-			if (cursed) {
-				equipCursed( hero );
-				GLog.n( TXT_EQUIP_CURSED, name() );
-			}
-			
-			hero.spendAndNext( TIME_TO_EQUIP );
-			return true;
-			
-		} else {
-			
-			collect( hero.belongings.backpack );
-			return false;
-		}
-	}
-	
-	@Override
-	public boolean doUnequip( Hero hero, boolean collect, boolean single ) {
-		if (super.doUnequip( hero, collect, single )) {
-			
-			hero.belongings.weapon = null;
-			return true;
-			
-		} else {
-			
-			return false;
-			
-		}
-	}
-	
-	public void activate( Hero hero ) {
-	}
-	
-	abstract public int min();
-	abstract public int max();
-	
-	public int damageRoll( Hero owner ) {
-		return Random.NormalIntRange( min(), max() );
-	}
-	
-	public float acuracyFactor( Hero hero ) {
-		return 1f;
-	}
-	
-	public float speedFactor( Hero hero ) {
-		return 1f;
-	}
-	
-	public void proc( Char attacker, Char defender, int damage ) {
-	}
-	
+    override fun doUnequip(hero: Hero, collect: Boolean, single: Boolean): Boolean {
+        return if (super.doUnequip(hero, collect, single)) {
+            hero.belongings.weapon = null
+            true
+        } else {
+            false
+        }
+    }
+
+    fun activate(hero: Hero?) {}
+    abstract fun min(): Int
+    abstract fun max(): Int
+    fun damageRoll(owner: Hero?): Int {
+        return Random.NormalIntRange(min(), max())
+    }
+
+    fun acuracyFactor(hero: Hero?): Float {
+        return 1f
+    }
+
+    fun speedFactor(hero: Hero?): Float {
+        return 1f
+    }
+
+    fun proc(attacker: Char?, defender: Char?, damage: Int) {}
+
+    companion object {
+        private const val TXT_EQUIP_CURSED = "you wince as your grip involuntarily tightens around your %s"
+        protected const val TIME_TO_EQUIP = 1f
+    }
 }

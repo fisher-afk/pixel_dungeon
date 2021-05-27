@@ -15,61 +15,48 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon;
+package com.watabou.pixeldungeon
 
-import java.util.HashMap;
+import com.watabou.utils.Bundle
 
-import com.watabou.pixeldungeon.actors.hero.HeroClass;
-import com.watabou.utils.Bundle;
+object GamesInProgress {
+    private val state: HashMap<HeroClass, Info?> = HashMap<HeroClass, Info?>()
+    fun check(cl: HeroClass): Info? {
+        return if (state.containsKey(cl)) {
+            state[cl]
+        } else {
+            var info: Info?
+            try {
+                val bundle: Bundle = Dungeon.gameBundle(Dungeon.gameFile(cl))
+                info = Info()
+                Dungeon.preview(info, bundle)
+            } catch (e: Exception) {
+                info = null
+            }
+            state[cl] = info
+            info
+        }
+    }
 
-public class GamesInProgress {
+    operator fun set(cl: HeroClass, depth: Int, level: Int, challenges: Boolean) {
+        val info = Info()
+        info.depth = depth
+        info.level = level
+        info.challenges = challenges
+        state[cl] = info
+    }
 
-	private static HashMap<HeroClass, Info> state = new HashMap<HeroClass, Info>();
-	
-	public static Info check( HeroClass cl ) {
-		
-		if (state.containsKey( cl )) {
-			
-			return state.get( cl );
-			
-		} else {
-			
-			Info info;
-			try {
-				
-				Bundle bundle = Dungeon.gameBundle( Dungeon.gameFile( cl ) );
-				info = new Info();
-				Dungeon.preview( info, bundle );
+    fun setUnknown(cl: HeroClass) {
+        state.remove(cl)
+    }
 
-			} catch (Exception e) {
-				info = null;
-			}
-			
-			state.put( cl, info );
-			return info;
-			
-		}
-	}
-	
-	public static void set( HeroClass cl, int depth, int level, boolean challenges ) {
-		Info info = new Info();
-		info.depth = depth;
-		info.level = level;
-		info.challenges = challenges;
-		state.put( cl, info );
-	}
-	
-	public static void setUnknown( HeroClass cl ) {
-		state.remove( cl );
-	}
-	
-	public static void delete( HeroClass cl ) {
-		state.put( cl, null );
-	}
-	
-	public static class Info {
-		public int depth;
-		public int level;
-		public boolean challenges;
-	}
+    fun delete(cl: HeroClass) {
+        state[cl] = null
+    }
+
+    class Info {
+        var depth = 0
+        var level = 0
+        var challenges = false
+    }
 }

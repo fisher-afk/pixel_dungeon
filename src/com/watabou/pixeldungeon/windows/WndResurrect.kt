@@ -15,88 +15,62 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.windows;
+package com.watabou.pixeldungeon.windows
 
-import com.watabou.noosa.BitmapTextMultiline;
-import com.watabou.noosa.Game;
-import com.watabou.pixeldungeon.Rankings;
-import com.watabou.pixeldungeon.Statistics;
-import com.watabou.pixeldungeon.actors.hero.Hero;
-import com.watabou.pixeldungeon.items.Ankh;
-import com.watabou.pixeldungeon.scenes.InterlevelScene;
-import com.watabou.pixeldungeon.scenes.PixelScene;
-import com.watabou.pixeldungeon.sprites.ItemSprite;
-import com.watabou.pixeldungeon.ui.RedButton;
-import com.watabou.pixeldungeon.ui.Window;
+import com.watabou.noosa.BitmapTextMultiline
 
-public class WndResurrect extends Window {
-	
-	private static final String TXT_MESSAGE	= "You died, but you were given another chance to win this dungeon. Will you take it?";
-	private static final String TXT_YES		= "Yes, I will fight!";
-	private static final String TXT_NO		= "No, I give up";
-	
-	private static final int WIDTH		= 120;
-	private static final int BTN_HEIGHT	= 20;
-	private static final float GAP		= 2;
-	
-	public static WndResurrect instance;
-	public static Object causeOfDeath;
-	
-	public WndResurrect( final Ankh ankh, Object causeOfDeath ) {
-		
-		super();
-		
-		instance = this;
-		WndResurrect.causeOfDeath = causeOfDeath;
-		
-		IconTitle titlebar = new IconTitle();
-		titlebar.icon( new ItemSprite( ankh.image(), null ) );
-		titlebar.label( ankh.name() );
-		titlebar.setRect( 0, 0, WIDTH, 0 );
-		add( titlebar );
-		
-		BitmapTextMultiline message = PixelScene.createMultiline( TXT_MESSAGE, 6 );
-		message.maxWidth = WIDTH;
-		message.measure();
-		message.y = titlebar.bottom() + GAP;
-		add( message );
-		
-		RedButton btnYes = new RedButton( TXT_YES ) {
-			@Override
-			protected void onClick() {
-				hide();
-				
-				Statistics.ankhsUsed++;
-				
-				InterlevelScene.mode = InterlevelScene.Mode.RESURRECT;
-				Game.switchScene( InterlevelScene.class );
-			}
-		};
-		btnYes.setRect( 0, message.y + message.height() + GAP, WIDTH, BTN_HEIGHT );
-		add( btnYes );
-		
-		RedButton btnNo = new RedButton( TXT_NO ) {
-			@Override
-			protected void onClick() {
-				hide();
-				
-				Rankings.INSTANCE.submit( false );
-				Hero.reallyDie( WndResurrect.causeOfDeath );
-			}
-		};
-		btnNo.setRect( 0, btnYes.bottom() + GAP, WIDTH, BTN_HEIGHT );
-		add( btnNo );
-		
-		resize( WIDTH, (int)btnNo.bottom() );
-	}
-	
-	@Override
-	public void destroy() {
-		super.destroy();
-		instance = null;
-	}
-	
-	@Override
-	public void onBackPressed() {
-	}
+class WndResurrect(ankh: Ankh, causeOfDeath: Any?) : Window() {
+    fun destroy() {
+        super.destroy()
+        instance = null
+    }
+
+    fun onBackPressed() {}
+
+    companion object {
+        private const val TXT_MESSAGE =
+            "You died, but you were given another chance to win this dungeon. Will you take it?"
+        private const val TXT_YES = "Yes, I will fight!"
+        private const val TXT_NO = "No, I give up"
+        private const val WIDTH = 120
+        private const val BTN_HEIGHT = 20
+        private const val GAP = 2f
+        var instance: WndResurrect?
+        var causeOfDeath: Any? = null
+    }
+
+    init {
+        instance = this
+        Companion.causeOfDeath = causeOfDeath
+        val titlebar = IconTitle()
+        titlebar.icon(ItemSprite(ankh.image(), null))
+        titlebar.label(ankh.name())
+        titlebar.setRect(0, 0, WIDTH, 0)
+        add(titlebar)
+        val message: BitmapTextMultiline = PixelScene.createMultiline(TXT_MESSAGE, 6)
+        message.maxWidth = WIDTH
+        message.measure()
+        message.y = titlebar.bottom() + GAP
+        add(message)
+        val btnYes: RedButton = object : RedButton(TXT_YES) {
+            protected fun onClick() {
+                hide()
+                Statistics.ankhsUsed++
+                InterlevelScene.mode = InterlevelScene.Mode.RESURRECT
+                Game.switchScene(InterlevelScene::class.java)
+            }
+        }
+        btnYes.setRect(0, message.y + message.height() + GAP, WIDTH, BTN_HEIGHT)
+        add(btnYes)
+        val btnNo: RedButton = object : RedButton(TXT_NO) {
+            protected fun onClick() {
+                hide()
+                Rankings.INSTANCE.submit(false)
+                Hero.reallyDie(Companion.causeOfDeath)
+            }
+        }
+        btnNo.setRect(0, btnYes.bottom() + GAP, WIDTH, BTN_HEIGHT)
+        add(btnNo)
+        resize(WIDTH, btnNo.bottom() as Int)
+    }
 }

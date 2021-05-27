@@ -15,84 +15,60 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.mechanics;
+package com.watabou.pixeldungeon.mechanics
 
-import com.watabou.pixeldungeon.actors.Actor;
-import com.watabou.pixeldungeon.levels.Level;
+import com.watabou.pixeldungeon.actors.Actor
 
-public class Ballistica {
-
-	public static int[] trace = new int[Math.max( Level.WIDTH, Level.HEIGHT )];
-	public static int distance;
-	
-	public static int cast( int from, int to, boolean magic, boolean hitChars ) {
-		
-		int w = Level.WIDTH;
-		
-		int x0 = from % w;
-		int x1 = to % w;
-		int y0 = from / w;
-		int y1 = to / w;
-		
-		int dx = x1 - x0;
-		int dy = y1 - y0;
-		
-		int stepX = dx > 0 ? +1 : -1;
-		int stepY = dy > 0 ? +1 : -1;
-		
-		dx = Math.abs( dx );
-		dy = Math.abs( dy );
-		
-		int stepA;
-		int stepB;
-		int dA;
-		int dB;
-		
-		if (dx > dy) {
-			
-			stepA = stepX;
-			stepB = stepY * w;
-			dA = dx;
-			dB = dy;
-
-		} else {
-			
-			stepA = stepY * w;
-			stepB = stepX;
-			dA = dy;
-			dB = dx;
-
-		}
-
-		distance = 1;
-		trace[0] = from;
-		
-		int cell = from;
-		
-		int err = dA / 2;
-		while (cell != to || magic) {
-			
-			cell += stepA;
-			
-			err += dB;
-			if (err >= dA) {
-				err = err - dA;
-				cell = cell + stepB;
-			}
-			
-			trace[distance++] = cell;
-			
-			if (!Level.passable[cell] && !Level.avoid[cell]) {
-				return trace[--distance - 1];
-			}
-			
-			if (Level.losBlocking[cell] || (hitChars && Actor.findChar( cell ) != null)) {
-				return cell;
-			}
-		}
-		
-		trace[distance++] = cell;
-		
-		return to;
-	}
+object Ballistica {
+    var trace = IntArray(Math.max(Level.WIDTH, Level.HEIGHT))
+    var distance = 0
+    fun cast(from: Int, to: Int, magic: Boolean, hitChars: Boolean): Int {
+        val w: Int = Level.WIDTH
+        val x0 = from % w
+        val x1 = to % w
+        val y0 = from / w
+        val y1 = to / w
+        var dx = x1 - x0
+        var dy = y1 - y0
+        val stepX = if (dx > 0) +1 else -1
+        val stepY = if (dy > 0) +1 else -1
+        dx = Math.abs(dx)
+        dy = Math.abs(dy)
+        val stepA: Int
+        val stepB: Int
+        val dA: Int
+        val dB: Int
+        if (dx > dy) {
+            stepA = stepX
+            stepB = stepY * w
+            dA = dx
+            dB = dy
+        } else {
+            stepA = stepY * w
+            stepB = stepX
+            dA = dy
+            dB = dx
+        }
+        distance = 1
+        trace[0] = from
+        var cell = from
+        var err = dA / 2
+        while (cell != to || magic) {
+            cell += stepA
+            err += dB
+            if (err >= dA) {
+                err = err - dA
+                cell = cell + stepB
+            }
+            trace[distance++] = cell
+            if (!Level.passable.get(cell) && !Level.avoid.get(cell)) {
+                return trace[--distance - 1]
+            }
+            if (Level.losBlocking.get(cell) || hitChars && Actor.findChar(cell) != null) {
+                return cell
+            }
+        }
+        trace[distance++] = cell
+        return to
+    }
 }

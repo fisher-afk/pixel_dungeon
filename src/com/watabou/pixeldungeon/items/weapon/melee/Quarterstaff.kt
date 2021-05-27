@@ -15,23 +15,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.weapon.melee;
+package com.watabou.pixeldungeon.items.weapon.melee
 
-import com.watabou.pixeldungeon.sprites.ItemSpriteSheet;
+import com.watabou.pixeldungeon.sprites.ItemSpriteSheet
 
-public class Quarterstaff extends MeleeWeapon {
+class Quarterstaff : MeleeWeapon(2, 1f, 1f) {
+    fun desc(): String {
+        return "A staff of hardwood, its ends are shod with iron."
+    }
 
-	{
-		name = "quarterstaff";
-		image = ItemSpriteSheet.QUARTERSTAFF;
-	}
-	
-	public Quarterstaff() {
-		super( 2, 1f, 1f );
-	}
-	
-	@Override
-	public String desc() {
-		return "A staff of hardwood, its ends are shod with iron.";
-	}
+    init {
+        name = "quarterstaff"
+        image = ItemSpriteSheet.QUARTERSTAFF
+    }
 }

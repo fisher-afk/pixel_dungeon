@@ -15,47 +15,33 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.weapon.enchantments;
+package com.watabou.pixeldungeon.items.weapon.enchantments
 
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.buffs.Buff;
-import com.watabou.pixeldungeon.items.weapon.Weapon;
-import com.watabou.pixeldungeon.sprites.ItemSprite;
-import com.watabou.pixeldungeon.sprites.ItemSprite.Glowing;
-import com.watabou.utils.Random;
+class Poison : Weapon.Enchantment() {
+    fun proc(weapon: Weapon, attacker: Char?, defender: Char, damage: Int): Boolean {
+        // lvl 0 - 33%
+        // lvl 1 - 50%
+        // lvl 2 - 60%
+        val level = Math.max(0, weapon.effectiveLevel())
+        return if (Random.Int(level + 3) >= 2) {
+            Buff.affect(defender, com.watabou.pixeldungeon.actors.buffs.Poison::class.java)
+                .set(com.watabou.pixeldungeon.actors.buffs.Poison.durationFactor(defender) * (level + 1))
+            true
+        } else {
+            false
+        }
+    }
 
-public class Poison extends Weapon.Enchantment {
+    fun glowing(): Glowing {
+        return PURPLE
+    }
 
-	private static final String TXT_VENOMOUS	= "venomous %s";
-	
-	private static ItemSprite.Glowing PURPLE = new ItemSprite.Glowing( 0x4400AA );
-	
-	@Override
-	public boolean proc( Weapon weapon, Char attacker, Char defender, int damage ) {
-		// lvl 0 - 33%
-		// lvl 1 - 50%
-		// lvl 2 - 60%
-		int level = Math.max( 0, weapon.effectiveLevel() );
-		
-		if (Random.Int( level + 3 ) >= 2) {
-			
-			Buff.affect( defender, com.watabou.pixeldungeon.actors.buffs.Poison.class ).
-				set( com.watabou.pixeldungeon.actors.buffs.Poison.durationFactor( defender ) * (level + 1) );
-			
-			return true;
-		} else {
-			return false;
-		}
-	}
-	
-	@Override
-	public Glowing glowing() {
-		return PURPLE;
-	}
-	
-	@Override
-	public String name( String weaponName) {
-		return String.format( TXT_VENOMOUS, weaponName );
-	}
+    fun name(weaponName: String?): String {
+        return String.format(TXT_VENOMOUS, weaponName)
+    }
 
+    companion object {
+        private const val TXT_VENOMOUS = "venomous %s"
+        private val PURPLE: ItemSprite.Glowing = Glowing(0x4400AA)
+    }
 }

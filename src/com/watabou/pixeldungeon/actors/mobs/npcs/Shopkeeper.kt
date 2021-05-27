@@ -15,88 +15,68 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.mobs.npcs;
+package com.watabou.pixeldungeon.actors.mobs.npcs
 
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.buffs.Buff;
-import com.watabou.pixeldungeon.effects.CellEmitter;
-import com.watabou.pixeldungeon.effects.particles.ElmoParticle;
-import com.watabou.pixeldungeon.items.Heap;
-import com.watabou.pixeldungeon.items.Item;
-import com.watabou.pixeldungeon.scenes.GameScene;
-import com.watabou.pixeldungeon.sprites.ShopkeeperSprite;
-import com.watabou.pixeldungeon.windows.WndBag;
-import com.watabou.pixeldungeon.windows.WndTradeItem;
+import com.watabou.pixeldungeon.Dungeon
 
-public class Shopkeeper extends NPC {
+class Shopkeeper : NPC() {
+    protected fun act(): Boolean {
+        throwItem()
+        sprite.turnTo(pos, Dungeon.hero.pos)
+        spend(TICK)
+        return true
+    }
 
-	{
-		name = "shopkeeper";
-		spriteClass = ShopkeeperSprite.class;
-	}
-	
-	@Override
-	protected boolean act() {
-		
-		throwItem();
-		
-		sprite.turnTo( pos, Dungeon.hero.pos );
-		spend( TICK );
-		return true;
-	}
-	
-	@Override
-	public void damage( int dmg, Object src ) {
-		flee();
-	}
-	
-	@Override
-	public void add( Buff buff ) {
-		flee();
-	}
-	
-	protected void flee() {
-		for (Heap heap: Dungeon.level.heaps.values()) {
-			if (heap.type == Heap.Type.FOR_SALE) {
-				CellEmitter.get( heap.pos ).burst( ElmoParticle.FACTORY, 4 );
-				heap.destroy();
-			}
-		}
-		
-		destroy();
-		
-		sprite.killAndErase();
-		CellEmitter.get( pos ).burst( ElmoParticle.FACTORY, 6 );
-	}
-	
-	@Override
-	public boolean reset() {
-		return true;
-	}
-	
-	@Override
-	public String description() {
-		return 
-			"This stout guy looks more appropriate for a trade district in some large city " +
-			"than for a dungeon. His prices explain why he prefers to do business here.";
-	}
-	
-	public static WndBag sell() {
-		return GameScene.selectItem( itemSelector, WndBag.Mode.FOR_SALE, "Select an item to sell" );
-	}
-	
-	private static WndBag.Listener itemSelector = new WndBag.Listener() {
-		@Override
-		public void onSelect( Item item ) {
-			if (item != null) {
-				WndBag parentWnd = sell();
-				GameScene.show( new WndTradeItem( item, parentWnd ) );
-			}
-		}
-	};
+    fun damage(dmg: Int, src: Any?) {
+        flee()
+    }
 
-	@Override
-	public void interact() {
-		sell();
-	}
+    fun add(buff: Buff?) {
+        flee()
+    }
+
+    protected fun flee() {
+        for (heap in Dungeon.level.heaps.values()) {
+            if (heap.type === Heap.Type.FOR_SALE) {
+                CellEmitter.get(heap.pos).burst(ElmoParticle.FACTORY, 4)
+                heap.destroy()
+            }
+        }
+        destroy()
+        sprite.killAndErase()
+        CellEmitter.get(pos).burst(ElmoParticle.FACTORY, 6)
+    }
+
+    fun reset(): Boolean {
+        return true
+    }
+
+    fun description(): String {
+        return "This stout guy looks more appropriate for a trade district in some large city " +
+                "than for a dungeon. His prices explain why he prefers to do business here."
+    }
+
+    override fun interact() {
+        sell()
+    }
+
+    companion object {
+        fun sell(): WndBag {
+            return GameScene.selectItem(itemSelector, WndBag.Mode.FOR_SALE, "Select an item to sell")
+        }
+
+        private val itemSelector: WndBag.Listener = object : Listener() {
+            fun onSelect(item: Item?) {
+                if (item != null) {
+                    val parentWnd: WndBag = sell()
+                    GameScene.show(WndTradeItem(item, parentWnd))
+                }
+            }
+        }
+    }
+
+    init {
+        name = "shopkeeper"
+        spriteClass = ShopkeeperSprite::class.java
+    }
 }

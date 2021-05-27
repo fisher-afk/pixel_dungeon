@@ -15,55 +15,42 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.sprites;
+package com.watabou.pixeldungeon.sprites
 
-import com.watabou.noosa.Camera;
-import com.watabou.noosa.TextureFilm;
-import com.watabou.pixeldungeon.Assets;
+import com.watabou.noosa.Camera
 
-public class RottingFistSprite extends MobSprite {
-	
-	private static final float FALL_SPEED	= 64;
-	
-	public RottingFistSprite() {
-		super();
-		
-		texture( Assets.ROTTING );
-		
-		TextureFilm frames = new TextureFilm( texture, 24, 17 );
-		
-		idle = new Animation( 2, true );
-		idle.frames( frames, 0, 0, 1 );
-		
-		run = new Animation( 3, true );
-		run.frames( frames, 0, 1 );
-		
-		attack = new Animation( 2, false );
-		attack.frames( frames, 0 );
-		
-		die = new Animation( 10, false );
-		die.frames( frames, 0, 2, 3, 4 );
-		
-		play( idle );
-	}
-	
-	@Override
-	public void attack( int cell ) {
-		super.attack( cell );
-		
-		speed.set( 0, -FALL_SPEED );
-		acc.set( 0, FALL_SPEED * 4 );
-	}
-	
-	@Override
-	public void onComplete( Animation anim ) {
-		super.onComplete( anim );
-		if (anim == attack) {
-			speed.set( 0 );
-			acc.set( 0 );
-			place( ch.pos );
-			
-			Camera.main.shake( 4, 0.2f );
-		}
-	}
+class RottingFistSprite : MobSprite() {
+    override fun attack(cell: Int) {
+        super.attack(cell)
+        speed.set(0, -FALL_SPEED)
+        acc.set(0, FALL_SPEED * 4)
+    }
+
+    override fun onComplete(anim: Animation) {
+        super.onComplete(anim)
+        if (anim === attack) {
+            speed.set(0)
+            acc.set(0)
+            place(ch.pos)
+            Camera.main.shake(4, 0.2f)
+        }
+    }
+
+    companion object {
+        private const val FALL_SPEED = 64f
+    }
+
+    init {
+        texture(Assets.ROTTING)
+        val frames = TextureFilm(texture, 24, 17)
+        idle = Animation(2, true)
+        idle.frames(frames, 0, 0, 1)
+        run = Animation(3, true)
+        run.frames(frames, 0, 1)
+        attack = Animation(2, false)
+        attack.frames(frames, 0)
+        die = Animation(10, false)
+        die.frames(frames, 0, 2, 3, 4)
+        play(idle)
+    }
 }

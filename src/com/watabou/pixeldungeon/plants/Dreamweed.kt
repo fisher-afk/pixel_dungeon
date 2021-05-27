@@ -15,53 +15,40 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.plants;
+package com.watabou.pixeldungeon.plants
 
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.blobs.Blob;
-import com.watabou.pixeldungeon.actors.blobs.ConfusionGas;
-import com.watabou.pixeldungeon.items.potions.PotionOfInvisibility;
-import com.watabou.pixeldungeon.scenes.GameScene;
-import com.watabou.pixeldungeon.sprites.ItemSpriteSheet;
+class Dreamweed : Plant() {
+    fun activate(ch: Char?) {
+        super.activate(ch)
+        if (ch != null) {
+            GameScene.add(Blob.seed(pos, 400, ConfusionGas::class.java))
+        }
+    }
 
-public class Dreamweed extends Plant {
+    override fun desc(): String {
+        return TXT_DESC
+    }
 
-	private static final String TXT_DESC = 
-		"Upon touching a Dreamweed it secretes a glittering cloud of confusing gas.";
-	
-	{
-		image = 3;
-		plantName = "Dreamweed";
-	}
-	
-	@Override
-	public void activate( Char ch ) {
-		super.activate( ch );
-		
-		if (ch != null) {
-			GameScene.add( Blob.seed( pos, 400, ConfusionGas.class ) );
-		}
-	}
-	
-	@Override
-	public String desc() {
-		return TXT_DESC;
-	}
-	
-	public static class Seed extends Plant.Seed {
-		{
-			plantName = "Dreamweed";
-			
-			name = "seed of " + plantName;
-			image = ItemSpriteSheet.SEED_DREAMWEED;
-			
-			plantClass = Dreamweed.class;
-			alchemyClass = PotionOfInvisibility.class;
-		}
-		
-		@Override
-		public String desc() {
-			return TXT_DESC;
-		}
-	}
+    class Seed : Plant.Seed() {
+        fun desc(): String {
+            return TXT_DESC
+        }
+
+        init {
+            plantName = "Dreamweed"
+            name = "seed of $plantName"
+            image = ItemSpriteSheet.SEED_DREAMWEED
+            plantClass = Dreamweed::class.java
+            alchemyClass = PotionOfInvisibility::class.java
+        }
+    }
+
+    companion object {
+        private const val TXT_DESC = "Upon touching a Dreamweed it secretes a glittering cloud of confusing gas."
+    }
+
+    init {
+        image = 3
+        plantName = "Dreamweed"
+    }
 }

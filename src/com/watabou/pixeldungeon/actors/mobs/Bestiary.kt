@@ -15,176 +15,195 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.mobs;
+package com.watabou.pixeldungeon.actors.mobs
 
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.mobs.Yog.BurningFist;
-import com.watabou.pixeldungeon.actors.mobs.Yog.RottingFist;
-import com.watabou.utils.Random;
+import com.watabou.pixeldungeon.actors.Char
 
-public class Bestiary {
+object Bestiary {
+    fun mob(depth: Int): Mob? {
+        val cl: Class<out Mob?> = mobClass(depth) as Class<out Mob?>
+        return try {
+            cl.newInstance()
+        } catch (e: Exception) {
+            null
+        }
+    }
 
-	public static Mob mob( int depth ) {
-		@SuppressWarnings("unchecked")
-		Class<? extends Mob> cl = (Class<? extends Mob>)mobClass( depth );
-		try {
-			return cl.newInstance();
-		} catch (Exception e) {
-			return null;
-		}
-	}
-	
-	public static Mob mutable( int depth ) {
-		@SuppressWarnings("unchecked")
-		Class<? extends Mob> cl = (Class<? extends Mob>)mobClass( depth );
-		
-		if (Random.Int( 30 ) == 0) {
-			if (cl == Rat.class) {
-				cl = Albino.class;
-			} else if (cl == Thief.class) {
-				cl = Bandit.class;
-			} else if (cl == Brute.class) {
-				cl = Shielded.class;
-			} else if (cl == Monk.class) {
-				cl = Senior.class;
-			} else if (cl == Scorpio.class) {
-				cl = Acidic.class;
-			}
-		}
-		
-		try {
-			return cl.newInstance();
-		} catch (Exception e) {
-			return null;
-		}
-	}
-	
-	private static Class<?> mobClass( int depth ) {
-		
-		float[] chances;
-		Class<?>[] classes;
-		
-		switch (depth) {
-		case 1:
-			chances = new float[]{ 1 };
-			classes = new Class<?>[]{ Rat.class };
-			break;
-		case 2:
-			chances = new float[]{ 1, 1 };
-			classes = new Class<?>[]{ Rat.class, Gnoll.class };
-			break;
-		case 3:
-			chances = new float[]{ 1, 2, 1,   0.02f };
-			classes = new Class<?>[]{ Rat.class, Gnoll.class, Crab.class,   Swarm.class };
-			break;
-		case 4:
-			chances = new float[]{ 1, 2, 3,   0.02f, 0.01f, 0.01f };
-			classes = new Class<?>[]{ Rat.class, Gnoll.class, Crab.class,   Swarm.class, Skeleton.class, Thief.class };
-			break;
-			
-		case 5:
-			chances = new float[]{ 1 };
-			classes = new Class<?>[]{ Goo.class };
-			break;
-			
-		case 6:
-			chances = new float[]{ 4, 2, 1,   0.2f };
-			classes = new Class<?>[]{ Skeleton.class, Thief.class, Swarm.class,   Shaman.class };
-			break;
-		case 7:
-			chances = new float[]{ 3, 1, 1, 1 };
-			classes = new Class<?>[]{ Skeleton.class, Shaman.class, Thief.class, Swarm.class };
-			break;
-		case 8:
-			chances = new float[]{ 3, 2, 1, 1, 1,   0.02f };
-			classes = new Class<?>[]{ Skeleton.class, Shaman.class, Gnoll.class, Thief.class, Swarm.class,   Bat.class };
-			break;
-		case 9:
-			chances = new float[]{ 3, 3, 1, 1,   0.02f, 0.01f };
-			classes = new Class<?>[]{ Skeleton.class, Shaman.class, Thief.class, Swarm.class,   Bat.class, Brute.class };
-			break;
-			
-		case 10:
-			chances = new float[]{ 1 };
-			classes = new Class<?>[]{ Tengu.class };
-			break;
-			
-		case 11:
-			chances = new float[]{ 1,   0.2f };
-			classes = new Class<?>[]{ Bat.class,   Brute.class };
-			break;
-		case 12:
-			chances = new float[]{ 1, 1,   0.2f };
-			classes = new Class<?>[]{ Bat.class, Brute.class,   Spinner.class };
-			break;
-		case 13:
-			chances = new float[]{ 1, 3, 1, 1,   0.02f };
-			classes = new Class<?>[]{ Bat.class, Brute.class, Shaman.class, Spinner.class,    Elemental.class };
-			break;
-		case 14:
-			chances = new float[]{ 1, 3, 1, 4,    0.02f, 0.01f };
-			classes = new Class<?>[]{ Bat.class, Brute.class, Shaman.class, Spinner.class,    Elemental.class, Monk.class };
-			break;
-			
-		case 15:
-			chances = new float[]{ 1 };
-			classes = new Class<?>[]{ DM300.class };
-			break;
-			
-		case 16:
-			chances = new float[]{ 1, 1,   0.2f };
-			classes = new Class<?>[]{ Elemental.class, Warlock.class,    Monk.class };
-			break;
-		case 17:
-			chances = new float[]{ 1, 1, 1 };
-			classes = new Class<?>[]{ Elemental.class, Monk.class, Warlock.class };
-			break;
-		case 18:
-			chances = new float[]{ 1, 2, 1, 1 };
-			classes = new Class<?>[]{ Elemental.class, Monk.class, Golem.class, Warlock.class };
-			break;
-		case 19:
-			chances = new float[]{ 1, 2, 3, 1,    0.02f };
-			classes = new Class<?>[]{ Elemental.class, Monk.class, Golem.class, Warlock.class,    Succubus.class };
-			break;
-			
-		case 20:
-			chances = new float[]{ 1 };
-			classes = new Class<?>[]{ King.class };
-			break;
-			
-		case 22:
-			chances = new float[]{ 1, 1 };
-			classes = new Class<?>[]{ Succubus.class, Eye.class };
-			break;
-		case 23:
-			chances = new float[]{ 1, 2, 1 };
-			classes = new Class<?>[]{ Succubus.class, Eye.class, Scorpio.class };
-			break;
-		case 24:
-			chances = new float[]{ 1, 2, 3 };
-			classes = new Class<?>[]{ Succubus.class, Eye.class, Scorpio.class };
-			break;
-			
-		case 25:
-			chances = new float[]{ 1 };
-			classes = new Class<?>[]{ Yog.class };
-			break;
-			
-		default:
-			chances = new float[]{ 1 };
-			classes = new Class<?>[]{ Eye.class };
-		}
-		
-		return classes[ Random.chances( chances )];
-	}
-	
-	public static boolean isBoss( Char mob ) {
-		return 
-			mob instanceof Goo || 
-			mob instanceof Tengu || 
-			mob instanceof DM300 || 
-			mob instanceof King || 
-			mob instanceof Yog || mob instanceof BurningFist || mob instanceof RottingFist;
-	}
+    fun mutable(depth: Int): Mob? {
+        var cl: Class<out Mob?> = mobClass(depth) as Class<out Mob?>
+        if (Random.Int(30) === 0) {
+            if (cl == Rat::class.java) {
+                cl = Albino::class.java
+            } else if (cl == Thief::class.java) {
+                cl = Bandit::class.java
+            } else if (cl == Brute::class.java) {
+                cl = Shielded::class.java
+            } else if (cl == Monk::class.java) {
+                cl = Senior::class.java
+            } else if (cl == Scorpio::class.java) {
+                cl = Acidic::class.java
+            }
+        }
+        return try {
+            cl.newInstance()
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    private fun mobClass(depth: Int): Class<*> {
+        val chances: FloatArray
+        val classes: Array<Class<*>>
+        when (depth) {
+            1 -> {
+                chances = floatArrayOf(1f)
+                classes = arrayOf(Rat::class.java)
+            }
+            2 -> {
+                chances = floatArrayOf(1f, 1f)
+                classes = arrayOf(Rat::class.java, Gnoll::class.java)
+            }
+            3 -> {
+                chances = floatArrayOf(1f, 2f, 1f, 0.02f)
+                classes = arrayOf(Rat::class.java, Gnoll::class.java, Crab::class.java, Swarm::class.java)
+            }
+            4 -> {
+                chances = floatArrayOf(1f, 2f, 3f, 0.02f, 0.01f, 0.01f)
+                classes = arrayOf(
+                    Rat::class.java,
+                    Gnoll::class.java,
+                    Crab::class.java,
+                    Swarm::class.java,
+                    Skeleton::class.java,
+                    Thief::class.java
+                )
+            }
+            5 -> {
+                chances = floatArrayOf(1f)
+                classes = arrayOf(Goo::class.java)
+            }
+            6 -> {
+                chances = floatArrayOf(4f, 2f, 1f, 0.2f)
+                classes = arrayOf(Skeleton::class.java, Thief::class.java, Swarm::class.java, Shaman::class.java)
+            }
+            7 -> {
+                chances = floatArrayOf(3f, 1f, 1f, 1f)
+                classes = arrayOf(Skeleton::class.java, Shaman::class.java, Thief::class.java, Swarm::class.java)
+            }
+            8 -> {
+                chances = floatArrayOf(3f, 2f, 1f, 1f, 1f, 0.02f)
+                classes = arrayOf(
+                    Skeleton::class.java,
+                    Shaman::class.java,
+                    Gnoll::class.java,
+                    Thief::class.java,
+                    Swarm::class.java,
+                    Bat::class.java
+                )
+            }
+            9 -> {
+                chances = floatArrayOf(3f, 3f, 1f, 1f, 0.02f, 0.01f)
+                classes = arrayOf(
+                    Skeleton::class.java,
+                    Shaman::class.java,
+                    Thief::class.java,
+                    Swarm::class.java,
+                    Bat::class.java,
+                    Brute::class.java
+                )
+            }
+            10 -> {
+                chances = floatArrayOf(1f)
+                classes = arrayOf(Tengu::class.java)
+            }
+            11 -> {
+                chances = floatArrayOf(1f, 0.2f)
+                classes = arrayOf(Bat::class.java, Brute::class.java)
+            }
+            12 -> {
+                chances = floatArrayOf(1f, 1f, 0.2f)
+                classes = arrayOf(Bat::class.java, Brute::class.java, Spinner::class.java)
+            }
+            13 -> {
+                chances = floatArrayOf(1f, 3f, 1f, 1f, 0.02f)
+                classes = arrayOf(
+                    Bat::class.java,
+                    Brute::class.java,
+                    Shaman::class.java,
+                    Spinner::class.java,
+                    Elemental::class.java
+                )
+            }
+            14 -> {
+                chances = floatArrayOf(1f, 3f, 1f, 4f, 0.02f, 0.01f)
+                classes = arrayOf(
+                    Bat::class.java,
+                    Brute::class.java,
+                    Shaman::class.java,
+                    Spinner::class.java,
+                    Elemental::class.java,
+                    Monk::class.java
+                )
+            }
+            15 -> {
+                chances = floatArrayOf(1f)
+                classes = arrayOf(DM300::class.java)
+            }
+            16 -> {
+                chances = floatArrayOf(1f, 1f, 0.2f)
+                classes = arrayOf(Elemental::class.java, Warlock::class.java, Monk::class.java)
+            }
+            17 -> {
+                chances = floatArrayOf(1f, 1f, 1f)
+                classes = arrayOf(Elemental::class.java, Monk::class.java, Warlock::class.java)
+            }
+            18 -> {
+                chances = floatArrayOf(1f, 2f, 1f, 1f)
+                classes = arrayOf(Elemental::class.java, Monk::class.java, Golem::class.java, Warlock::class.java)
+            }
+            19 -> {
+                chances = floatArrayOf(1f, 2f, 3f, 1f, 0.02f)
+                classes = arrayOf(
+                    Elemental::class.java,
+                    Monk::class.java,
+                    Golem::class.java,
+                    Warlock::class.java,
+                    Succubus::class.java
+                )
+            }
+            20 -> {
+                chances = floatArrayOf(1f)
+                classes = arrayOf(King::class.java)
+            }
+            22 -> {
+                chances = floatArrayOf(1f, 1f)
+                classes = arrayOf(Succubus::class.java, Eye::class.java)
+            }
+            23 -> {
+                chances = floatArrayOf(1f, 2f, 1f)
+                classes = arrayOf(Succubus::class.java, Eye::class.java, Scorpio::class.java)
+            }
+            24 -> {
+                chances = floatArrayOf(1f, 2f, 3f)
+                classes = arrayOf(Succubus::class.java, Eye::class.java, Scorpio::class.java)
+            }
+            25 -> {
+                chances = floatArrayOf(1f)
+                classes = arrayOf(Yog::class.java)
+            }
+            else -> {
+                chances = floatArrayOf(1f)
+                classes = arrayOf(Eye::class.java)
+            }
+        }
+        return classes[Random.chances(chances)]
+    }
+
+    fun isBoss(mob: Char?): Boolean {
+        return mob is Goo ||
+                mob is Tengu ||
+                mob is DM300 ||
+                mob is King ||
+                mob is Yog || mob is BurningFist || mob is RottingFist
+    }
 }

@@ -15,60 +15,47 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.effects;
+package com.watabou.pixeldungeon.effects
 
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Paint;
+import com.watabou.gltextures.SmartTexture
 
-import com.watabou.gltextures.SmartTexture;
-import com.watabou.gltextures.TextureCache;
-import com.watabou.noosa.Image;
+class Halo() : Image() {
+    protected var radius = RADIUS.toFloat()
+    protected var brightness = 1f
 
-public class Halo extends Image {
-	
-	private static final Object CACHE_KEY = Halo.class;
-	
-	protected static final int RADIUS	= 64;
-	
-	protected float radius = RADIUS;
-	protected float brightness = 1;
+    constructor(radius: Float, color: Int, brightness: Float) : this() {
+        hardlight(color)
+        alpha(brightness.also { this.brightness = it })
+        radius(radius)
+    }
 
-	public Halo() {
-		super();
-		
-		if (!TextureCache.contains( CACHE_KEY )) {
-			Bitmap bmp = Bitmap.createBitmap( RADIUS * 2, RADIUS * 2, Bitmap.Config.ARGB_8888 );
-			Canvas canvas = new Canvas( bmp );
-			Paint paint = new Paint();
-			paint.setColor( 0xFFFFFFFF );
-			canvas.drawCircle( RADIUS, RADIUS, RADIUS * 0.75f, paint );
-			paint.setColor( 0x88FFFFFF );
-			canvas.drawCircle( RADIUS, RADIUS, RADIUS, paint );
-			TextureCache.add( CACHE_KEY, new SmartTexture( bmp ) );
-		}
-		
-		texture( CACHE_KEY );
-		
-		origin.set( RADIUS );
-	}
-	
-	public Halo( float radius, int color, float brightness ) {
-		
-		this();
-		
-		hardlight( color );
-		alpha( this.brightness = brightness );
-		radius( radius );
-	}
-	
-	public Halo point( float x, float y ) {
-		this.x = x - RADIUS;
-		this.y = y - RADIUS;
-		return this;
-	}
-	
-	public void radius( float value ) {
-		scale.set(  (this.radius = value) / RADIUS );
-	}
+    fun point(x: Float, y: Float): Halo {
+        x = x - RADIUS
+        y = y - RADIUS
+        return this
+    }
+
+    fun radius(value: Float) {
+        scale.set(value.also { radius = it } / RADIUS)
+    }
+
+    companion object {
+        private val CACHE_KEY: Any = Halo::class.java
+        protected const val RADIUS = 64
+    }
+
+    init {
+        if (!TextureCache.contains(CACHE_KEY)) {
+            val bmp: Bitmap = Bitmap.createBitmap(RADIUS * 2, RADIUS * 2, Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(bmp)
+            val paint = Paint()
+            paint.setColor(-0x1)
+            canvas.drawCircle(RADIUS.toFloat(), RADIUS.toFloat(), RADIUS * 0.75f, paint)
+            paint.setColor(-0x77000001)
+            canvas.drawCircle(RADIUS.toFloat(), RADIUS.toFloat(), RADIUS.toFloat(), paint)
+            TextureCache.add(CACHE_KEY, SmartTexture(bmp))
+        }
+        texture(CACHE_KEY)
+        origin.set(RADIUS)
+    }
 }

@@ -15,19 +15,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.buffs;
+package com.watabou.pixeldungeon.actors.buffs
 
-import com.watabou.pixeldungeon.ui.BuffIndicator;
+import com.watabou.pixeldungeon.ui.BuffIndicator
+class Amok : FlavourBuff() {
+    override fun icon(): Int {
+        return BuffIndicator.AMOK
+    }
 
-public class Amok extends FlavourBuff {
-	
-	@Override
-	public int icon() {
-		return BuffIndicator.AMOK;
-	}
-	
-	@Override
-	public String toString() {
-		return "Amok";
-	}
+    override fun toString(): String {
+        return "Amok"
+    }
 }

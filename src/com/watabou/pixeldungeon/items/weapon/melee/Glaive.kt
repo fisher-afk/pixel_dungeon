@@ -15,23 +15,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.weapon.melee;
+package com.watabou.pixeldungeon.items.weapon.melee
 
-import com.watabou.pixeldungeon.sprites.ItemSpriteSheet;
+import com.watabou.pixeldungeon.sprites.ItemSpriteSheet
 
-public class Glaive extends MeleeWeapon {
+class Glaive : MeleeWeapon(5, 1f, 1f) {
+    fun desc(): String {
+        return "A polearm consisting of a sword blade on the end of a pole."
+    }
 
-	{
-		name = "glaive";
-		image = ItemSpriteSheet.GLAIVE;
-	}
-	
-	public Glaive() {
-		super( 5, 1f, 1f );
-	}
-	
-	@Override
-	public String desc() {
-		return "A polearm consisting of a sword blade on the end of a pole.";
-	}
+    init {
+        name = "glaive"
+        image = ItemSpriteSheet.GLAIVE
+    }
 }

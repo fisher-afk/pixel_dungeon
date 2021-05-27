@@ -15,31 +15,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.buffs;
+package com.watabou.pixeldungeon.actors.buffs
 
-import java.util.HashSet;
+import com.watabou.pixeldungeon.actors.blobs.ToxicGas
 
-import com.watabou.pixeldungeon.actors.blobs.ToxicGas;
-import com.watabou.pixeldungeon.ui.BuffIndicator;
+class GasesImmunity : FlavourBuff() {
+    override fun icon(): Int {
+        return BuffIndicator.IMMUNITY
+    }
 
-public class GasesImmunity extends FlavourBuff {
-	
-	public static final float DURATION	= 5f;
-	
-	@Override
-	public int icon() {
-		return BuffIndicator.IMMUNITY;
-	}
-	
-	@Override
-	public String toString() {
-		return "Immune to gases";
-	}
-	
-	public static final HashSet<Class<?>> IMMUNITIES = new HashSet<Class<?>>();
-	static {
-		IMMUNITIES.add( Paralysis.class );
-		IMMUNITIES.add( ToxicGas.class );
-		IMMUNITIES.add( Vertigo.class );
-	}
+    override fun toString(): String {
+        return "Immune to gases"
+    }
+
+    companion object {
+        const val DURATION = 5f
+        val IMMUNITIES = HashSet<Class<*>>()
+
+        init {
+            IMMUNITIES.add(Paralysis::class.java)
+            IMMUNITIES.add(ToxicGas::class.java)
+            IMMUNITIES.add(Vertigo::class.java)
+        }
+    }
 }

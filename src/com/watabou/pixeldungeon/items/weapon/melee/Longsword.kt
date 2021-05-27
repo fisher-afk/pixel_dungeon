@@ -15,23 +15,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.weapon.melee;
+package com.watabou.pixeldungeon.items.weapon.melee
 
-import com.watabou.pixeldungeon.sprites.ItemSpriteSheet;
+import com.watabou.pixeldungeon.sprites.ItemSpriteSheet
 
-public class Longsword extends MeleeWeapon {
-	
-	{
-		name = "longsword";
-		image = ItemSpriteSheet.LONG_SWORD;
-	}
-	
-	public Longsword() {
-		super( 4, 1f, 1f );
-	}
-	
-	@Override
-	public String desc() {
-		return "This towering blade inflicts heavy damage by investing its heft into every cut.";
-	}
+class Longsword : MeleeWeapon(4, 1f, 1f) {
+    fun desc(): String {
+        return "This towering blade inflicts heavy damage by investing its heft into every cut."
+    }
+
+    init {
+        name = "longsword"
+        image = ItemSpriteSheet.LONG_SWORD
+    }
 }

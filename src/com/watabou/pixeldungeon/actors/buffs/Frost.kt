@@ -15,65 +15,50 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.buffs;
+package com.watabou.pixeldungeon.actors.buffs
 
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.hero.Hero;
-import com.watabou.pixeldungeon.items.Item;
-import com.watabou.pixeldungeon.items.food.FrozenCarpaccio;
-import com.watabou.pixeldungeon.items.food.MysteryMeat;
-import com.watabou.pixeldungeon.items.rings.RingOfElements.Resistance;
-import com.watabou.pixeldungeon.ui.BuffIndicator;
+import com.watabou.pixeldungeon.Dungeon
 
-public class Frost extends FlavourBuff {
+class Frost : FlavourBuff() {
+    override fun attachTo(target: Char): Boolean {
+        return if (super.attachTo(target)) {
+            target.paralysed = true
+            Burning.detach(target, Burning::class.java)
+            if (target is Hero) {
+                val hero: Hero = target as Hero
+                var item: Item = hero.belongings.randomUnequipped()
+                if (item is MysteryMeat) {
+                    item = item.detach(hero.belongings.backpack)
+                    val carpaccio = FrozenCarpaccio()
+                    if (!carpaccio.collect(hero.belongings.backpack)) {
+                        Dungeon.level.drop(carpaccio, target.pos).sprite.drop()
+                    }
+                }
+            }
+            true
+        } else {
+            false
+        }
+    }
 
-	private static final float DURATION	= 5f;
-	
-	@Override
-	public boolean attachTo( Char target ) {
-		if (super.attachTo( target )) {
-			
-			target.paralysed = true;
-			Burning.detach( target, Burning.class );
-			
-			if (target instanceof Hero) {
-				Hero hero = (Hero)target;
-				Item item = hero.belongings.randomUnequipped();
-				if (item instanceof MysteryMeat) {
-					
-					item = item.detach( hero.belongings.backpack );
-					FrozenCarpaccio carpaccio = new FrozenCarpaccio(); 
-					if (!carpaccio.collect( hero.belongings.backpack )) {
-						Dungeon.level.drop( carpaccio, target.pos ).sprite.drop();
-					}
-				}
-			}
+    override fun detach() {
+        super.detach()
+        Paralysis.unfreeze(target)
+    }
 
-			return true;
-		} else {
-			return false;
-		}
-	}
-	
-	@Override
-	public void detach() {
-		super.detach();
-		Paralysis.unfreeze( target );
-	}
-	
-	@Override
-	public int icon() {
-		return BuffIndicator.FROST;
-	}
-	
-	@Override
-	public String toString() {
-		return "Frozen";
-	}
-	
-	public static float duration( Char ch ) {
-		Resistance r = ch.buff( Resistance.class );
-		return r != null ? r.durationFactor() * DURATION : DURATION;
-	}
+    override fun icon(): Int {
+        return BuffIndicator.FROST
+    }
+
+    override fun toString(): String {
+        return "Frozen"
+    }
+
+    companion object {
+        private const val DURATION = 5f
+        fun duration(ch: Char): Float {
+            val r: Resistance = ch.buff(Resistance::class.java)
+            return if (r != null) r.durationFactor() * DURATION else DURATION
+        }
+    }
 }

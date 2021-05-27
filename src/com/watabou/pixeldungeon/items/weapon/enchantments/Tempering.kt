@@ -15,33 +15,24 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.weapon.enchantments;
+package com.watabou.pixeldungeon.items.weapon.enchantments
 
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.items.weapon.Weapon;
-import com.watabou.pixeldungeon.sprites.ItemSprite;
-import com.watabou.pixeldungeon.sprites.ItemSprite.Glowing;
+class Tempering : Weapon.Enchantment() {
+    fun proc(weapon: Weapon, attacker: Char?, defender: Char?, damage: Int): Boolean {
+        weapon.polish()
+        return true
+    }
 
-public class Tempering extends Weapon.Enchantment {
+    fun glowing(): Glowing {
+        return GRAY
+    }
 
-	private static final String TXT_TEMPERED	= "tempered %s";
-	
-	private static ItemSprite.Glowing GRAY = new ItemSprite.Glowing( 0xCC8888 );
-	
-	@Override
-	public boolean proc( Weapon weapon, Char attacker, Char defender, int damage ) {
-		weapon.polish();
-		return true;
-	}
-	
-	@Override
-	public Glowing glowing() {
-		return GRAY;
-	}
-	
-	@Override
-	public String name( String weaponName) {
-		return String.format( TXT_TEMPERED, weaponName );
-	}
+    fun name(weaponName: String?): String {
+        return String.format(TXT_TEMPERED, weaponName)
+    }
 
+    companion object {
+        private const val TXT_TEMPERED = "tempered %s"
+        private val GRAY: ItemSprite.Glowing = Glowing(0xCC8888)
+    }
 }

@@ -15,48 +15,40 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.ui;
+package com.watabou.pixeldungeon.ui
 
-import com.watabou.noosa.ColorBlock;
-import com.watabou.noosa.ui.Component;
+import com.watabou.noosa.ColorBlock
 
-public class HealthBar extends Component {
+class HealthBar : Component() {
+    private var hpBg: ColorBlock? = null
+    private var hpLvl: ColorBlock? = null
+    private var level = 0f
+    protected fun createChildren() {
+        hpBg = ColorBlock(1, 1, COLOR_BG)
+        add(hpBg)
+        hpLvl = ColorBlock(1, 1, COLOR_LVL)
+        add(hpLvl)
+        height = HEIGHT
+    }
 
-	private static final int COLOR_BG	= 0xFFCC0000;
-	private static final int COLOR_LVL	= 0xFF00EE00;
-	
-	private static final int HEIGHT	= 2;
-	
-	private ColorBlock hpBg;
-	private ColorBlock hpLvl;
-	
-	private float level;
-	
-	@Override
-	protected void createChildren() {
-		hpBg = new ColorBlock( 1, 1, COLOR_BG );
-		add( hpBg );
-		
-		hpLvl = new ColorBlock( 1, 1, COLOR_LVL );
-		add( hpLvl );
-		
-		height = HEIGHT;
-	}
-	
-	@Override
-	protected void layout() {
-		
-		hpBg.x = hpLvl.x = x;
-		hpBg.y = hpLvl.y = y;
-		
-		hpBg.size( width, HEIGHT );
-		hpLvl.size( width * level, HEIGHT );
-		
-		height = HEIGHT;
-	}
-	
-	public void level( float value ) {
-		level = value;
-		layout();
-	}
+    protected fun layout() {
+        hpLvl.x = x
+        hpBg.x = hpLvl.x
+        hpLvl.y = y
+        hpBg.y = hpLvl.y
+        hpBg.size(width, HEIGHT)
+        hpLvl.size(width * level, HEIGHT)
+        height = HEIGHT
+    }
+
+    fun level(value: Float) {
+        level = value
+        layout()
+    }
+
+    companion object {
+        private const val COLOR_BG = -0x340000
+        private const val COLOR_LVL = -0xff1200
+        private const val HEIGHT = 2
+    }
 }

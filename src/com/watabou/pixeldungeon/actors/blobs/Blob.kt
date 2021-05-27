@@ -15,198 +15,157 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.blobs;
+package com.watabou.pixeldungeon.actors.blobs
 
-import java.util.Arrays;
+import com.watabou.pixeldungeon.Dungeon
 
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.PixelDungeon;
-import com.watabou.pixeldungeon.actors.Actor;
-import com.watabou.pixeldungeon.effects.BlobEmitter;
-import com.watabou.pixeldungeon.levels.Level;
-import com.watabou.pixeldungeon.utils.BArray;
-import com.watabou.utils.Bundle;
+class Blob protected constructor() : Actor() {
+    var volume = 0
+    var cur: IntArray
+    protected var off: IntArray
+    var emitter: BlobEmitter? = null
+    fun storeInBundle(bundle: Bundle) {
+        super.storeInBundle(bundle)
+        if (volume > 0) {
+            var start: Int
+            start = 0
+            while (start < LENGTH) {
+                if (cur[start] > 0) {
+                    break
+                }
+                start++
+            }
+            var end: Int
+            end = LENGTH - 1
+            while (end > start) {
+                if (cur[end] > 0) {
+                    break
+                }
+                end--
+            }
+            bundle.put(START, start)
+            bundle.put(CUR, trim(start, end + 1))
+        }
+    }
 
-public class Blob extends Actor {
-	
-	public static final int WIDTH	= Level.WIDTH;
-	public static final int HEIGHT	= Level.HEIGHT;
-	public static final int LENGTH	= Level.LENGTH;
-	
-	public int volume = 0;
-	
-	public int[] cur;
-	protected int[] off;
-	
-	public BlobEmitter emitter;
-	
-	protected Blob() {
-		
-		cur = new int[LENGTH];
-		off = new int[LENGTH];
-		
-		volume = 0;
-	}
-	
-	private static final String CUR		= "cur";
-	private static final String START	= "start";
-	
-	@Override
-	public void storeInBundle( Bundle bundle ) {
-		super.storeInBundle( bundle );
-		
-		if (volume > 0) {
-		
-			int start;
-			for (start=0; start < LENGTH; start++) {
-				if (cur[start] > 0) {
-					break;
-				}
-			}
-			int end;
-			for (end=LENGTH-1; end > start; end--) {
-				if (cur[end] > 0) {
-					break;
-				}
-			}
-			
-			bundle.put( START, start );
-			bundle.put( CUR, trim( start, end + 1 ) );
-			
-		}
-	}
-	
-	private int[] trim( int start, int end ) {
-		int len = end - start;
-		int[] copy = new int[len];
-		System.arraycopy( cur, start, copy, 0, len );
-		return copy;
-	}
-	
-	@Override
-	public void restoreFromBundle( Bundle bundle ) {
-		
-		super.restoreFromBundle( bundle );
-		
-		int[] data = bundle.getIntArray( CUR );
-		if (data != null) {
-			int start = bundle.getInt( START );	
-			for (int i=0; i < data.length; i++) {
-				cur[i + start] = data[i];
-				volume += data[i];
-			}
-		}
-		
-		if (Level.resizingNeeded) {
-			int[] cur = new int[Level.LENGTH];
-			Arrays.fill( cur, 0 );
-			
-			int loadedMapSize = Level.loadedMapSize;
-			for (int i=0; i < loadedMapSize; i++) {
-				System.arraycopy( this.cur, i * loadedMapSize, cur, i * Level.WIDTH, loadedMapSize );
-			}
-			
-			this.cur = cur;
-		}
-	}
-	
-	@Override
-	public boolean act() {
-		
-		spend( TICK );
-		
-		if (volume > 0) {
+    private fun trim(start: Int, end: Int): IntArray {
+        val len = end - start
+        val copy = IntArray(len)
+        System.arraycopy(cur, start, copy, 0, len)
+        return copy
+    }
 
-			volume = 0;
-			evolve();
-			
-			int[] tmp = off;
-			off = cur;
-			cur = tmp;
-			
-		}
-		
-		return true;
-	}
-	
-	public void use( BlobEmitter emitter ) {
-		this.emitter = emitter;
-	}
-	
-	protected void evolve() {
-		
-		boolean[] notBlocking = BArray.not( Level.solid, null );
-		
-		for (int i=1; i < HEIGHT-1; i++) {
-			
-			int from = i * WIDTH + 1;
-			int to = from + WIDTH - 2;
-			
-			for (int pos=from; pos < to; pos++) {
-				if (notBlocking[pos]) {
-					
-					int count = 1;
-					int sum = cur[pos];
-					
-					if (notBlocking[pos-1]) {
-						sum += cur[pos-1];
-						count++;
-					}
-					if (notBlocking[pos+1]) {
-						sum += cur[pos+1];
-						count++;
-					}
-					if (notBlocking[pos-WIDTH]) {
-						sum += cur[pos-WIDTH];
-						count++;
-					}
-					if (notBlocking[pos+WIDTH]) {
-						sum += cur[pos+WIDTH];
-						count++;
-					}
-					
-					int value = sum >= count ? (sum / count) - 1 : 0;
-					off[pos] = value;
-					
-					volume += value;
-				} else {
-					off[pos] = 0;
-				}
-			}
-		}
-	}
-	
-	public void seed( int cell, int amount ) {
-		cur[cell] += amount;
-		volume += amount;
-	}
-	
-	public void clear( int cell ) {
-		volume -= cur[cell];
-		cur[cell] = 0;
-	}
-	
-	public String tileDesc() {
-		return null;
-	}
-	
-	@SuppressWarnings("unchecked")
-	public static<T extends Blob> T seed( int cell, int amount, Class<T> type ) {
-		try {
-			
-			T gas = (T)Dungeon.level.blobs.get( type );
-			if (gas == null) {
-				gas = type.newInstance();
-				Dungeon.level.blobs.put( type, gas );
-			}
-			
-			gas.seed( cell, amount );
-			
-			return gas;
-			
-		} catch (Exception e) {
-			PixelDungeon.reportException( e );
-			return null;
-		}
-	}
+    fun restoreFromBundle(bundle: Bundle) {
+        super.restoreFromBundle(bundle)
+        val data: IntArray = bundle.getIntArray(CUR)
+        if (data != null) {
+            val start: Int = bundle.getInt(START)
+            for (i in data.indices) {
+                cur[i + start] = data[i]
+                volume += data[i]
+            }
+        }
+        if (Level.resizingNeeded) {
+            val cur = IntArray(Level.LENGTH)
+            Arrays.fill(cur, 0)
+            val loadedMapSize: Int = Level.loadedMapSize
+            for (i in 0 until loadedMapSize) {
+                System.arraycopy(this.cur, i * loadedMapSize, cur, i * Level.WIDTH, loadedMapSize)
+            }
+            this.cur = cur
+        }
+    }
+
+    fun act(): Boolean {
+        spend(TICK)
+        if (volume > 0) {
+            volume = 0
+            evolve()
+            val tmp = off
+            off = cur
+            cur = tmp
+        }
+        return true
+    }
+
+    fun use(emitter: BlobEmitter?) {
+        this.emitter = emitter
+    }
+
+    protected fun evolve() {
+        val notBlocking: BooleanArray = BArray.not(Level.solid, null)
+        for (i in 1 until HEIGHT - 1) {
+            val from = i * WIDTH + 1
+            val to = from + WIDTH - 2
+            for (pos in from until to) {
+                if (notBlocking[pos]) {
+                    var count = 1
+                    var sum = cur[pos]
+                    if (notBlocking[pos - 1]) {
+                        sum += cur[pos - 1]
+                        count++
+                    }
+                    if (notBlocking[pos + 1]) {
+                        sum += cur[pos + 1]
+                        count++
+                    }
+                    if (notBlocking[pos - WIDTH]) {
+                        sum += cur[pos - WIDTH]
+                        count++
+                    }
+                    if (notBlocking[pos + WIDTH]) {
+                        sum += cur[pos + WIDTH]
+                        count++
+                    }
+                    val value = if (sum >= count) sum / count - 1 else 0
+                    off[pos] = value
+                    volume += value
+                } else {
+                    off[pos] = 0
+                }
+            }
+        }
+    }
+
+    fun seed(cell: Int, amount: Int) {
+        cur[cell] += amount
+        volume += amount
+    }
+
+    fun clear(cell: Int) {
+        volume -= cur[cell]
+        cur[cell] = 0
+    }
+
+    fun tileDesc(): String? {
+        return null
+    }
+
+    companion object {
+        val WIDTH: Int = Level.WIDTH
+        val HEIGHT: Int = Level.HEIGHT
+        val LENGTH: Int = Level.LENGTH
+        private const val CUR = "cur"
+        private const val START = "start"
+        fun <T : Blob?> seed(cell: Int, amount: Int, type: Class<T>): T? {
+            return try {
+                var gas: T? = Dungeon.level.blobs.get(type)
+                if (gas == null) {
+                    gas = type.newInstance()
+                    Dungeon.level.blobs.put(type, gas)
+                }
+                gas!!.seed(cell, amount)
+                gas
+            } catch (e: Exception) {
+                PixelDungeon.reportException(e)
+                null
+            }
+        }
+    }
+
+    init {
+        cur = IntArray(LENGTH)
+        off = IntArray(LENGTH)
+        volume = 0
+    }
 }

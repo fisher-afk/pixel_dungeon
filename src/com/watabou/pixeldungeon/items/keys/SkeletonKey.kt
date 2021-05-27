@@ -15,21 +15,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.keys;
+package com.watabou.pixeldungeon.items.keys
 
-import com.watabou.pixeldungeon.sprites.ItemSpriteSheet;
+import com.watabou.pixeldungeon.sprites.ItemSpriteSheet
 
-public class SkeletonKey extends Key {
-	
-	{
-		name = "skeleton key";
-		image = ItemSpriteSheet.SKELETON_KEY;
-	}
-	
-	@Override
-	public String info() {
-		return 
-			"This key looks serious: its head is shaped like a skull. " +
-			"Probably it can open some serious door.";
-	}
+class SkeletonKey : Key() {
+    fun info(): String {
+        return "This key looks serious: its head is shaped like a skull. " +
+                "Probably it can open some serious door."
+    }
+
+    init {
+        name = "skeleton key"
+        image = ItemSpriteSheet.SKELETON_KEY
+    }
 }

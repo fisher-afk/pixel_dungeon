@@ -15,44 +15,36 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.buffs;
+package com.watabou.pixeldungeon.actors.buffs
 
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.ResultDescriptions;
-import com.watabou.pixeldungeon.levels.Level;
-import com.watabou.pixeldungeon.ui.BuffIndicator;
-import com.watabou.pixeldungeon.utils.GLog;
-import com.watabou.pixeldungeon.utils.Utils;
+import com.watabou.pixeldungeon.Dungeon
 
-public class Ooze extends Buff {
-	
-	private static final String TXT_HERO_KILLED = "%s killed you...";
-	
-	public int damage	= 1;
-	
-	@Override
-	public int icon() {
-		return BuffIndicator.OOZE;
-	}
-	
-	@Override
-	public String toString() {
-		return "Caustic ooze";
-	}
-	
-	@Override
-	public boolean act() {
-		if (target.isAlive()) {
-			target.damage( damage, this );
-			if (!target.isAlive() && target == Dungeon.hero) {
-				Dungeon.fail( Utils.format( ResultDescriptions.OOZE, Dungeon.depth ) );
-				GLog.n( TXT_HERO_KILLED, toString() );
-			}
-			spend( TICK );
-		}
-		if (Level.water[target.pos]) {
-			detach();
-		}
-		return true;
-	}
+class Ooze : Buff() {
+    var damage = 1
+    override fun icon(): Int {
+        return BuffIndicator.OOZE
+    }
+
+    override fun toString(): String {
+        return "Caustic ooze"
+    }
+
+    override fun act(): Boolean {
+        if (target.isAlive()) {
+            target.damage(damage, this)
+            if (!target.isAlive() && target === Dungeon.hero) {
+                Dungeon.fail(Utils.format(ResultDescriptions.OOZE, Dungeon.depth))
+                GLog.n(TXT_HERO_KILLED, toString())
+            }
+            spend(TICK)
+        }
+        if (Level.water.get(target.pos)) {
+            detach()
+        }
+        return true
+    }
+
+    companion object {
+        private const val TXT_HERO_KILLED = "%s killed you..."
+    }
 }

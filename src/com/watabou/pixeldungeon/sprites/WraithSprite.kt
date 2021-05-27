@@ -15,37 +15,25 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.sprites;
+package com.watabou.pixeldungeon.sprites
 
-import com.watabou.noosa.TextureFilm;
-import com.watabou.pixeldungeon.Assets;
+import com.watabou.noosa.TextureFilm
+class WraithSprite : MobSprite() {
+    override fun blood(): Int {
+        return -0x78000000
+    }
 
-public class WraithSprite extends MobSprite {
-	
-	public WraithSprite() {
-		super();
-		
-		texture( Assets.WRAITH );
-		
-		TextureFilm frames = new TextureFilm( texture, 14, 15 );
-		
-		idle = new Animation( 5, true );
-		idle.frames( frames, 0, 1 );
-		
-		run = new Animation( 10, true );
-		run.frames( frames, 0, 1 );
-		
-		attack = new Animation( 10, false );
-		attack.frames( frames, 0, 2, 3 );
-		
-		die = new Animation( 8, false );
-		die.frames( frames, 0, 4, 5, 6, 7 );
-		
-		play( idle );
-	}
-	
-	@Override
-	public int blood() {
-		return 0x88000000;
-	}
+    init {
+        texture(Assets.WRAITH)
+        val frames = TextureFilm(texture, 14, 15)
+        idle = Animation(5, true)
+        idle.frames(frames, 0, 1)
+        run = Animation(10, true)
+        run.frames(frames, 0, 1)
+        attack = Animation(10, false)
+        attack.frames(frames, 0, 2, 3)
+        die = Animation(8, false)
+        die.frames(frames, 0, 4, 5, 6, 7)
+        play(idle)
+    }
 }

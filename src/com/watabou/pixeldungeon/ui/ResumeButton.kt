@@ -15,53 +15,39 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.ui;
+package com.watabou.pixeldungeon.ui
 
-import com.watabou.noosa.Image;
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.scenes.PixelScene;
+import com.watabou.noosa.Image
 
-public class ResumeButton extends Tag {
-	
-	private Image icon;
-	
-	public ResumeButton() {
-		super( 0xCDD5C0 );
-		
-		setSize( 24, 22 );
-		
-		visible = false;
-	}
-	
-	@Override
-	protected void createChildren() {
-		super.createChildren();
-		
-		icon = Icons.get( Icons.RESUME );
-		add( icon );
-	}
-	
-	@Override
-	protected void layout() {
-		super.layout();
-		
-		icon.x = PixelScene.align( PixelScene.uiCamera, x+1 + (width - icon.width) / 2 );
-		icon.y = PixelScene.align( PixelScene.uiCamera, y + (height - icon.height) / 2 );
-	}
-	
-	@Override
-	public void update() {
-		boolean prevVisible = visible;
-		visible = (Dungeon.hero.lastAction != null);
-		if (visible && !prevVisible) {
-			flash();
-		}
+class ResumeButton : Tag(0xCDD5C0) {
+    private var icon: Image? = null
+    protected override fun createChildren() {
+        super.createChildren()
+        icon = Icons.get(Icons.RESUME)
+        add(icon)
+    }
 
-		super.update();
-	}
-	
-	@Override
-	protected void onClick() {
-		Dungeon.hero.resume();
-	}
+    protected override fun layout() {
+        super.layout()
+        icon.x = PixelScene.align(PixelScene.uiCamera, x + 1 + (width - icon.width) / 2)
+        icon.y = PixelScene.align(PixelScene.uiCamera, y + (height - icon.height) / 2)
+    }
+
+    override fun update() {
+        val prevVisible: Boolean = visible
+        visible = Dungeon.hero.lastAction != null
+        if (visible && !prevVisible) {
+            flash()
+        }
+        super.update()
+    }
+
+    protected fun onClick() {
+        Dungeon.hero.resume()
+    }
+
+    init {
+        setSize(24, 22)
+        visible = false
+    }
 }

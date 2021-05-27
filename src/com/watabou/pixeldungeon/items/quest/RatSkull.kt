@@ -15,38 +15,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.quest;
+package com.watabou.pixeldungeon.items.quest
 
-import com.watabou.pixeldungeon.items.Item;
-import com.watabou.pixeldungeon.sprites.ItemSpriteSheet;
+import com.watabou.pixeldungeon.items.Item
 
-public class RatSkull extends Item {
-	
-	{
-		name = "giant rat skull";
-		image = ItemSpriteSheet.SKULL;
-		
-		unique = true;
-	}
-	
-	@Override
-	public boolean isUpgradable() {
-		return false;
-	}
-	
-	@Override
-	public boolean isIdentified() {
-		return true;
-	}
-	
-	@Override
-	public String info() {
-		return
-			"It could be a nice hunting trophy, but it smells too bad to place it on a wall.";
-	}
-	
-	@Override
-	public int price() {
-		return 100;
-	}
+class RatSkull : Item() {
+    override val isUpgradable: Boolean
+        get() = false
+    override val isIdentified: Boolean
+        get() = true
+
+    override fun info(): String {
+        return "It could be a nice hunting trophy, but it smells too bad to place it on a wall."
+    }
+
+    override fun price(): Int {
+        return 100
+    }
+
+    init {
+        name = "giant rat skull"
+        image = ItemSpriteSheet.SKULL
+        unique = true
+    }
 }

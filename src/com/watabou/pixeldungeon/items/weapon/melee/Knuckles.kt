@@ -15,23 +15,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.weapon.melee;
+package com.watabou.pixeldungeon.items.weapon.melee
 
-import com.watabou.pixeldungeon.sprites.ItemSpriteSheet;
+import com.watabou.pixeldungeon.sprites.ItemSpriteSheet
 
-public class Knuckles extends MeleeWeapon {
+class Knuckles : MeleeWeapon(1, 1f, 0.5f) {
+    fun desc(): String {
+        return "A piece of iron shaped to fit around the knuckles."
+    }
 
-	{
-		name = "knuckleduster";
-		image = ItemSpriteSheet.KNUCKLEDUSTER;
-	}
-	
-	public Knuckles() {
-		super( 1, 1f, 0.5f );
-	}
-	
-	@Override
-	public String desc() {
-		return "A piece of iron shaped to fit around the knuckles.";
-	}
+    init {
+        name = "knuckleduster"
+        image = ItemSpriteSheet.KNUCKLEDUSTER
+    }
 }

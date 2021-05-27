@@ -15,34 +15,22 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.levels.traps;
+package com.watabou.pixeldungeon.levels.traps
 
-import com.watabou.noosa.audio.Sample;
-import com.watabou.pixeldungeon.Assets;
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.mobs.Mob;
-import com.watabou.pixeldungeon.effects.CellEmitter;
-import com.watabou.pixeldungeon.effects.Speck;
-import com.watabou.pixeldungeon.utils.GLog;
+import com.watabou.noosa.audio.Sample
 
-public class AlarmTrap {
-
-	// 0xDD3333
-	
-	public static void trigger( int pos, Char ch ) {
-		
-		for (Mob mob : Dungeon.level.mobs) {
-			if (mob != ch) {
-				mob.beckon( pos );
-			}
-		}
-		
-		if (Dungeon.visible[pos]) {
-			GLog.w( "The trap emits a piercing sound that echoes throughout the dungeon!" );
-			CellEmitter.center( pos ).start( Speck.factory( Speck.SCREAM ), 0.3f, 3 );
-		}
-		
-		Sample.INSTANCE.play( Assets.SND_ALERT );
-	}
+object AlarmTrap {
+    // 0xDD3333
+    fun trigger(pos: Int, ch: Char) {
+        for (mob in Dungeon.level.mobs) {
+            if (mob !== ch) {
+                mob.beckon(pos)
+            }
+        }
+        if (Dungeon.visible.get(pos)) {
+            GLog.w("The trap emits a piercing sound that echoes throughout the dungeon!")
+            CellEmitter.center(pos).start(Speck.factory(Speck.SCREAM), 0.3f, 3)
+        }
+        Sample.INSTANCE.play(Assets.SND_ALERT)
+    }
 }

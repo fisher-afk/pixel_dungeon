@@ -15,89 +15,62 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.scrolls;
+package com.watabou.pixeldungeon.items.scrolls
 
-import com.watabou.noosa.audio.Sample;
-import com.watabou.pixeldungeon.Assets;
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.buffs.Invisibility;
-import com.watabou.pixeldungeon.effects.CellEmitter;
-import com.watabou.pixeldungeon.effects.Speck;
-import com.watabou.pixeldungeon.effects.SpellSprite;
-import com.watabou.pixeldungeon.levels.Level;
-import com.watabou.pixeldungeon.levels.Terrain;
-import com.watabou.pixeldungeon.scenes.GameScene;
-import com.watabou.pixeldungeon.utils.GLog;
+import com.watabou.noosa.audio.Sample
 
-public class ScrollOfMagicMapping extends Scroll {
+class ScrollOfMagicMapping : Scroll() {
+    protected override fun doRead() {
+        val length: Int = Level.LENGTH
+        val map: IntArray = Dungeon.level.map
+        val mapped: BooleanArray = Dungeon.level.mapped
+        val discoverable: BooleanArray = Level.discoverable
+        var noticed = false
+        for (i in 0 until length) {
+            val terr = map[i]
+            if (discoverable[i]) {
+                mapped[i] = true
+                if (Terrain.flags.get(terr) and Terrain.SECRET !== 0) {
+                    Level.set(i, Terrain.discover(terr))
+                    GameScene.updateMap(i)
+                    if (Dungeon.visible.get(i)) {
+                        GameScene.discoverTile(i, terr)
+                        discover(i)
+                        noticed = true
+                    }
+                }
+            }
+        }
+        Dungeon.observe()
+        GLog.i(TXT_LAYOUT)
+        if (noticed) {
+            Sample.INSTANCE.play(Assets.SND_SECRET)
+        }
+        SpellSprite.show(curUser, SpellSprite.MAP)
+        Sample.INSTANCE.play(Assets.SND_READ)
+        Invisibility.dispel()
+        setKnown()
+        readAnimation()
+    }
 
-	private static final String TXT_LAYOUT = "You are now aware of the level layout.";
-	
-	{
-		name = "Scroll of Magic Mapping";
-	}
-	
-	@Override
-	protected void doRead() {
-		
-		int length = Level.LENGTH;
-		int[] map = Dungeon.level.map;
-		boolean[] mapped = Dungeon.level.mapped;
-		boolean[] discoverable = Level.discoverable;
+    fun desc(): String {
+        return "When this scroll is read, an image of crystal clarity will be etched into your memory, " +
+                "alerting you to the precise layout of the level and revealing all hidden secrets. " +
+                "The locations of items and creatures will remain unknown."
+    }
 
-		boolean noticed = false;
-		
-		for (int i=0; i < length; i++) {
-			
-			int terr = map[i];
-			
-			if (discoverable[i]) {
-				
-				mapped[i] = true;
-				if ((Terrain.flags[terr] & Terrain.SECRET) != 0) {
-					
-					Level.set( i, Terrain.discover( terr ) );						
-					GameScene.updateMap( i );
-					
-					if (Dungeon.visible[i]) {
-						GameScene.discoverTile( i, terr );
-						discover( i );
-						
-						noticed = true;
-					}
-				}
-			}
-		}
-		Dungeon.observe();
-		
-		GLog.i( TXT_LAYOUT );
-		if (noticed) {
-			Sample.INSTANCE.play( Assets.SND_SECRET );
-		}
-		
-		SpellSprite.show( curUser, SpellSprite.MAP );
-		Sample.INSTANCE.play( Assets.SND_READ );
-		Invisibility.dispel();
-		
-		setKnown();
-		
-		readAnimation();
-	}
-	
-	@Override
-	public String desc() {
-		return
-			"When this scroll is read, an image of crystal clarity will be etched into your memory, " +
-			"alerting you to the precise layout of the level and revealing all hidden secrets. " +
-			"The locations of items and creatures will remain unknown.";
-	}
-	
-	@Override
-	public int price() {
-		return isKnown() ? 25 * quantity : super.price();
-	}
-	
-	public static void discover( int cell ) {
-		CellEmitter.get( cell ).start( Speck.factory( Speck.DISCOVER ), 0.1f, 4 );
-	}
+    override fun price(): Int {
+        return if (isKnown()) 25 * quantity else super.price()
+    }
+
+    companion object {
+        private const val TXT_LAYOUT = "You are now aware of the level layout."
+        fun discover(cell: Int) {
+            CellEmitter.get(cell).start(Speck.factory(Speck.DISCOVER), 0.1f, 4)
+        }
+    }
+
+    init {
+        name = "Scroll of Magic Mapping"
+    }
 }

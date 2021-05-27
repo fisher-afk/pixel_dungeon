@@ -15,66 +15,47 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.weapon.missiles;
+package com.watabou.pixeldungeon.items.weapon.missiles
 
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.buffs.Buff;
-import com.watabou.pixeldungeon.actors.buffs.Paralysis;
-import com.watabou.pixeldungeon.items.Item;
-import com.watabou.pixeldungeon.sprites.ItemSpriteSheet;
-import com.watabou.utils.Random;
+class CurareDart @JvmOverloads constructor(number: Int = 1) : MissileWeapon() {
+    fun min(): Int {
+        return 1
+    }
 
-public class CurareDart extends MissileWeapon {
+    fun max(): Int {
+        return 3
+    }
 
-	public static final float DURATION	= 3f;
-	
-	{
-		name = "curare dart";
-		image = ItemSpriteSheet.CURARE_DART;
-		
-		STR = 14;
-	}
-	
-	public CurareDart() {
-		this( 1 );
-	}
-	
-	public CurareDart( int number ) {
-		super();
-		quantity = number;
-	}
-	
-	@Override
-	public int min() {
-		return 1;
-	}
-	
-	@Override
-	public int max() {
-		return 3;
-	}
-	
-	@Override
-	public void proc( Char attacker, Char defender, int damage ) {
-		Buff.prolong( defender, Paralysis.class, DURATION );
-		super.proc( attacker, defender, damage );
-	}
-	
-	@Override
-	public String desc() {
-		return 
-			"These little evil darts don't do much damage but they can paralyze " +
-			"the target leaving it helpless and motionless for some time.";
-	}
-	
-	@Override
-	public Item random() {
-		quantity = Random.Int( 2, 5 );
-		return this;
-	}
-	
-	@Override
-	public int price() {
-		return 12 * quantity;
-	}
+    fun proc(attacker: Char, defender: Char?, damage: Int) {
+        Buff.prolong(defender, Paralysis::class.java, DURATION)
+        super.proc(attacker, defender, damage)
+    }
+
+    fun desc(): String {
+        return "These little evil darts don't do much damage but they can paralyze " +
+                "the target leaving it helpless and motionless for some time."
+    }
+
+    override fun random(): Item {
+        quantity = Random.Int(2, 5)
+        return this
+    }
+
+    fun price(): Int {
+        return 12 * quantity
+    }
+
+    companion object {
+        const val DURATION = 3f
+    }
+
+    init {
+        name = "curare dart"
+        image = ItemSpriteSheet.CURARE_DART
+        STR = 14
+    }
+
+    init {
+        quantity = number
+    }
 }

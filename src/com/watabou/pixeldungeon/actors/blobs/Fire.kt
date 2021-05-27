@@ -15,99 +15,72 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.blobs;
+package com.watabou.pixeldungeon.actors.blobs
 
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.Actor;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.buffs.Buff;
-import com.watabou.pixeldungeon.actors.buffs.Burning;
-import com.watabou.pixeldungeon.effects.BlobEmitter;
-import com.watabou.pixeldungeon.effects.particles.FlameParticle;
-import com.watabou.pixeldungeon.items.Heap;
-import com.watabou.pixeldungeon.levels.Level;
-import com.watabou.pixeldungeon.scenes.GameScene;
+import com.watabou.pixeldungeon.Dungeon
 
-public class Fire extends Blob {
-	
-	@Override
-	protected void evolve() {
+class Fire : Blob() {
+    protected override fun evolve() {
+        val flamable: BooleanArray = Level.flamable
+        val from: Int = WIDTH + 1
+        val to: Int = Level.LENGTH - WIDTH - 1
+        var observe = false
+        for (pos in from until to) {
+            var fire: Int
+            if (cur.get(pos) > 0) {
+                burn(pos)
+                fire = cur.get(pos) - 1
+                if (fire <= 0 && flamable[pos]) {
+                    val oldTile: Int = Dungeon.level.map.get(pos)
+                    Dungeon.level.destroy(pos)
+                    observe = true
+                    GameScene.updateMap(pos)
+                    if (Dungeon.visible.get(pos)) {
+                        GameScene.discoverTile(pos, oldTile)
+                    }
+                }
+            } else {
+                if (flamable[pos] && (cur.get(pos - 1) > 0 || cur.get(pos + 1) > 0 || cur.get(pos - WIDTH) > 0 || cur.get(
+                        pos + WIDTH
+                    ) > 0)
+                ) {
+                    fire = 4
+                    burn(pos)
+                } else {
+                    fire = 0
+                }
+            }
+            volume += fire.also { off.get(pos) = it }
+        }
+        if (observe) {
+            Dungeon.observe()
+        }
+    }
 
-		boolean[] flamable = Level.flamable;
-		
-		int from = WIDTH + 1;
-		int to = Level.LENGTH - WIDTH - 1;
-		
-		boolean observe = false;
-		
-		for (int pos=from; pos < to; pos++) {
-			
-			int fire;
-			
-			if (cur[pos] > 0) {
-				
-				burn( pos );
-				
-				fire = cur[pos] - 1;
-				if (fire <= 0 && flamable[pos]) {
-					
-					int oldTile = Dungeon.level.map[pos];
-					Dungeon.level.destroy( pos );
-					
-					observe = true;
-					GameScene.updateMap( pos );
-					if (Dungeon.visible[pos]) {
-						GameScene.discoverTile( pos, oldTile );
-					}
-				}
-				
-			} else {
-				
-				if (flamable[pos] && (cur[pos-1] > 0 || cur[pos+1] > 0 || cur[pos-WIDTH] > 0 || cur[pos+WIDTH] > 0)) {
-					fire = 4;
-					burn( pos );
-				} else {
-					fire = 0;
-				}
+    private fun burn(pos: Int) {
+        val ch: Char = Actor.findChar(pos)
+        if (ch != null) {
+            Buff.affect(ch, Burning::class.java).reignite(ch)
+        }
+        val heap: Heap = Dungeon.level.heaps.get(pos)
+        if (heap != null) {
+            heap.burn()
+        }
+    }
 
-			}
-			
-			volume += (off[pos] = fire);
+    override fun seed(cell: Int, amount: Int) {
+        if (cur.get(cell) === 0) {
+            volume += amount
+            cur.get(cell) = amount
+        }
+    }
 
-		}
-		
-		if (observe) {
-			Dungeon.observe();
-		}
-	}
-	
-	private void burn( int pos ) {
-		Char ch = Actor.findChar( pos );
-		if (ch != null) {
-			Buff.affect( ch, Burning.class ).reignite( ch );
-		}
-		
-		Heap heap = Dungeon.level.heaps.get( pos );
-		if (heap != null) {
-			heap.burn();
-		}
-	}
-	
-	public void seed( int cell, int amount ) {
-		if (cur[cell] == 0) {
-			volume += amount;
-			cur[cell] = amount;
-		}
-	}
-	
-	@Override
-	public void use( BlobEmitter emitter ) {
-		super.use( emitter );
-		emitter.start( FlameParticle.FACTORY, 0.03f, 0 );
-	}
-	
-	@Override
-	public String tileDesc() {
-		return "A fire is raging here.";
-	}
+    override fun use(emitter: BlobEmitter) {
+        super.use(emitter)
+        emitter.start(FlameParticle.FACTORY, 0.03f, 0)
+    }
+
+    override fun tileDesc(): String {
+        return "A fire is raging here."
+    }
 }

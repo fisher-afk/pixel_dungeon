@@ -15,26 +15,20 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.rings;
+package com.watabou.pixeldungeon.items.rings
 
-public class RingOfHerbalism extends Ring {
+class RingOfHerbalism : Ring() {
+    protected override fun buff(): RingBuff {
+        return Herbalism()
+    }
 
-	{
-		name = "Ring of Herbalism";
-	}
-	
-	@Override
-	protected RingBuff buff( ) {
-		return new Herbalism();
-	}
-	
-	@Override
-	public String desc() {
-		return isKnown() ?
-			"This ring increases your chance to gather dew and seeds from trampled grass." :
-			super.desc();
-	}
-	
-	public class Herbalism extends RingBuff {
-	}
+    override fun desc(): String {
+        return if (isKnown()) "This ring increases your chance to gather dew and seeds from trampled grass." else super.desc()
+    }
+
+    inner class Herbalism : RingBuff()
+
+    init {
+        name = "Ring of Herbalism"
+    }
 }

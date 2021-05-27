@@ -15,25 +15,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.armor;
+package com.watabou.pixeldungeon.items.armor
 
-import com.watabou.pixeldungeon.sprites.ItemSpriteSheet;
+import com.watabou.pixeldungeon.sprites.ItemSpriteSheet
 
+class MailArmor : Armor(3) {
+    fun desc(): String {
+        return "Interlocking metal links make for a tough but flexible suit of armor."
+    }
 
-public class MailArmor extends Armor {
-
-	{
-		name = "mail armor";
-		image = ItemSpriteSheet.ARMOR_MAIL;
-	}
-	
-	public MailArmor() {
-		super( 3 );
-	}
-
-	@Override
-	public String desc() {
-		return 
-			"Interlocking metal links make for a tough but flexible suit of armor.";
-	}
+    init {
+        name = "mail armor"
+        image = ItemSpriteSheet.ARMOR_MAIL
+    }
 }

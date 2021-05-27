@@ -15,139 +15,111 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.mechanics;
+package com.watabou.pixeldungeon.mechanics
 
-import java.util.Arrays;
+import com.watabou.pixeldungeon.levels.Level
 
-import com.watabou.pixeldungeon.levels.Level;
+object ShadowCaster {
+    private const val MAX_DISTANCE = 8
+    private val WIDTH: Int = Level.WIDTH
+    private val HEIGHT: Int = Level.HEIGHT
+    private var distance = 0
+    private var limits: IntArray?
+    private var losBlocking: BooleanArray
+    private var fieldOfView: BooleanArray
+    private var rounding: Array<IntArray?>
+    private val obs = Obstacles()
+    fun castShadow(x: Int, y: Int, fieldOfView: BooleanArray, distance: Int) {
+        losBlocking = Level.losBlocking
+        ShadowCaster.distance = distance
+        limits = rounding[distance]
+        ShadowCaster.fieldOfView = fieldOfView
+        Arrays.fill(fieldOfView, false)
+        fieldOfView[y * WIDTH + x] = true
+        scanSector(x, y, +1, +1, 0, 0)
+        scanSector(x, y, -1, +1, 0, 0)
+        scanSector(x, y, +1, -1, 0, 0)
+        scanSector(x, y, -1, -1, 0, 0)
+        scanSector(x, y, 0, 0, +1, +1)
+        scanSector(x, y, 0, 0, -1, +1)
+        scanSector(x, y, 0, 0, +1, -1)
+        scanSector(x, y, 0, 0, -1, -1)
+    }
 
-public final class ShadowCaster {
+    private fun scanSector(cx: Int, cy: Int, m1: Int, m2: Int, m3: Int, m4: Int) {
+        obs.reset()
+        for (p in 1..distance) {
+            val dq2 = 0.5f / p
+            val pp = limits!![p]
+            for (q in 0..pp) {
+                val x = cx + q * m1 + p * m3
+                val y = cy + p * m2 + q * m4
+                if (y >= 0 && y < HEIGHT && x >= 0 && x < WIDTH) {
+                    val a0 = q.toFloat() / p
+                    val a1 = a0 - dq2
+                    val a2 = a0 + dq2
+                    val pos = y * WIDTH + x
+                    if (obs.isBlocked(a0) && obs.isBlocked(a1) && obs.isBlocked(a2)) {
+                        // Do nothing					
+                    } else {
+                        fieldOfView[pos] = true
+                    }
+                    if (losBlocking[pos]) {
+                        obs.add(a1, a2)
+                    }
+                }
+            }
+            obs.nextRow()
+        }
+    }
 
-	private static final int MAX_DISTANCE = 8;
-	
-	private static final int WIDTH	= Level.WIDTH;
-	private static final int HEIGHT	= Level.HEIGHT;
-	
-	private static int distance;
-	private static int limits[];
-	
-	private static boolean[] losBlocking;
-	private static boolean[] fieldOfView;
-	
-	private static int[][] rounding;
-	static {
-		rounding = new int[MAX_DISTANCE+1][];
-		for (int i=1; i <= MAX_DISTANCE; i++) {
-			rounding[i] = new int[i+1];
-			for (int j=1; j <= i; j++) {
-				rounding[i][j] = (int)Math.min( j, Math.round( i * Math.cos( Math.asin( j / (i + 0.5) ))));
-			}
-		}
-	}
-	
-	private static Obstacles obs = new Obstacles();
-	
-	public static void castShadow( int x, int y, boolean[] fieldOfView, int distance ) {
+    private class Obstacles {
+        private var length = 0
+        private var limit = 0
+        fun reset() {
+            length = 0
+            limit = 0
+        }
 
-		losBlocking = Level.losBlocking;
-		
-		ShadowCaster.distance = distance;
-		limits = rounding[distance];
-		
-		ShadowCaster.fieldOfView = fieldOfView;
-		Arrays.fill( fieldOfView, false );
-		fieldOfView[y * WIDTH + x] = true;
-		
-		scanSector( x, y, +1, +1, 0, 0 );
-		scanSector( x, y, -1, +1, 0, 0 );
-		scanSector( x, y, +1, -1, 0, 0 );
-		scanSector( x, y, -1, -1, 0, 0 );
-		scanSector( x, y, 0, 0, +1, +1 );
-		scanSector( x, y, 0, 0, -1, +1 );
-		scanSector( x, y, 0, 0, +1, -1 );
-		scanSector( x, y, 0, 0, -1, -1 );
-	}
-	
-	private static void scanSector( int cx, int cy, int m1, int m2, int m3, int m4 ) {
-		
-		obs.reset();
-		
-		for (int p=1; p <= distance; p++) {
+        fun add(o1: Float, o2: Float) {
+            if (length > limit && o1 <= a2[length - 1]) {
 
-			float dq2 = 0.5f / p;
-			
-			int pp = limits[p];
-			for (int q=0; q <= pp; q++) {
-				
-				int x = cx + q * m1 + p * m3;
-				int y = cy + p * m2 + q * m4;
-				
-				if (y >= 0 && y < HEIGHT && x >= 0 && x < WIDTH) {
-					
-					float a0 = (float)q / p;
-					float a1 = a0 - dq2;
-					float a2 = a0 + dq2;
-					
-					int pos = y * WIDTH + x;
-	
-					if (obs.isBlocked( a0 ) && obs.isBlocked( a1 ) && obs.isBlocked( a2 )) {
-						// Do nothing					
-					} else {
-						fieldOfView[pos] = true;
-					}
-					
-					if (losBlocking[pos]) {
-						obs.add( a1, a2 );
-					}
+                // Merging several blocking cells
+                a2[length - 1] = o2
+            } else {
+                a1[length] = o1
+                a2[length++] = o2
+            }
+        }
 
-				}
-			}
-			
-			obs.nextRow();
-		}
-	}
-	
-	private static final class Obstacles {
-		
-		private static int SIZE = (MAX_DISTANCE+1) * (MAX_DISTANCE+1) / 2;
-		private static float[] a1 = new float[SIZE];
-		private static float[] a2 = new float[SIZE];
-		
-		private int length;
-		private int limit;
-		
-		public void reset() {
-			length = 0;
-			limit = 0;
-		}
-		
-		public void add( float o1, float o2 ) {
-			
-			if (length > limit && o1 <= a2[length-1]) {
-				
-				// Merging several blocking cells
-				a2[length-1] = o2;
-				
-			} else {
-				
-				a1[length] = o1;
-				a2[length++] = o2;
-				
-			}
-			
-		}
-		
-		public boolean isBlocked( float a ) {
-			for (int i=0; i < limit; i++) {
-				if (a >= a1[i] && a <= a2[i]) {
-					return true;
-				}
-			}
-			return false;
-		}
-		
-		public void nextRow() {
-			limit = length;
-		}
-	}
+        fun isBlocked(a: Float): Boolean {
+            for (i in 0 until limit) {
+                if (a >= a1[i] && a <= a2[i]) {
+                    return true
+                }
+            }
+            return false
+        }
+
+        fun nextRow() {
+            limit = length
+        }
+
+        companion object {
+            private const val SIZE = (MAX_DISTANCE + 1) * (MAX_DISTANCE + 1) / 2
+            private val a1 = FloatArray(SIZE)
+            private val a2 = FloatArray(SIZE)
+        }
+    }
+
+    init {
+        rounding = arrayOfNulls(MAX_DISTANCE + 1)
+        for (i in 1..MAX_DISTANCE) {
+            rounding[i] = IntArray(i + 1)
+            for (j in 1..i) {
+                rounding[i]!![j] = Math.min(j.toLong(), Math.round(i * Math.cos(Math.asin(j / (i + 0.5)))))
+                    .toInt()
+            }
+        }
+    }
 }

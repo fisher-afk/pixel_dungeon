@@ -15,32 +15,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.effects;
+package com.watabou.pixeldungeon.effects
 
-import com.watabou.gltextures.SmartTexture;
-import com.watabou.noosa.NinePatch;
-import com.watabou.pixeldungeon.Assets;
+import com.watabou.gltextures.SmartTexture
 
-public class ShadowBox extends NinePatch {
+class ShadowBox : NinePatch(Assets.SHADOW, 1) {
+    fun size(width: Float, height: Float) {
+        super.size(width / SIZE, height / SIZE)
+    }
 
-	public static final float SIZE	= 16;
-	
-	public ShadowBox() {
-		super( Assets.SHADOW, 1 );
-		
-		texture.filter( SmartTexture.LINEAR, SmartTexture.LINEAR );
-		
-		scale.set( SIZE, SIZE );
-	}
-	
-	@Override
-	public void size(float width, float height) {
-		super.size( width / SIZE, height / SIZE );
-	}
+    fun boxRect(x: Float, y: Float, width: Float, height: Float) {
+        x = x - SIZE
+        y = y - SIZE
+        size(width + SIZE * 2, height + SIZE * 2)
+    }
 
-	public void boxRect( float x, float y, float width, float height ) {
-		this.x = x - SIZE;
-		this.y = y - SIZE;
-		size( width + SIZE * 2, height + SIZE * 2 );
-	}
+    companion object {
+        const val SIZE = 16f
+    }
+
+    init {
+        texture.filter(SmartTexture.LINEAR, SmartTexture.LINEAR)
+        scale.set(SIZE, SIZE)
+    }
 }

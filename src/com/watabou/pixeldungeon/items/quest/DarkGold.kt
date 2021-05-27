@@ -15,40 +15,29 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.quest;
+package com.watabou.pixeldungeon.items.quest
 
-import com.watabou.pixeldungeon.items.Item;
-import com.watabou.pixeldungeon.sprites.ItemSpriteSheet;
+import com.watabou.pixeldungeon.items.Item
 
-public class DarkGold extends Item {
-	
-	{
-		name = "dark gold ore";
-		image = ItemSpriteSheet.ORE;
-		
-		stackable = true;
-		unique = true;
-	}
-	
-	@Override
-	public boolean isUpgradable() {
-		return false;
-	}
-	
-	@Override
-	public boolean isIdentified() {
-		return true;
-	}
-	
-	@Override
-	public String info() {
-		return
-			"This metal is called dark not because of its color (it doesn't differ from the normal gold), " +
-			"but because it melts under the daylight, making it useless on the surface.";
-	}
-	
-	@Override
-	public int price() {
-		return quantity;
-	}
+class DarkGold : Item() {
+    override val isUpgradable: Boolean
+        get() = false
+    override val isIdentified: Boolean
+        get() = true
+
+    override fun info(): String {
+        return "This metal is called dark not because of its color (it doesn't differ from the normal gold), " +
+                "but because it melts under the daylight, making it useless on the surface."
+    }
+
+    override fun price(): Int {
+        return quantity
+    }
+
+    init {
+        name = "dark gold ore"
+        image = ItemSpriteSheet.ORE
+        stackable = true
+        unique = true
+    }
 }

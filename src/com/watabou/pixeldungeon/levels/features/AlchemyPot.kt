@@ -15,34 +15,25 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.levels.features;
+package com.watabou.pixeldungeon.levels.features
 
-import com.watabou.pixeldungeon.actors.hero.Hero;
-import com.watabou.pixeldungeon.items.Item;
-import com.watabou.pixeldungeon.scenes.GameScene;
-import com.watabou.pixeldungeon.windows.WndBag;
+import com.watabou.pixeldungeon.actors.hero.Hero
 
-public class AlchemyPot {
+object AlchemyPot {
+    private const val TXT_SELECT_SEED = "Select a seed to throw"
+    private var hero: Hero? = null
+    private var pos = 0
+    fun operate(hero: Hero?, pos: Int) {
+        AlchemyPot.hero = hero
+        AlchemyPot.pos = pos
+        GameScene.selectItem(itemSelector, WndBag.Mode.SEED, TXT_SELECT_SEED)
+    }
 
-	private static final String TXT_SELECT_SEED	= "Select a seed to throw"; 
-	
-	private static Hero hero;
-	private static int pos;
-	
-	public static void operate( Hero hero, int pos ) {
-		
-		AlchemyPot.hero = hero;
-		AlchemyPot.pos = pos;
-		
-		GameScene.selectItem( itemSelector, WndBag.Mode.SEED, TXT_SELECT_SEED );
-	}
-	
-	private static final WndBag.Listener itemSelector = new WndBag.Listener() {
-		@Override
-		public void onSelect( Item item ) {
-			if (item != null) {
-				item.cast( hero, pos );
-			}
-		}
-	};
+    private val itemSelector: WndBag.Listener = object : Listener() {
+        fun onSelect(item: Item?) {
+            if (item != null) {
+                item.cast(hero, pos)
+            }
+        }
+    }
 }

@@ -15,23 +15,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.weapon.melee;
+package com.watabou.pixeldungeon.items.weapon.melee
 
-import com.watabou.pixeldungeon.sprites.ItemSpriteSheet;
+import com.watabou.pixeldungeon.sprites.ItemSpriteSheet
 
-public class Dagger extends MeleeWeapon {
-	
-	{
-		name = "dagger";
-		image = ItemSpriteSheet.DAGGER;
-	}
-	
-	public Dagger() {
-		super( 1, 1.2f, 1f );
-	}
-	
-	@Override
-	public String desc() {
-		return "A simple iron dagger with a well worn wooden handle.";
-	}
+class Dagger : MeleeWeapon(1, 1.2f, 1f) {
+    fun desc(): String {
+        return "A simple iron dagger with a well worn wooden handle."
+    }
+
+    init {
+        name = "dagger"
+        image = ItemSpriteSheet.DAGGER
+    }
 }

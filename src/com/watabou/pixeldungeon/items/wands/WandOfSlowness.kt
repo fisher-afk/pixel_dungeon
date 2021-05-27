@@ -15,47 +15,31 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.wands;
+package com.watabou.pixeldungeon.items.wands
 
-import com.watabou.noosa.audio.Sample;
-import com.watabou.pixeldungeon.Assets;
-import com.watabou.pixeldungeon.actors.Actor;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.buffs.Buff;
-import com.watabou.pixeldungeon.actors.buffs.Slow;
-import com.watabou.pixeldungeon.effects.MagicMissile;
-import com.watabou.pixeldungeon.utils.GLog;
-import com.watabou.utils.Callback;
+import com.watabou.noosa.audio.Sample
 
-public class WandOfSlowness extends Wand {
+class WandOfSlowness : Wand() {
+    protected override fun onZap(cell: Int) {
+        val ch: Char = Actor.findChar(cell)
+        if (ch != null) {
+            Buff.affect(ch, Slow::class.java, Slow.duration(ch) / 3 + power())
+        } else {
+            GLog.i("nothing happened")
+        }
+    }
 
-	{
-		name = "Wand of Slowness";
-	}
+    protected override fun fx(cell: Int, callback: Callback?) {
+        MagicMissile.slowness(curUser.sprite.parent, curUser.pos, cell, callback)
+        Sample.INSTANCE.play(Assets.SND_ZAP)
+    }
 
-	@Override
-	protected void onZap( int cell ) {
-		Char ch = Actor.findChar( cell );
-		if (ch != null) {
-			
-			Buff.affect( ch, Slow.class, Slow.duration( ch ) / 3 + power() );
+    fun desc(): String {
+        return "This wand will cause a creature to move and attack " +
+                "at half its ordinary speed until the effect ends"
+    }
 
-		} else {
-			
-			GLog.i( "nothing happened" );
-			
-		}
-	}
-	
-	protected void fx( int cell, Callback callback ) {
-		MagicMissile.slowness( curUser.sprite.parent, curUser.pos, cell, callback );
-		Sample.INSTANCE.play( Assets.SND_ZAP );
-	}
-	
-	@Override
-	public String desc() {
-		return 
-			"This wand will cause a creature to move and attack " +
-			"at half its ordinary speed until the effect ends";
-	}
+    init {
+        name = "Wand of Slowness"
+    }
 }

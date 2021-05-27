@@ -15,144 +15,103 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.buffs;
+package com.watabou.pixeldungeon.actors.buffs
 
-import com.watabou.pixeldungeon.Badges;
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.ResultDescriptions;
-import com.watabou.pixeldungeon.actors.hero.Hero;
-import com.watabou.pixeldungeon.actors.hero.HeroClass;
-import com.watabou.pixeldungeon.items.rings.RingOfSatiety;
-import com.watabou.pixeldungeon.ui.BuffIndicator;
-import com.watabou.pixeldungeon.utils.GLog;
-import com.watabou.pixeldungeon.utils.Utils;
-import com.watabou.utils.Bundle;
-import com.watabou.utils.Random;
+import com.watabou.pixeldungeon.Badges
 
-public class Hunger extends Buff implements Hero.Doom {
+class Hunger : Buff(), Hero.Doom {
+    private var level = 0f
+    override fun storeInBundle(bundle: Bundle) {
+        super.storeInBundle(bundle)
+        bundle.put(LEVEL, level)
+    }
 
-	private static final float STEP	= 10f;
-	
-	public static final float HUNGRY	= 260f;
-	public static final float STARVING	= 360f;
-	
-	private static final String TXT_HUNGRY		= "You are hungry.";
-	private static final String TXT_STARVING	= "You are starving!";
-	private static final String TXT_DEATH		= "You starved to death...";
-	
-	private float level;
+    override fun restoreFromBundle(bundle: Bundle) {
+        super.restoreFromBundle(bundle)
+        level = bundle.getFloat(LEVEL)
+    }
 
-	private static final String LEVEL	= "level";
-	
-	@Override
-	public void storeInBundle( Bundle bundle ) {
-		super.storeInBundle( bundle );
-		bundle.put( LEVEL, level );
-	}
-	
-	@Override
-	public void restoreFromBundle( Bundle bundle ) {
-		super.restoreFromBundle( bundle );
-		level = bundle.getFloat( LEVEL );
-	}
-	
-	@Override
-	public boolean act() {
-		if (target.isAlive()) {
-			
-			Hero hero = (Hero)target;
-			
-			if (isStarving()) {
-				if (Random.Float() < 0.3f && (target.HP > 1 || !target.paralysed)) {
-					
-					GLog.n( TXT_STARVING );
-					hero.damage( 1, this );
-					
-					hero.interrupt();
-				}
-			} else {	
-				
-				int bonus = 0;
-				for (Buff buff : target.buffs( RingOfSatiety.Satiety.class )) {
-					bonus += ((RingOfSatiety.Satiety)buff).level;
-				}
-				
-				float newLevel = level + STEP - bonus;
-				boolean statusUpdated = false;
-				if (newLevel >= STARVING) {
-					
-					GLog.n( TXT_STARVING );
-					statusUpdated = true;
-					
-					hero.interrupt();
-					
-				} else if (newLevel >= HUNGRY && level < HUNGRY) {
-					
-					GLog.w( TXT_HUNGRY );
-					statusUpdated = true;
-					
-				}
-				level = newLevel;
-				
-				if (statusUpdated) {
-					BuffIndicator.refreshHero();
-				}
-				
-			}
-			
-			float step = ((Hero)target).heroClass == HeroClass.ROGUE ? STEP * 1.2f : STEP;
-			spend( target.buff( Shadows.class ) == null ? step : step * 1.5f );
-			
-		} else {
-			
-			diactivate();
-			
-		}
+    override fun act(): Boolean {
+        if (target.isAlive()) {
+            val hero: Hero = target as Hero
+            if (isStarving) {
+                if (Random.Float() < 0.3f && (target.HP > 1 || !target.paralysed)) {
+                    GLog.n(TXT_STARVING)
+                    hero.damage(1, this)
+                    hero.interrupt()
+                }
+            } else {
+                var bonus = 0
+                for (buff in target.buffs(RingOfSatiety.Satiety::class.java)) {
+                    bonus += (buff as RingOfSatiety.Satiety).level
+                }
+                val newLevel = level + STEP - bonus
+                var statusUpdated = false
+                if (newLevel >= STARVING) {
+                    GLog.n(TXT_STARVING)
+                    statusUpdated = true
+                    hero.interrupt()
+                } else if (newLevel >= HUNGRY && level < HUNGRY) {
+                    GLog.w(TXT_HUNGRY)
+                    statusUpdated = true
+                }
+                level = newLevel
+                if (statusUpdated) {
+                    BuffIndicator.refreshHero()
+                }
+            }
+            val step = if ((target as Hero).heroClass === HeroClass.ROGUE) STEP * 1.2f else STEP
+            spend(if (target.buff(Shadows::class.java) == null) step else step * 1.5f)
+        } else {
+            diactivate()
+        }
+        return true
+    }
 
-		return true;
-	}
-	
-	public void satisfy( float energy ) {
-		level -= energy;
-		if (level < 0) {
-			level = 0;
-		} else if (level > STARVING) {
-			level = STARVING;
-		}
-		
-		BuffIndicator.refreshHero();
-	}
-	
-	public boolean isStarving() {
-		return level >= STARVING;
-	}
-	
-	@Override
-	public int icon() {
-		if (level < HUNGRY) {
-			return BuffIndicator.NONE;
-		} else if (level < STARVING) {
-			return BuffIndicator.HUNGER;
-		} else {
-			return BuffIndicator.STARVATION;
-		}
-	}
-	
-	@Override
-	public String toString() {
-		if (level < STARVING) {
-			return "Hungry";
-		} else {
-			return "Starving";
-		}
-	}
+    fun satisfy(energy: Float) {
+        level -= energy
+        if (level < 0) {
+            level = 0f
+        } else if (level > STARVING) {
+            level = STARVING
+        }
+        BuffIndicator.refreshHero()
+    }
 
-	@Override
-	public void onDeath() {
-		
-		Badges.validateDeathFromHunger();
-		
-		Dungeon.fail( Utils.format( ResultDescriptions.HUNGER, Dungeon.depth ) );
-		GLog.n( TXT_DEATH );
-	}
+    val isStarving: Boolean
+        get() = level >= STARVING
+
+    override fun icon(): Int {
+        return if (level < HUNGRY) {
+            BuffIndicator.NONE
+        } else if (level < STARVING) {
+            BuffIndicator.HUNGER
+        } else {
+            BuffIndicator.STARVATION
+        }
+    }
+
+    override fun toString(): String {
+        return if (level < STARVING) {
+            "Hungry"
+        } else {
+            "Starving"
+        }
+    }
+
+    fun onDeath() {
+        Badges.validateDeathFromHunger()
+        Dungeon.fail(Utils.format(ResultDescriptions.HUNGER, Dungeon.depth))
+        GLog.n(TXT_DEATH)
+    }
+
+    companion object {
+        private const val STEP = 10f
+        const val HUNGRY = 260f
+        const val STARVING = 360f
+        private const val TXT_HUNGRY = "You are hungry."
+        private const val TXT_STARVING = "You are starving!"
+        private const val TXT_DEATH = "You starved to death..."
+        private const val LEVEL = "level"
+    }
 }

@@ -15,66 +15,46 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.blobs;
+package com.watabou.pixeldungeon.actors.blobs
 
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.Actor;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.buffs.Buff;
-import com.watabou.pixeldungeon.actors.buffs.Roots;
-import com.watabou.pixeldungeon.effects.BlobEmitter;
-import com.watabou.pixeldungeon.effects.particles.LeafParticle;
-import com.watabou.pixeldungeon.levels.Level;
-import com.watabou.pixeldungeon.levels.Terrain;
-import com.watabou.pixeldungeon.scenes.GameScene;
+import com.watabou.pixeldungeon.Dungeon
 
-public class Regrowth extends Blob {
-	
-	@Override
-	protected void evolve() {
-		super.evolve();
-		
-		if (volume > 0) {
-			
-			boolean mapUpdated = false;
-			
-			for (int i=0; i < LENGTH; i++) {
-				if (off[i] > 0) {
-					int c = Dungeon.level.map[i];
-					int c1 = c;
-					if (c == Terrain.EMPTY || c == Terrain.EMBERS || c == Terrain.EMPTY_DECO) {
-						c1 = cur[i] > 9 ? Terrain.HIGH_GRASS : Terrain.GRASS;
-					} else if (c == Terrain.GRASS && cur[i] > 9) {
-						c1 = Terrain.HIGH_GRASS ;
-					}
-					
-					if (c1 != c) {
-						Level.set( i, Terrain.HIGH_GRASS );
-						mapUpdated = true;
-						
-						GameScene.updateMap( i );
-						if (Dungeon.visible[i]) {
-							GameScene.discoverTile( i, c );
-						}
-					}
-					
-					Char ch = Actor.findChar( i );
-					if (ch != null) {
-						Buff.prolong( ch, Roots.class, TICK );
-					}
-				}
-			}
-			
-			if (mapUpdated) {
-				Dungeon.observe();
-			}
-		}
-	}
-	
-	@Override
-	public void use( BlobEmitter emitter ) {
-		super.use( emitter );
-		
-		emitter.start( LeafParticle.LEVEL_SPECIFIC, 0.2f, 0 );
-	}
+class Regrowth : Blob() {
+    protected override fun evolve() {
+        super.evolve()
+        if (volume > 0) {
+            var mapUpdated = false
+            for (i in 0 until LENGTH) {
+                if (off.get(i) > 0) {
+                    val c: Int = Dungeon.level.map.get(i)
+                    var c1 = c
+                    if (c == Terrain.EMPTY || c == Terrain.EMBERS || c == Terrain.EMPTY_DECO) {
+                        c1 = if (cur.get(i) > 9) Terrain.HIGH_GRASS else Terrain.GRASS
+                    } else if (c == Terrain.GRASS && cur.get(i) > 9) {
+                        c1 = Terrain.HIGH_GRASS
+                    }
+                    if (c1 != c) {
+                        Level.set(i, Terrain.HIGH_GRASS)
+                        mapUpdated = true
+                        GameScene.updateMap(i)
+                        if (Dungeon.visible.get(i)) {
+                            GameScene.discoverTile(i, c)
+                        }
+                    }
+                    val ch: Char = Actor.findChar(i)
+                    if (ch != null) {
+                        Buff.prolong(ch, Roots::class.java, TICK)
+                    }
+                }
+            }
+            if (mapUpdated) {
+                Dungeon.observe()
+            }
+        }
+    }
+
+    override fun use(emitter: BlobEmitter) {
+        super.use(emitter)
+        emitter.start(LeafParticle.LEVEL_SPECIFIC, 0.2f, 0)
+    }
 }

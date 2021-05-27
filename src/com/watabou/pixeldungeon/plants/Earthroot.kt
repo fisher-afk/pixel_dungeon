@@ -15,129 +15,106 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.plants;
+package com.watabou.pixeldungeon.plants
 
-import com.watabou.noosa.Camera;
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.buffs.Buff;
-import com.watabou.pixeldungeon.effects.CellEmitter;
-import com.watabou.pixeldungeon.effects.particles.EarthParticle;
-import com.watabou.pixeldungeon.items.potions.PotionOfParalyticGas;
-import com.watabou.pixeldungeon.sprites.ItemSpriteSheet;
-import com.watabou.pixeldungeon.ui.BuffIndicator;
-import com.watabou.utils.Bundle;
+import com.watabou.noosa.Camera
 
-public class Earthroot extends Plant {
+class Earthroot : Plant() {
+    override fun activate(ch: Char?) {
+        super.activate(ch)
+        if (ch != null) {
+            Buff.affect(ch, Armor::class.java).level = ch.HT
+        }
+        if (Dungeon.visible.get(pos)) {
+            CellEmitter.bottom(pos).start(EarthParticle.FACTORY, 0.05f, 8)
+            Camera.main.shake(1, 0.4f)
+        }
+    }
 
-	private static final String TXT_DESC = 
-		"When a creature touches an Earthroot, its roots " +
-		"create a kind of natural armor around it.";
-	
-	{
-		image = 5;
-		plantName = "Earthroot";
-	}
-	
-	@Override
-	public void activate( Char ch ) {
-		super.activate( ch );
-		
-		if (ch != null) {
-			Buff.affect( ch, Armor.class ).level = ch.HT;
-		}
-		
-		if (Dungeon.visible[pos]) {
-			CellEmitter.bottom( pos ).start( EarthParticle.FACTORY, 0.05f, 8 );
-			Camera.main.shake( 1, 0.4f );
-		}
-	}
-	
-	@Override
-	public String desc() {
-		return TXT_DESC;
-	}
-	
-	public static class Seed extends Plant.Seed {
-		{
-			plantName = "Earthroot";
-			
-			name = "seed of " + plantName;
-			image = ItemSpriteSheet.SEED_EARTHROOT;
-			
-			plantClass = Earthroot.class;
-			alchemyClass = PotionOfParalyticGas.class;
-		}
-		
-		@Override
-		public String desc() {
-			return TXT_DESC;
-		}
-	}
-	
-	public static class Armor extends Buff {
-		
-		private static final float STEP = 1f;
-		
-		private int pos;
-		private int level;
-		
-		@Override
-		public boolean attachTo( Char target ) {
-			pos = target.pos;
-			return super.attachTo( target );
-		}
-		
-		@Override
-		public boolean act() {
-			if (target.pos != pos) {
-				detach();
-			}
-			spend( STEP );
-			return true;
-		}
-		
-		public int absorb( int damage ) {
-			if (damage >= level) {
-				detach();
-				return damage - level;
-			} else {
-				level -= damage;
-				return 0;
-			}
-		}
-		
-		public void level( int value ) {
-			if (level < value) {
-				level = value;
-			}
-		}
-		
-		@Override
-		public int icon() {
-			return BuffIndicator.ARMOR;
-		}
-		
-		@Override
-		public String toString() {
-			return "Herbal armor";
-		}
-		
-		private static final String POS		= "pos";
-		private static final String LEVEL	= "level";
-		
-		@Override
-		public void storeInBundle( Bundle bundle ) {
-			super.storeInBundle( bundle );
-			bundle.put( POS, pos );
-			bundle.put( LEVEL, level );
-		}
-		
-		@Override
-		public void restoreFromBundle( Bundle bundle ) {
-			super.restoreFromBundle( bundle );
-			pos = bundle.getInt( POS );
-			level = bundle.getInt( LEVEL );
-		}
-	}
+    override fun desc(): String {
+        return TXT_DESC
+    }
+
+    class Seed : Plant.Seed() {
+        fun desc(): String {
+            return TXT_DESC
+        }
+
+        init {
+            plantName = "Earthroot"
+            name = "seed of $plantName"
+            image = ItemSpriteSheet.SEED_EARTHROOT
+            plantClass = Earthroot::class.java
+            alchemyClass = PotionOfParalyticGas::class.java
+        }
+    }
+
+    class Armor : Buff() {
+        private var pos = 0
+        private var level = 0
+        fun attachTo(target: Char): Boolean {
+            pos = target.pos
+            return super.attachTo(target)
+        }
+
+        fun act(): Boolean {
+            if (target.pos !== pos) {
+                detach()
+            }
+            spend(STEP)
+            return true
+        }
+
+        fun absorb(damage: Int): Int {
+            return if (damage >= level) {
+                detach()
+                damage - level
+            } else {
+                level -= damage
+                0
+            }
+        }
+
+        fun level(value: Int) {
+            if (level < value) {
+                level = value
+            }
+        }
+
+        fun icon(): Int {
+            return BuffIndicator.ARMOR
+        }
+
+        override fun toString(): String {
+            return "Herbal armor"
+        }
+
+        fun storeInBundle(bundle: Bundle) {
+            super.storeInBundle(bundle)
+            bundle.put(POS, pos)
+            bundle.put(LEVEL, level)
+        }
+
+        fun restoreFromBundle(bundle: Bundle) {
+            super.restoreFromBundle(bundle)
+            pos = bundle.getInt(POS)
+            level = bundle.getInt(LEVEL)
+        }
+
+        companion object {
+            private const val STEP = 1f
+            private const val POS = "pos"
+            private const val LEVEL = "level"
+        }
+    }
+
+    companion object {
+        private const val TXT_DESC = "When a creature touches an Earthroot, its roots " +
+                "create a kind of natural armor around it."
+    }
+
+    init {
+        image = 5
+        plantName = "Earthroot"
+    }
 }

@@ -15,46 +15,30 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.levels.painters;
+package com.watabou.pixeldungeon.levels.painters
 
-import com.watabou.pixeldungeon.actors.blobs.WaterOfAwareness;
-import com.watabou.pixeldungeon.actors.blobs.WaterOfHealth;
-import com.watabou.pixeldungeon.actors.blobs.WaterOfTransmutation;
-import com.watabou.pixeldungeon.actors.blobs.WellWater;
-import com.watabou.pixeldungeon.levels.Level;
-import com.watabou.pixeldungeon.levels.Room;
-import com.watabou.pixeldungeon.levels.Terrain;
-import com.watabou.utils.Point;
-import com.watabou.utils.Random;
+import com.watabou.pixeldungeon.actors.blobs.WaterOfAwareness
 
-public class MagicWellPainter extends Painter {
+object MagicWellPainter : Painter() {
+    private val WATERS =
+        arrayOf<Class<*>>(WaterOfAwareness::class.java, WaterOfHealth::class.java, WaterOfTransmutation::class.java)
 
-	private static final Class<?>[] WATERS = 
-		{WaterOfAwareness.class, WaterOfHealth.class, WaterOfTransmutation.class};
-	
-	public static void paint( Level level, Room room ) {
-
-		fill( level, room, Terrain.WALL );
-		fill( level, room, 1, Terrain.EMPTY );
-		
-		Point c = room.center();
-		set( level, c.x, c.y, Terrain.WELL );
-		
-		@SuppressWarnings("unchecked")
-		Class<? extends WellWater> waterClass = 
-			(Class<? extends WellWater>)Random.element( WATERS );
-		
-		WellWater water = (WellWater)level.blobs.get( waterClass );
-		if (water == null) {
-			try {
-				water = waterClass.newInstance();
-			} catch (Exception e) {
-				water = null;
-			}
-		}
-		water.seed( c.x + Level.WIDTH * c.y, 1 );
-		level.blobs.put( waterClass, water );
-		
-		room.entrance().set( Room.Door.Type.REGULAR );
-	}
+    fun paint(level: Level, room: Room) {
+        fill(level, room, Terrain.WALL)
+        fill(level, room, 1, Terrain.EMPTY)
+        val c: Point = room.center()
+        set(level, c.x, c.y, Terrain.WELL)
+        val waterClass: Class<out WellWater?> = Random.element(WATERS)
+        var water: WellWater? = level.blobs.get(waterClass) as WellWater
+        if (water == null) {
+            water = try {
+                waterClass.newInstance()
+            } catch (e: Exception) {
+                null
+            }
+        }
+        water.seed(c.x + Level.WIDTH * c.y, 1)
+        level.blobs.put(waterClass, water)
+        room.entrance().set(Room.Door.Type.REGULAR)
+    }
 }

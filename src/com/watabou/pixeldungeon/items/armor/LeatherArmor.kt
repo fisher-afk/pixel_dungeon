@@ -15,24 +15,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.armor;
+package com.watabou.pixeldungeon.items.armor
 
-import com.watabou.pixeldungeon.sprites.ItemSpriteSheet;
+import com.watabou.pixeldungeon.sprites.ItemSpriteSheet
 
+class LeatherArmor : Armor(2) {
+    fun desc(): String {
+        return "Armor made from tanned monster hide. Not as light as cloth armor but provides better protection."
+    }
 
-public class LeatherArmor extends Armor {
-
-	{	
-		name = "leather armor";
-		image = ItemSpriteSheet.ARMOR_LEATHER;
-	}
-	
-	public LeatherArmor() {
-		super( 2 );
-	}
-	
-	@Override
-	public String desc() {
-		return "Armor made from tanned monster hide. Not as light as cloth armor but provides better protection.";
-	}
+    init {
+        name = "leather armor"
+        image = ItemSpriteSheet.ARMOR_LEATHER
+    }
 }

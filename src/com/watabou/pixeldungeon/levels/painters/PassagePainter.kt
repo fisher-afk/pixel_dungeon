@@ -15,102 +15,76 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.levels.painters;
+package com.watabou.pixeldungeon.levels.painters
 
-import java.util.ArrayList;
-import java.util.Collections;
+import com.watabou.pixeldungeon.levels.Level
 
-import com.watabou.pixeldungeon.levels.Level;
-import com.watabou.pixeldungeon.levels.Room;
-import com.watabou.utils.Point;
+object PassagePainter : Painter() {
+    private var pasWidth = 0
+    private var pasHeight = 0
+    fun paint(level: Level, room: Room) {
+        pasWidth = room.width() - 2
+        pasHeight = room.height() - 2
+        val floor: Int = level.tunnelTile()
+        val joints = ArrayList<Int>()
+        for (door in room.connected.values()) {
+            joints.add(xy2p(room, door))
+        }
+        Collections.sort<Int>(joints)
+        val nJoints = joints.size
+        val perimeter = pasWidth * 2 + pasHeight * 2
+        var start = 0
+        var maxD = joints[0] + perimeter - joints[nJoints - 1]
+        for (i in 1 until nJoints) {
+            val d = joints[i] - joints[i - 1]
+            if (d > maxD) {
+                maxD = d
+                start = i
+            }
+        }
+        val end = (start + nJoints - 1) % nJoints
+        var p = joints[start]
+        do {
+            set(level, p2xy(room, p), floor)
+            p = (p + 1) % perimeter
+        } while (p != joints[end])
+        set(level, p2xy(room, p), floor)
+        for (door in room.connected.values()) {
+            door.set(Room.Door.Type.TUNNEL)
+        }
+    }
 
-public class PassagePainter extends Painter {
+    private fun xy2p(room: Room, xy: Point): Int {
+        return if (xy.y === room.top) {
+            xy.x - room.left - 1
+        } else if (xy.x === room.right) {
+            xy.y - room.top - 1 + pasWidth
+        } else if (xy.y === room.bottom) {
+            room.right - xy.x - 1 + pasWidth + pasHeight
+        } else  /*if (xy.x == room.left)*/ {
+            if (xy.y === room.top + 1) {
+                0
+            } else {
+                room.bottom - xy.y - 1 + pasWidth * 2 + pasHeight
+            }
+        }
+    }
 
-	private static int pasWidth;
-	private static int pasHeight;
-	
-	public static void paint( Level level, Room room ) {
-		
-		pasWidth = room.width() - 2;
-		pasHeight = room.height() - 2;
-		
-		int floor = level.tunnelTile();
-		
-		ArrayList<Integer> joints = new ArrayList<Integer>();
-		for (Point door : room.connected.values()) {
-			joints.add( xy2p( room, door ) );
-		}
-		Collections.sort( joints );
-		
-		int nJoints = joints.size();
-		int perimeter = pasWidth * 2 + pasHeight * 2;
-		
-		int start = 0;
-		int maxD = joints.get( 0 ) + perimeter - joints.get( nJoints - 1 );
-		for (int i=1; i < nJoints; i++) {
-			int d = joints.get( i ) - joints.get( i - 1 );
-			if (d > maxD) {
-				maxD = d;
-				start = i;
-			}
-		}
-		
-		int end = (start + nJoints - 1) % nJoints;
-		
-		int p = joints.get( start );
-		do {
-			set( level, p2xy( room, p ), floor );
-			p = (p + 1) % perimeter;
-		} while (p != joints.get( end ));
-		
-		set( level, p2xy( room, p ), floor );
-		
-		for (Room.Door door : room.connected.values()) {
-			door.set( Room.Door.Type.TUNNEL );
-		}
-	}
-	
-	private static int xy2p( Room room, Point xy ) {
-		if (xy.y == room.top) {
-			
-			return (xy.x - room.left - 1);
-			
-		} else if (xy.x == room.right) {
-			
-			return (xy.y - room.top - 1) + pasWidth;
-			
-		} else if (xy.y == room.bottom) {
-			
-			return (room.right - xy.x - 1) + pasWidth + pasHeight;
-			
-		} else /*if (xy.x == room.left)*/ {
-			
-			if (xy.y == room.top + 1) {
-				return 0;
-			} else {
-				return (room.bottom - xy.y - 1) + pasWidth * 2 + pasHeight;
-			}
-			
-		}
-	}
-	
-	private static Point p2xy( Room room, int p ) {
-		if (p < pasWidth) {
-			
-			return new Point( room.left + 1 + p, room.top + 1);
-			
-		} else if (p < pasWidth + pasHeight) {
-			
-			return new Point( room.right - 1, room.top + 1 + (p - pasWidth) );
-			
-		} else if (p < pasWidth * 2 + pasHeight) {
-			
-			return new Point( room.right - 1 - (p - (pasWidth + pasHeight)), room.bottom - 1 );
-			
-		} else {
-
-			return new Point( room.left + 1, room.bottom - 1 - (p - (pasWidth * 2 + pasHeight)) );
-			
-		}
-	}
+    private fun p2xy(room: Room, p: Int): Point {
+        return if (p < pasWidth) {
+            Point(room.left + 1 + p, room.top + 1)
+        } else if (p < pasWidth + pasHeight) {
+            Point(room.right - 1, room.top + 1 + (p - pasWidth))
+        } else if (p < pasWidth * 2 + pasHeight) {
+            Point(
+                room.right - 1 - (p - (pasWidth + pasHeight)),
+                room.bottom - 1
+            )
+        } else {
+            Point(
+                room.left + 1,
+                room.bottom - 1 - (p - (pasWidth * 2 + pasHeight))
+            )
+        }
+    }
 }

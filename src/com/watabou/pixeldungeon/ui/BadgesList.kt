@@ -15,108 +15,79 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.ui;
+package com.watabou.pixeldungeon.ui
 
-import java.util.ArrayList;
+import com.watabou.noosa.BitmapText
 
-import com.watabou.noosa.BitmapText;
-import com.watabou.noosa.Game;
-import com.watabou.noosa.Image;
-import com.watabou.noosa.audio.Sample;
-import com.watabou.noosa.ui.Component;
-import com.watabou.pixeldungeon.Assets;
-import com.watabou.pixeldungeon.Badges;
-import com.watabou.pixeldungeon.effects.BadgeBanner;
-import com.watabou.pixeldungeon.scenes.PixelScene;
-import com.watabou.pixeldungeon.windows.WndBadge;
+class BadgesList(global: Boolean) : ScrollPane(Component()) {
+    private val items = ArrayList<ListItem>()
+    protected override fun layout() {
+        var pos = 0f
+        val size = items.size
+        for (i in 0 until size) {
+            items[i].setRect(0, pos, width, ListItem.Companion.HEIGHT)
+            pos += ListItem.Companion.HEIGHT
+        }
+        content.setSize(width, pos)
+        super.layout()
+    }
 
-public class BadgesList extends ScrollPane {
+    override fun onClick(x: Float, y: Float) {
+        val size = items.size
+        for (i in 0 until size) {
+            if (items[i].onClick(x, y)) {
+                break
+            }
+        }
+    }
 
-	private ArrayList<ListItem> items = new ArrayList<ListItem>();
-	
-	public BadgesList( boolean global ) {
-		super( new Component() );
-		
-		for (Badges.Badge badge : Badges.filtered( global )) {
-			
-			if (badge.image == -1) {
-				continue;
-			}
-			
-			ListItem item = new ListItem( badge );
-			content.add( item );
-			items.add( item );
-		}
-	}
-	
-	@Override
-	protected void layout() {
-		float pos = 0;
-		
-		int size = items.size();
-		for (int i=0; i < size; i++) {
-			items.get( i ).setRect( 0, pos, width, ListItem.HEIGHT );
-			pos += ListItem.HEIGHT;
-		}
-		
-		content.setSize( width, pos );
-		
-		super.layout();
-	}
-	
-	@Override
-	public void onClick( float x, float y ) {
-		int size = items.size();
-		for (int i=0; i < size; i++) {
-			if (items.get( i ).onClick( x, y )) {
-				break;
-			}
-		}
-	}
+    private inner class ListItem(badge: Badges.Badge) : Component() {
+        private val badge: Badges.Badge
+        private var icon: Image? = null
+        private var label: BitmapText? = null
+        protected fun createChildren() {
+            icon = Image()
+            add(icon)
+            label = PixelScene.createText(6)
+            add(label)
+        }
 
-	private class ListItem extends Component {
-		
-		private static final float HEIGHT	= 20;
-		
-		private Badges.Badge badge;
-		
-		private Image icon;
-		private BitmapText label;
-		
-		public ListItem( Badges.Badge badge ) {
-			super();
-			
-			this.badge = badge;
-			icon.copy( BadgeBanner.image( badge.image ));
-			label.text( badge.description );
-		}
-		
-		@Override
-		protected void createChildren() {
-			icon = new Image();
-			add( icon );
-			
-			label = PixelScene.createText( 6 );
-			add( label );
-		}
-		
-		@Override
-		protected void layout() {
-			icon.x = x;
-			icon.y = PixelScene.align( y + (height - icon.height) / 2 );
-			
-			label.x = icon.x + icon.width + 2;
-			label.y = PixelScene.align( y + (height - label.baseLine()) / 2 );
-		}
-		
-		public boolean onClick( float x, float y ) {
-			if (inside( x, y )) {
-				Sample.INSTANCE.play( Assets.SND_CLICK, 0.7f, 0.7f, 1.2f );
-				Game.scene().add( new WndBadge( badge ) );
-				return true;
-			} else {
-				return false;
-			}
-		}
-	}
+        protected fun layout() {
+            icon.x = x
+            icon.y = PixelScene.align(y + (height - icon.height) / 2)
+            label.x = icon.x + icon.width + 2
+            label.y = PixelScene.align(y + (height - label.baseLine()) / 2)
+        }
+
+        fun onClick(x: Float, y: Float): Boolean {
+            return if (inside(x, y)) {
+                Sample.INSTANCE.play(Assets.SND_CLICK, 0.7f, 0.7f, 1.2f)
+                Game.scene().add(WndBadge(badge))
+                true
+            } else {
+                false
+            }
+        }
+
+        companion object {
+            const val HEIGHT = 20f
+        }
+
+        init {
+            this.badge = badge
+            icon.copy(BadgeBanner.image(badge.image))
+            label.text(badge.description)
+        }
+    }
+
+    init {
+        for (badge in Badges.filtered(global)) {
+            if (badge.image === -1) {
+                continue
+            }
+            val item = ListItem(badge)
+            content.add(item)
+            items.add(item)
+        }
+    }
 }

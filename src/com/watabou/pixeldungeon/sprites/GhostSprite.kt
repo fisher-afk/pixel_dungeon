@@ -15,54 +15,35 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.sprites;
+package com.watabou.pixeldungeon.sprites
 
-import javax.microedition.khronos.opengles.GL10;
+import com.watabou.noosa.TextureFilm
+class GhostSprite : MobSprite() {
+    fun draw() {
+        GLES20.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE)
+        super.draw()
+        GLES20.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA)
+    }
 
-import android.opengl.GLES20;
+    override fun die() {
+        super.die()
+        emitter().start(ShaftParticle.FACTORY, 0.3f, 4)
+        emitter().start(Speck.factory(Speck.LIGHT), 0.2f, 3)
+    }
 
-import com.watabou.noosa.TextureFilm;
-import com.watabou.pixeldungeon.Assets;
-import com.watabou.pixeldungeon.effects.Speck;
-import com.watabou.pixeldungeon.effects.particles.ShaftParticle;
+    override fun blood(): Int {
+        return 0xFFFFFF
+    }
 
-public class GhostSprite extends MobSprite {
-	
-	public GhostSprite() {
-		super();
-		
-		texture( Assets.GHOST );
-		
-		TextureFilm frames = new TextureFilm( texture, 14, 15 );
-		
-		idle = new Animation( 5, true );
-		idle.frames( frames, 0, 1 );
-		
-		run = new Animation( 10, true );
-		run.frames( frames, 0, 1 );
-		
-		die = new Animation( 20, false );
-		die.frames( frames, 0 );
-		
-		play( idle );
-	}
-	
-	@Override
-	public void draw() {
-		GLES20.glBlendFunc( GL10.GL_SRC_ALPHA, GL10.GL_ONE );
-		super.draw();
-		GLES20.glBlendFunc( GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA );
-	}
-	
-	@Override
-	public void die() {
-		super.die();
-		emitter().start( ShaftParticle.FACTORY, 0.3f, 4 );
-		emitter().start( Speck.factory( Speck.LIGHT ), 0.2f, 3 );
-	}
-	
-	@Override
-	public int blood() {
-		return 0xFFFFFF;
-	}
+    init {
+        texture(Assets.GHOST)
+        val frames = TextureFilm(texture, 14, 15)
+        idle = Animation(5, true)
+        idle.frames(frames, 0, 1)
+        run = Animation(10, true)
+        run.frames(frames, 0, 1)
+        die = Animation(20, false)
+        die.frames(frames, 0)
+        play(idle)
+    }
 }

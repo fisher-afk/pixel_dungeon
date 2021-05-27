@@ -15,124 +15,86 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.scrolls;
+package com.watabou.pixeldungeon.items.scrolls
 
-import java.util.ArrayList;
+import com.watabou.noosa.audio.Sample
 
-import com.watabou.noosa.audio.Sample;
-import com.watabou.pixeldungeon.Assets;
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.buffs.Blindness;
-import com.watabou.pixeldungeon.actors.buffs.Invisibility;
-import com.watabou.pixeldungeon.actors.hero.Hero;
-import com.watabou.pixeldungeon.actors.mobs.Bestiary;
-import com.watabou.pixeldungeon.actors.mobs.Mob;
-import com.watabou.pixeldungeon.effects.CellEmitter;
-import com.watabou.pixeldungeon.effects.Speck;
-import com.watabou.pixeldungeon.items.Heap;
-import com.watabou.pixeldungeon.items.Heap.Type;
-import com.watabou.pixeldungeon.items.Item;
-import com.watabou.pixeldungeon.scenes.GameScene;
-import com.watabou.pixeldungeon.sprites.HeroSprite;
-import com.watabou.pixeldungeon.sprites.ItemSpriteSheet;
-import com.watabou.pixeldungeon.utils.GLog;
-import com.watabou.utils.Random;
+class ScrollOfWipeOut : Item() {
+    fun actions(hero: Hero?): ArrayList<String> {
+        val actions: ArrayList<String> = super.actions(hero)
+        actions.add(AC_READ)
+        return actions
+    }
 
-public class ScrollOfWipeOut extends Item {
+    fun execute(hero: Hero, action: String) {
+        if (action == AC_READ) {
+            if (hero.buff(Blindness::class.java) != null) {
+                GLog.w(TXT_BLINDED)
+            } else {
+                curUser = hero
+                curItem = detach(hero.belongings.backpack)
+                doRead()
+            }
+        } else {
+            super.execute(hero, action)
+        }
+    }
 
-	private static final String TXT_BLINDED	= "You can't read a scroll while blinded";
-	
-	public static final String AC_READ	= "READ";
-	
-	protected static final float TIME_TO_READ	= 1f;
-	
-	{
-		name = "Scroll of Wipe Out";
-		image = ItemSpriteSheet.SCROLL_WIPE_OUT;
-		
-		stackable = true;		
-		defaultAction = AC_READ;
-	}
-	
-	@Override
-	public ArrayList<String> actions( Hero hero ) {
-		ArrayList<String> actions = super.actions( hero );
-		actions.add( AC_READ );
-		return actions;
-	}
-	
-	@Override
-	public void execute( Hero hero, String action ) {
-		if (action.equals( AC_READ )) {
-			
-			if (hero.buff( Blindness.class ) != null) {
-				GLog.w( TXT_BLINDED );
-			} else {
-				curUser = hero;
-				curItem = detach( hero.belongings.backpack );
-				doRead();
-			}
-			
-		} else {
-		
-			super.execute( hero, action );
-			
-		}
-	}
-	
-	private void doRead() {
-		GameScene.flash( 0xFF6644 );
-		
-		Invisibility.dispel();
-		
-		for (Mob mob : Dungeon.level.mobs.toArray( new Mob[0] )) {
-			if (!Bestiary.isBoss( mob )) {
-				Sample.INSTANCE.play( Assets.SND_CURSED, 0.3f, 0.3f, Random.Float( 0.6f, 0.9f ) );
-				mob.die( this );
-			}
-		}
-		
-		for (Heap heap : Dungeon.level.heaps.values()) {
-			switch (heap.type) {
-			case FOR_SALE:
-				heap.type = Type.HEAP;
-				if (Dungeon.visible[heap.pos]) {
-					CellEmitter.center( heap.pos ).burst( Speck.factory( Speck.COIN ), 2 );
-				}
-				break;
-			case MIMIC:
-				heap.type = Type.HEAP;
-				heap.sprite.link();
-				Sample.INSTANCE.play( Assets.SND_CURSED, 0.3f, 0.3f, Random.Float( 0.6f, 0.9f ) );
-				break;
-			default:
-			}
-		}
-		
-		curUser.spend( TIME_TO_READ );
-		curUser.busy();
-		((HeroSprite)curUser.sprite).read();
-	}
-	
-	@Override
-	public boolean isUpgradable() {
-		return false;
-	}
-	
-	@Override
-	public boolean isIdentified() {
-		return true;
-	}
+    private fun doRead() {
+        GameScene.flash(0xFF6644)
+        Invisibility.dispel()
+        for (mob in Dungeon.level.mobs.toArray(arrayOfNulls<Mob>(0))) {
+            if (!Bestiary.isBoss(mob)) {
+                Sample.INSTANCE.play(Assets.SND_CURSED, 0.3f, 0.3f, Random.Float(0.6f, 0.9f))
+                mob.die(this)
+            }
+        }
+        for (heap in Dungeon.level.heaps.values()) {
+            when (heap.type) {
+                FOR_SALE -> {
+                    heap.type = Type.HEAP
+                    if (Dungeon.visible.get(heap.pos)) {
+                        CellEmitter.center(heap.pos).burst(Speck.factory(Speck.COIN), 2)
+                    }
+                }
+                MIMIC -> {
+                    heap.type = Type.HEAP
+                    heap.sprite.link()
+                    Sample.INSTANCE.play(Assets.SND_CURSED, 0.3f, 0.3f, Random.Float(0.6f, 0.9f))
+                }
+                else -> {
+                }
+            }
+        }
+        curUser.spend(TIME_TO_READ)
+        curUser.busy()
+        (curUser.sprite as HeroSprite).read()
+    }
 
-	@Override
-	public String desc() {
-		return
-			"Read this scroll to unleash the wrath of the dungeon spirits, killing everything on the current level. " +
-			"Well, almost everything. Some of the more powerful creatures may be not affected.";
-	}
-	
-	@Override
-	public int price() {
-		return 100 * quantity;
-	}
+    val isUpgradable: Boolean
+        get() = false
+    val isIdentified: Boolean
+        get() = true
+
+    fun desc(): String {
+        return "Read this scroll to unleash the wrath of the dungeon spirits, killing everything on the current level. " +
+                "Well, almost everything. Some of the more powerful creatures may be not affected."
+    }
+
+    fun price(): Int {
+        return 100 * quantity
+    }
+
+    companion object {
+        private const val TXT_BLINDED = "You can't read a scroll while blinded"
+        const val AC_READ = "READ"
+        protected const val TIME_TO_READ = 1f
+    }
+
+    init {
+        name = "Scroll of Wipe Out"
+        image = ItemSpriteSheet.SCROLL_WIPE_OUT
+        stackable = true
+        defaultAction = AC_READ
+    }
 }

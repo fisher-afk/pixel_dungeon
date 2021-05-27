@@ -15,58 +15,38 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.armor.glyphs;
+package com.watabou.pixeldungeon.items.armor.glyphs
 
-import com.watabou.noosa.Camera;
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.effects.Lightning;
-import com.watabou.pixeldungeon.items.armor.Armor;
-import com.watabou.pixeldungeon.items.armor.Armor.Glyph;
-import com.watabou.pixeldungeon.levels.Level;
-import com.watabou.pixeldungeon.levels.traps.LightningTrap;
-import com.watabou.pixeldungeon.sprites.ItemSprite;
-import com.watabou.pixeldungeon.sprites.ItemSprite.Glowing;
-import com.watabou.utils.Random;
+import com.watabou.noosa.Camera
 
-public class Potential extends Glyph {
+class Potential : Glyph() {
+    fun proc(armor: Armor, attacker: Char, defender: Char, damage: Int): Int {
+        val level = Math.max(0, armor.effectiveLevel())
+        if (Level.adjacent(attacker.pos, defender.pos) && Random.Int(level + 7) >= 6) {
+            var dmg: Int = Random.IntRange(1, damage)
+            attacker.damage(dmg, LightningTrap.LIGHTNING)
+            dmg = Random.IntRange(1, dmg)
+            defender.damage(dmg, LightningTrap.LIGHTNING)
+            checkOwner(defender)
+            if (defender === Dungeon.hero) {
+                Camera.main.shake(2, 0.3f)
+            }
+            val points = intArrayOf(attacker.pos, defender.pos)
+            attacker.sprite.parent.add(Lightning(points, 2, null))
+        }
+        return damage
+    }
 
-	private static final String TXT_POTENTIAL	= "%s of potential";
-	
-	private static ItemSprite.Glowing BLUE = new ItemSprite.Glowing( 0x66CCEE );
-	
-	@Override
-	public int proc( Armor armor, Char attacker, Char defender, int damage) {
+    fun name(weaponName: String?): String {
+        return String.format(TXT_POTENTIAL, weaponName)
+    }
 
-		int level = Math.max( 0, armor.effectiveLevel() );
-		
-		if (Level.adjacent( attacker.pos, defender.pos ) && Random.Int( level + 7 ) >= 6) {
-			
-			int dmg = Random.IntRange( 1, damage );
-			attacker.damage( dmg, LightningTrap.LIGHTNING );
-			dmg = Random.IntRange( 1, dmg );
-			defender.damage( dmg, LightningTrap.LIGHTNING );
-			
-			checkOwner( defender );
-			if (defender == Dungeon.hero) {
-				Camera.main.shake( 2, 0.3f );
-			}
-			
-			int[] points = {attacker.pos, defender.pos};
-			attacker.sprite.parent.add( new Lightning( points, 2, null ) );
+    fun glowing(): Glowing {
+        return BLUE
+    }
 
-		}
-		
-		return damage;
-	}
-	
-	@Override
-	public String name( String weaponName) {
-		return String.format( TXT_POTENTIAL, weaponName );
-	}
-
-	@Override
-	public Glowing glowing() {
-		return BLUE;
-	}
+    companion object {
+        private const val TXT_POTENTIAL = "%s of potential"
+        private val BLUE: ItemSprite.Glowing = Glowing(0x66CCEE)
+    }
 }

@@ -15,49 +15,41 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.keys;
+package com.watabou.pixeldungeon.items.keys
 
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.items.bags.Bag;
-import com.watabou.pixeldungeon.sprites.ItemSpriteSheet;
-import com.watabou.pixeldungeon.utils.Utils;
+import com.watabou.pixeldungeon.Dungeon
 
-public class IronKey extends Key {
+class IronKey : Key() {
+    fun collect(bag: Bag?): Boolean {
+        val result: Boolean = super.collect(bag)
+        if (result && depth === Dungeon.depth && Dungeon.hero != null) {
+            Dungeon.hero.belongings.countIronKeys()
+        }
+        return result
+    }
 
-	private static final String TXT_FROM_DEPTH = "iron key from depth %d";
+    fun onDetach() {
+        if (depth === Dungeon.depth) {
+            Dungeon.hero.belongings.countIronKeys()
+        }
+    }
 
-	public static int curDepthQuantity = 0;
-	
-	{
-		name = "iron key";
-		image = ItemSpriteSheet.IRON_KEY;
-	}
-	
-	@Override
-	public boolean collect( Bag bag ) {
-		boolean result = super.collect( bag );
-		if (result && depth == Dungeon.depth && Dungeon.hero != null) {
-			Dungeon.hero.belongings.countIronKeys();
-		}
-		return result;
-	}
-	
-	@Override
-	public void onDetach( ) {
-		if (depth == Dungeon.depth) {
-			Dungeon.hero.belongings.countIronKeys();
-		}
-	}
-	
-	@Override
-	public String toString() {
-		return Utils.format( TXT_FROM_DEPTH, depth );
-	}
-	
-	@Override
-	public String info() {
-		return 
-			"The notches on this ancient iron key are well worn; its leather lanyard " +
-			"is battered by age. What door might it open?";
-	}
+    override fun toString(): String {
+        return Utils.format(TXT_FROM_DEPTH, depth)
+    }
+
+    fun info(): String {
+        return "The notches on this ancient iron key are well worn; its leather lanyard " +
+                "is battered by age. What door might it open?"
+    }
+
+    companion object {
+        private const val TXT_FROM_DEPTH = "iron key from depth %d"
+        var curDepthQuantity = 0
+    }
+
+    init {
+        name = "iron key"
+        image = ItemSpriteSheet.IRON_KEY
+    }
 }

@@ -15,32 +15,30 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.food;
+package com.watabou.pixeldungeon.items.food
 
-import com.watabou.pixeldungeon.actors.buffs.Hunger;
-import com.watabou.pixeldungeon.sprites.ItemSpriteSheet;
+import com.watabou.pixeldungeon.actors.buffs.Hunger
 
-public class ChargrilledMeat extends Food {
+class ChargrilledMeat : Food() {
+    override fun info(): String {
+        return "It looks like a decent steak."
+    }
 
-	{
-		name = "chargrilled meat";
-		image = ItemSpriteSheet.STEAK;
-		energy = Hunger.STARVING - Hunger.HUNGRY;
-	}
-	
-	@Override
-	public String info() {
-		return "It looks like a decent steak.";
-	}
-	
-	@Override
-	public int price() {
-		return 5 * quantity;
-	}
-	
-	public static Food cook( MysteryMeat ingredient ) {
-		ChargrilledMeat result = new ChargrilledMeat();
-		result.quantity = ingredient.quantity();
-		return result;
-	}
+    override fun price(): Int {
+        return 5 * quantity
+    }
+
+    companion object {
+        fun cook(ingredient: MysteryMeat): Food {
+            val result = ChargrilledMeat()
+            result.quantity = ingredient.quantity()
+            return result
+        }
+    }
+
+    init {
+        name = "chargrilled meat"
+        image = ItemSpriteSheet.STEAK
+        energy = Hunger.STARVING - Hunger.HUNGRY
+    }
 }

@@ -15,148 +15,121 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items;
+package com.watabou.pixeldungeon.items
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
+import com.watabou.utils.Bundle
 
-import com.watabou.utils.Bundle;
-import com.watabou.utils.Random;
+class ItemStatusHandler<T : Item?> {
+    private var items: Array<Class<out T>>
+    private var images: HashMap<Class<out T>, Int>
+    private var labels: HashMap<Class<out T>, String>
+    private var known: HashSet<Class<out T>>
 
-public class ItemStatusHandler<T extends Item> {
+    constructor(items: Array<Class<out T>>, allLabels: Array<String?>, allImages: Array<Int?>) {
+        this.items = items
+        images = HashMap()
+        labels = HashMap()
+        known = HashSet()
+        val labelsLeft: ArrayList<String> = ArrayList<String>(Arrays.asList<String>(*allLabels))
+        val imagesLeft: ArrayList<Int> = ArrayList<Int>(Arrays.asList<Int>(*allImages))
+        for (i in items.indices) {
+            val item = items[i]
+            val index: Int = Random.Int(labelsLeft.size)
+            labels[item] = labelsLeft[index]
+            labelsLeft.removeAt(index)
+            images[item] = imagesLeft[index]
+            imagesLeft.removeAt(index)
+        }
+    }
 
-	private Class<? extends T>[] items;
-	
-	private HashMap<Class<? extends T>, Integer> images;
-	private HashMap<Class<? extends T>, String> labels;
-	private HashSet<Class<? extends T>> known;
-	
-	public ItemStatusHandler( Class<? extends T>[] items, String[] allLabels, Integer[] allImages ) {
-		
-		this.items = items;
-		
-		this.images = new HashMap<Class<? extends T>, Integer>();
-		this.labels = new HashMap<Class<? extends T>, String>();
-		known = new HashSet<Class<? extends T>>();
-		
-		ArrayList<String> labelsLeft = new ArrayList<String>( Arrays.asList( allLabels ) );
-		ArrayList<Integer> imagesLeft = new ArrayList<Integer>( Arrays.asList( allImages ) );
-		
-		for (int i=0; i < items.length; i++) {
-			
-			Class<? extends T> item = (Class<? extends T>)(items[i]);
-			
-			int index = Random.Int( labelsLeft.size() );
-			
-			labels.put( item, labelsLeft.get( index ) );
-			labelsLeft.remove( index );
-			
-			images.put( item, imagesLeft.get( index ) );
-			imagesLeft.remove( index );
-		}
-	}
-	
-	public ItemStatusHandler( Class<? extends T>[] items, String[] labels, Integer[] images, Bundle bundle ) {
-		
-		this.items = items;
-		
-		this.images = new HashMap<Class<? extends T>, Integer>();
-		this.labels = new HashMap<Class<? extends T>, String>();
-		known = new HashSet<Class<? extends T>>();
-		
-		restore( bundle, labels, images );
-	}
-	
-	private static final String PFX_IMAGE	= "_image";
-	private static final String PFX_LABEL	= "_label";
-	private static final String PFX_KNOWN	= "_known";
-	
-	public void save( Bundle bundle ) {
-		for (int i=0; i < items.length; i++) {
-			String itemName = items[i].toString();
-			bundle.put( itemName + PFX_IMAGE, images.get( items[i] ) );
-			bundle.put( itemName + PFX_LABEL, labels.get( items[i] ) );
-			bundle.put( itemName + PFX_KNOWN, known.contains( items[i] ) );
-		}
-	}
-	
-	private void restore( Bundle bundle, String[] allLabels, Integer[] allImages ) {
-		
-		ArrayList<String> labelsLeft = new ArrayList<String>( Arrays.asList( allLabels ) );
-		ArrayList<Integer> imagesLeft = new ArrayList<Integer>( Arrays.asList( allImages ) );
-		
-		for (int i=0; i < items.length; i++) {
-			
-			Class<? extends T> item = (Class<? extends T>)(items[i]);
-			String itemName = item.toString();
-			
-			if (bundle.contains( itemName + PFX_LABEL )) {
-				
-				String label = bundle.getString( itemName + PFX_LABEL );
-				labels.put( item, label );
-				labelsLeft.remove( label );
-				
-				Integer image = bundle.getInt( itemName + PFX_IMAGE );
-				images.put( item, image );
-				imagesLeft.remove( image );
-				
-				if (bundle.getBoolean( itemName + PFX_KNOWN )) {
-					known.add( item );
-				}
-				
-			} else {
-				
-				int index = Random.Int( labelsLeft.size() );
-				
-				labels.put( item, labelsLeft.get( index ) );
-				labelsLeft.remove( index );
-				
-				images.put( item, imagesLeft.get( index ) );
-				imagesLeft.remove( index );
-				
-			}
-		}
-	}
-	
-	public int image( T item ) {
-		return images.get( item.getClass() );
-	}
-	
-	public String label( T item ) {
-		return labels.get( item.getClass() );
-	}
-	
-	public boolean isKnown( T item ) {
-		return known.contains( item.getClass() );
-	}
-	
-	@SuppressWarnings("unchecked")
-	public void know( T item ) {
-		known.add( (Class<? extends T>)item.getClass() );
-		
-		if (known.size() == items.length - 1) {
-			for (int i=0; i < items.length; i++) {
-				if (!known.contains( items[i] )) {
-					known.add( items[i] );
-					break;
-				}
-			}
-		}
-	}
-	
-	public HashSet<Class<? extends T>> known() {
-		return known;
-	}
-	
-	public HashSet<Class<? extends T>> unknown() {
-		HashSet<Class<? extends T>> result = new HashSet<Class<? extends T>>();
-		for (Class<? extends T> i : items) {
-			if (!known.contains( i )) {
-				result.add( i );
-			}
-		}
-		return result;
-	}
+    constructor(items: Array<Class<out T>>, labels: Array<String>, images: Array<Int>, bundle: Bundle) {
+        this.items = items
+        this.images = HashMap()
+        this.labels = HashMap()
+        known = HashSet()
+        restore(bundle, labels, images)
+    }
+
+    fun save(bundle: Bundle) {
+        for (i in items.indices) {
+            val itemName = items[i].toString()
+            bundle.put(itemName + PFX_IMAGE, images[items[i]])
+            bundle.put(itemName + PFX_LABEL, labels[items[i]])
+            bundle.put(
+                itemName + PFX_KNOWN, known.contains(
+                    items[i]
+                )
+            )
+        }
+    }
+
+    private fun restore(bundle: Bundle, allLabels: Array<String>, allImages: Array<Int>) {
+        val labelsLeft: ArrayList<String> = ArrayList<String>(Arrays.asList<String>(*allLabels))
+        val imagesLeft: ArrayList<Int> = ArrayList<Int>(Arrays.asList<Int>(*allImages))
+        for (i in items.indices) {
+            val item = items[i]
+            val itemName = item.toString()
+            if (bundle.contains(itemName + PFX_LABEL)) {
+                val label: String = bundle.getString(itemName + PFX_LABEL)
+                labels[item] = label
+                labelsLeft.remove(label)
+                val image: Int = bundle.getInt(itemName + PFX_IMAGE)
+                images[item] = image
+                imagesLeft.remove(image)
+                if (bundle.getBoolean(itemName + PFX_KNOWN)) {
+                    known.add(item)
+                }
+            } else {
+                val index: Int = Random.Int(labelsLeft.size)
+                labels[item] = labelsLeft[index]
+                labelsLeft.removeAt(index)
+                images[item] = imagesLeft[index]
+                imagesLeft.removeAt(index)
+            }
+        }
+    }
+
+    fun image(item: T): Int {
+        return images[item.getClass()]!!
+    }
+
+    fun label(item: T): String? {
+        return labels[item.getClass()]
+    }
+
+    fun isKnown(item: T): Boolean {
+        return known.contains(item.getClass())
+    }
+
+    fun know(item: T) {
+        known.add(item.getClass() as Class<out T>)
+        if (known.size == items.size - 1) {
+            for (i in items.indices) {
+                if (!known.contains(items[i])) {
+                    known.add(items[i])
+                    break
+                }
+            }
+        }
+    }
+
+    fun known(): HashSet<Class<out T>> {
+        return known
+    }
+
+    fun unknown(): HashSet<Class<out T>> {
+        val result = HashSet<Class<out T>>()
+        for (i in items) {
+            if (!known.contains(i)) {
+                result.add(i)
+            }
+        }
+        return result
+    }
+
+    companion object {
+        private const val PFX_IMAGE = "_image"
+        private const val PFX_LABEL = "_label"
+        private const val PFX_KNOWN = "_known"
+    }
 }

@@ -15,26 +15,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.levels.traps;
+package com.watabou.pixeldungeon.levels.traps
 
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.buffs.Buff;
-import com.watabou.pixeldungeon.actors.buffs.Poison;
-import com.watabou.pixeldungeon.effects.CellEmitter;
-import com.watabou.pixeldungeon.effects.particles.PoisonParticle;
+import com.watabou.pixeldungeon.Dungeon
 
-public class PoisonTrap {
-
-	// 0xBB66EE
-	
-	public static void trigger( int pos, Char ch ) {
-		
-		if (ch != null) {
-			Buff.affect( ch, Poison.class ).set( Poison.durationFactor( ch ) * (4 + Dungeon.depth / 2) );
-		}
-		
-		CellEmitter.center( pos ).burst( PoisonParticle.SPLASH, 3 );
-		
-	}
+object PoisonTrap {
+    // 0xBB66EE
+    fun trigger(pos: Int, ch: Char?) {
+        if (ch != null) {
+            Buff.affect(ch, Poison::class.java).set(Poison.durationFactor(ch) * (4 + Dungeon.depth / 2))
+        }
+        CellEmitter.center(pos).burst(PoisonParticle.SPLASH, 3)
+    }
 }

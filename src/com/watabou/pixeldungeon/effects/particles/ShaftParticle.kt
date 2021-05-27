@@ -15,52 +15,42 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.effects.particles;
+package com.watabou.pixeldungeon.effects.particles
 
-import com.watabou.noosa.particles.Emitter;
-import com.watabou.noosa.particles.PixelParticle;
-import com.watabou.noosa.particles.Emitter.Factory;
-import com.watabou.utils.Random;
+import com.watabou.noosa.particles.Emitter
 
-public class ShaftParticle extends PixelParticle {
-	
-	public static final Emitter.Factory FACTORY = new Factory() {	
-		@Override
-		public void emit( Emitter emitter, int index, float x, float y ) {
-			((ShaftParticle)emitter.recycle( ShaftParticle.class )).reset( x, y );
-		}
-		@Override
-		public boolean lightMode() {
-			return true;
-		}
-	};
-	
-	public ShaftParticle() {
-		super();
-		
-		lifespan = 1.2f;
-		speed.set( 0, -6 );
-	}
-	
-	private float offs;
-	
-	public void reset( float x, float y ) {
-		revive();
-		
-		this.x = x;
-		this.y = y;
-		
-		offs = -Random.Float( lifespan );
-		left = lifespan - offs;
-	}
-	
-	@Override
-	public void update() {
-		super.update();
-		
-		float p = left / lifespan;
-		am = p < 0.5f ? p : 1 - p;
-		scale.x = (1 - p) * 4;
-		scale.y = 16 + (1 - p) * 16;
-	}
+class ShaftParticle : PixelParticle() {
+    private var offs = 0f
+    fun reset(x: Float, y: Float) {
+        revive()
+        x = x
+        y = y
+        offs = -Random.Float(lifespan)
+        left = lifespan - offs
+    }
+
+    fun update() {
+        super.update()
+        val p: Float = left / lifespan
+        am = if (p < 0.5f) p else 1 - p
+        scale.x = (1 - p) * 4
+        scale.y = 16 + (1 - p) * 16
+    }
+
+    companion object {
+        val FACTORY: Emitter.Factory = object : Factory() {
+            fun emit(emitter: Emitter, index: Int, x: Float, y: Float) {
+                (emitter.recycle(ShaftParticle::class.java) as ShaftParticle).reset(x, y)
+            }
+
+            fun lightMode(): Boolean {
+                return true
+            }
+        }
+    }
+
+    init {
+        lifespan = 1.2f
+        speed.set(0, -6)
+    }
 }

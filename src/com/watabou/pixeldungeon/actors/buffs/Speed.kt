@@ -15,10 +15,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.buffs;
+package com.watabou.pixeldungeon.actors.buffs
 
-public class Speed extends FlavourBuff {
-	
-	public static final float DURATION = 10f;
-	
+object Speed : FlavourBuff() {
+    const val DURATION = 10f
 }

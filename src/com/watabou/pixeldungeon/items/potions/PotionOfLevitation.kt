@@ -15,36 +15,28 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.potions;
+package com.watabou.pixeldungeon.items.potions
 
-import com.watabou.pixeldungeon.actors.buffs.Buff;
-import com.watabou.pixeldungeon.actors.buffs.Levitation;
-import com.watabou.pixeldungeon.actors.hero.Hero;
-import com.watabou.pixeldungeon.utils.GLog;
+import com.watabou.pixeldungeon.actors.buffs.Buff
 
-public class PotionOfLevitation extends Potion {
+class PotionOfLevitation : Potion() {
+    protected override fun apply(hero: Hero?) {
+        setKnown()
+        Buff.affect(hero, Levitation::class.java, Levitation.DURATION)
+        GLog.i("You float into the air!")
+    }
 
-	{
-		name = "Potion of Levitation";
-	}
-	
-	@Override
-	protected void apply( Hero hero ) {
-		setKnown();
-		Buff.affect( hero, Levitation.class, Levitation.DURATION );
-		GLog.i( "You float into the air!" );
-	}
-	
-	@Override
-	public String desc() {
-		return
-			"Drinking this curious liquid will cause you to hover in the air, " +
-			"able to drift effortlessly over traps. Flames and gases " +
-			"fill the air, however, and cannot be bypassed while airborne.";
-	}
-	
-	@Override
-	public int price() {
-		return isKnown() ? 35 * quantity : super.price();
-	}
+    fun desc(): String {
+        return "Drinking this curious liquid will cause you to hover in the air, " +
+                "able to drift effortlessly over traps. Flames and gases " +
+                "fill the air, however, and cannot be bypassed while airborne."
+    }
+
+    override fun price(): Int {
+        return if (isKnown()) 35 * quantity else super.price()
+    }
+
+    init {
+        name = "Potion of Levitation"
+    }
 }

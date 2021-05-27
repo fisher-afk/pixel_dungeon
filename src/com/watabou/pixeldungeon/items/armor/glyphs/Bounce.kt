@@ -15,58 +15,40 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.armor.glyphs;
+package com.watabou.pixeldungeon.items.armor.glyphs
 
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.Actor;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.mobs.Mob;
-import com.watabou.pixeldungeon.effects.Pushing;
-import com.watabou.pixeldungeon.items.armor.Armor;
-import com.watabou.pixeldungeon.items.armor.Armor.Glyph;
-import com.watabou.pixeldungeon.levels.Level;
-import com.watabou.utils.Random;
+import com.watabou.pixeldungeon.Dungeon
 
-public class Bounce extends Glyph {
+class Bounce : Glyph() {
+    fun proc(armor: Armor, attacker: Char, defender: Char, damage: Int): Int {
+        val level = Math.max(0, armor.effectiveLevel())
+        if (Level.adjacent(attacker.pos, defender.pos) && Random.Int(level + 5) >= 4) {
+            for (i in 0 until Level.NEIGHBOURS8.length) {
+                val ofs: Int = Level.NEIGHBOURS8.get(i)
+                if (attacker.pos - defender.pos === ofs) {
+                    val newPos: Int = attacker.pos + ofs
+                    if ((Level.passable.get(newPos) || Level.avoid.get(newPos)) && Actor.findChar(newPos) == null) {
+                        Actor.addDelayed(Pushing(attacker, attacker.pos, newPos), -1)
+                        attacker.pos = newPos
+                        // FIXME
+                        if (attacker is Mob) {
+                            Dungeon.level.mobPress(attacker as Mob)
+                        } else {
+                            Dungeon.level.press(newPos, attacker)
+                        }
+                    }
+                    break
+                }
+            }
+        }
+        return damage
+    }
 
-	private static final String TXT_BOUNCE	= "%s of bounce";
-	
-	@Override
-	public int proc( Armor armor, Char attacker, Char defender, int damage) {
+    fun name(weaponName: String?): String {
+        return String.format(TXT_BOUNCE, weaponName)
+    }
 
-		int level = Math.max( 0, armor.effectiveLevel() );
-		
-		if (Level.adjacent( attacker.pos, defender.pos ) && Random.Int( level + 5) >= 4) {
-			
-			for (int i=0; i < Level.NEIGHBOURS8.length; i++) {
-				int ofs = Level.NEIGHBOURS8[i];
-				if (attacker.pos - defender.pos == ofs) {
-					int newPos = attacker.pos + ofs;
-					if ((Level.passable[newPos] || Level.avoid[newPos]) && Actor.findChar( newPos ) == null) {
-						
-						Actor.addDelayed( new Pushing( attacker, attacker.pos, newPos ), -1 );
-						
-						attacker.pos = newPos;
-						// FIXME
-						if (attacker instanceof Mob) {
-							Dungeon.level.mobPress( (Mob)attacker );
-						} else {
-							Dungeon.level.press( newPos, attacker );
-						}
-						
-					}
-					break;
-				}
-			}
-
-		}
-		
-		return damage;
-	}
-	
-	@Override
-	public String name( String weaponName) {
-		return String.format( TXT_BOUNCE, weaponName );
-	}
-
+    companion object {
+        private const val TXT_BOUNCE = "%s of bounce"
+    }
 }

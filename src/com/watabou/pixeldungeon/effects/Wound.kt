@@ -15,69 +15,54 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.effects;
+package com.watabou.pixeldungeon.effects
 
-import com.watabou.noosa.Game;
-import com.watabou.noosa.Group;
-import com.watabou.noosa.Image;
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.DungeonTilemap;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.levels.Level;
+import com.watabou.noosa.Game
 
-public class Wound extends Image {
+class Wound : Image(Effects.get(Effects.Type.WOUND)) {
+    private var time = 0f
+    fun reset(p: Int) {
+        revive()
+        x = p % Level.WIDTH * DungeonTilemap.SIZE + (DungeonTilemap.SIZE - width) / 2
+        y = p / Level.WIDTH * DungeonTilemap.SIZE + (DungeonTilemap.SIZE - height) / 2
+        time = TIME_TO_FADE
+    }
 
-	private static final float TIME_TO_FADE = 0.8f;
-	
-	private float time;
-	
-	public Wound() {
-		super( Effects.get( Effects.Type.WOUND ) );
-		origin.set( width / 2, height / 2 );
-	}
-	
-	public void reset( int p ) {
-		revive();
-		
-		x = (p % Level.WIDTH) * DungeonTilemap.SIZE + (DungeonTilemap.SIZE - width) / 2;
-		y = (p / Level.WIDTH) * DungeonTilemap.SIZE + (DungeonTilemap.SIZE - height) / 2;
-		
-		time = TIME_TO_FADE;
-	}
-	
-	@Override
-	public void update() {
-		super.update();
-		
-		if ((time -= Game.elapsed) <= 0) {
-			kill();
-		} else {
-			float p = time / TIME_TO_FADE;
-			alpha( p );
-			scale.x = 1 + p;
-		}
-	}
-	
-	public static void hit( Char ch ) {
-		hit( ch, 0 );
-	}
-	
-	public static void hit( Char ch, float angle ) {
-		Wound w = (Wound)ch.sprite.parent.recycle( Wound.class );
-		ch.sprite.parent.bringToFront( w );
-		w.reset( ch.pos );
-		w.angle = angle;
-	}
-	
-	public static void hit( int pos ) {
-		hit( pos, 0 );
-	}
-	
-	public static void hit( int pos, float angle ) {
-		Group parent = Dungeon.hero.sprite.parent;
-		Wound w = (Wound)parent.recycle( Wound.class );
-		parent.bringToFront( w );
-		w.reset( pos );
-		w.angle = angle;
-	}
+    fun update() {
+        super.update()
+        if (Game.elapsed.let { time -= it; time } <= 0) {
+            kill()
+        } else {
+            val p = time / TIME_TO_FADE
+            alpha(p)
+            scale.x = 1 + p
+        }
+    }
+
+    companion object {
+        private const val TIME_TO_FADE = 0.8f
+        fun hit(ch: Char) {
+            hit(ch, 0f)
+        }
+
+        fun hit(ch: Char, angle: Float) {
+            val w = ch.sprite.parent.recycle(Wound::class.java) as Wound
+            ch.sprite.parent.bringToFront(w)
+            w.reset(ch.pos)
+            w.angle = angle
+        }
+
+        @JvmOverloads
+        fun hit(pos: Int, angle: Float = 0f) {
+            val parent: Group = Dungeon.hero.sprite.parent
+            val w = parent.recycle(Wound::class.java) as Wound
+            parent.bringToFront(w)
+            w.reset(pos)
+            w.angle = angle
+        }
+    }
+
+    init {
+        origin.set(width / 2, height / 2)
+    }
 }

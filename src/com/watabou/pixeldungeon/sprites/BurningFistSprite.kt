@@ -15,63 +15,43 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.sprites;
+package com.watabou.pixeldungeon.sprites
 
-import com.watabou.noosa.TextureFilm;
-import com.watabou.noosa.audio.Sample;
-import com.watabou.pixeldungeon.Assets;
-import com.watabou.pixeldungeon.effects.MagicMissile;
-import com.watabou.utils.Callback;
+import com.watabou.noosa.TextureFilm
 
-public class BurningFistSprite extends MobSprite {
-	
-	public BurningFistSprite() {
-		super();
-		
-		texture( Assets.BURNING );
-		
-		TextureFilm frames = new TextureFilm( texture, 24, 17 );
-		
-		idle = new Animation( 2, true );
-		idle.frames( frames, 0, 0, 1 );
-		
-		run = new Animation( 3, true );
-		run.frames( frames, 0, 1 );
-		
-		attack = new Animation( 8, false );
-		attack.frames( frames, 0, 5, 6 );
-		
-		die = new Animation( 10, false );
-		die.frames( frames, 0, 2, 3, 4 );
-		
-		play( idle );
-	}
-	
-	private int posToShoot;
-	
-	@Override
-	public void attack( int cell ) {
-		posToShoot = cell;	
-		super.attack( cell );
-	}
-	
-	@Override
-	public void onComplete( Animation anim ) {
-		if (anim == attack) {
+class BurningFistSprite : MobSprite() {
+    private var posToShoot = 0
+    override fun attack(cell: Int) {
+        posToShoot = cell
+        super.attack(cell)
+    }
 
-			Sample.INSTANCE.play( Assets.SND_ZAP );
-			MagicMissile.shadow( parent, ch.pos, posToShoot, 
-				new Callback() {			
-					@Override
-					public void call() {
-						ch.onAttackComplete();
-					}
-				} );
-			
-			idle();
-			
-		} else {
-			super.onComplete( anim );
-		}
-	}
+    override fun onComplete(anim: Animation) {
+        if (anim === attack) {
+            Sample.INSTANCE.play(Assets.SND_ZAP)
+            MagicMissile.shadow(parent, ch.pos, posToShoot,
+                object : Callback() {
+                    fun call() {
+                        ch.onAttackComplete()
+                    }
+                })
+            idle()
+        } else {
+            super.onComplete(anim)
+        }
+    }
+
+    init {
+        texture(Assets.BURNING)
+        val frames = TextureFilm(texture, 24, 17)
+        idle = Animation(2, true)
+        idle.frames(frames, 0, 0, 1)
+        run = Animation(3, true)
+        run.frames(frames, 0, 1)
+        attack = Animation(8, false)
+        attack.frames(frames, 0, 5, 6)
+        die = Animation(10, false)
+        die.frames(frames, 0, 2, 3, 4)
+        play(idle)
+    }
 }

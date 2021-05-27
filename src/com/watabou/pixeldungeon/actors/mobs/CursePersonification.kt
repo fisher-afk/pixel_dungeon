@@ -15,114 +15,87 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.mobs;
+package com.watabou.pixeldungeon.actors.mobs
 
-import java.util.HashSet;
+import com.watabou.pixeldungeon.Dungeon
 
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.Actor;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.buffs.Paralysis;
-import com.watabou.pixeldungeon.actors.buffs.Roots;
-import com.watabou.pixeldungeon.actors.buffs.Terror;
-import com.watabou.pixeldungeon.actors.mobs.npcs.Ghost;
-import com.watabou.pixeldungeon.effects.Pushing;
-import com.watabou.pixeldungeon.items.weapon.enchantments.Death;
-import com.watabou.pixeldungeon.levels.Level;
-import com.watabou.pixeldungeon.sprites.CursePersonificationSprite;
-import com.watabou.utils.Random;
+class CursePersonification : Mob() {
+    fun damageRoll(): Int {
+        return Random.NormalIntRange(3, 5)
+    }
 
-public class CursePersonification extends Mob {
+    fun attackSkill(target: Char?): Int {
+        return 10 + Dungeon.depth
+    }
 
-	{
-		name = "curse personification";
-		spriteClass = CursePersonificationSprite.class;
-		
-		HP = HT = 10 + Dungeon.depth * 3;
-		defenseSkill = 10 + Dungeon.depth;
-		
-		EXP = 3;
-		maxLvl = 5;	
-		
-		state = HUNTING;
-		baseSpeed = 0.5f;
-		flying = true;
-	}
-	
-	@Override
-	public int damageRoll() {
-		return Random.NormalIntRange( 3, 5 );
-	}
-	
-	@Override
-	public int attackSkill( Char target ) {
-		return 10 + Dungeon.depth;
-	}
-	
-	@Override
-	public int dr() {
-		return 1;
-	}
-	
-	@Override
-	public int attackProc(Char enemy, int damage) {
+    fun dr(): Int {
+        return 1
+    }
 
-		for (int i=0; i < Level.NEIGHBOURS8.length; i++) {
-			int ofs = Level.NEIGHBOURS8[i];
-			if (enemy.pos - pos == ofs) {
-				int newPos = enemy.pos + ofs;
-				if ((Level.passable[newPos] || Level.avoid[newPos]) && Actor.findChar( newPos ) == null) {
-					
-					Actor.addDelayed( new Pushing( enemy, enemy.pos, newPos ), -1 );
-					
-					enemy.pos = newPos;
-					// FIXME
-					if (enemy instanceof Mob) {
-						Dungeon.level.mobPress( (Mob)enemy );
-					} else {
-						Dungeon.level.press( newPos, enemy );
-					}
-					
-				}
-				break;
-			}
-		}
-		
-		return super.attackProc( enemy, damage );
-	}
-	
-	@Override
-	protected boolean act() {
-		if (HP > 0 && HP < HT) {
-			HP++;
-		}
-		return super.act();
-	}
-	
-	@Override
-	public void die( Object cause ) {
-		Ghost ghost = new Ghost();
-		ghost.state = ghost.PASSIVE;
-		Ghost.replace( this, ghost );
-	}
-	
-	@Override
-	public String description() {
-		return
-			"This creature resembles the sad ghost, but it swirls with darkness. " +
-			"Its face bears an expression of despair.";
-	}
-	
-	private static final HashSet<Class<?>> IMMUNITIES = new HashSet<Class<?>>();
-	static {
-		IMMUNITIES.add( Death.class );
-		IMMUNITIES.add( Terror.class );
-		IMMUNITIES.add( Paralysis.class );
-		IMMUNITIES.add( Roots.class );
-	}
-	
-	@Override
-	public HashSet<Class<?>> immunities() {
-		return IMMUNITIES;
-	}
+    fun attackProc(enemy: Char, damage: Int): Int {
+        for (i in 0 until Level.NEIGHBOURS8.length) {
+            val ofs: Int = Level.NEIGHBOURS8.get(i)
+            if (enemy.pos - pos === ofs) {
+                val newPos: Int = enemy.pos + ofs
+                if ((Level.passable.get(newPos) || Level.avoid.get(newPos)) && Actor.findChar(newPos) == null) {
+                    Actor.addDelayed(Pushing(enemy, enemy.pos, newPos), -1)
+                    enemy.pos = newPos
+                    // FIXME
+                    if (enemy is Mob) {
+                        Dungeon.level.mobPress(enemy as Mob)
+                    } else {
+                        Dungeon.level.press(newPos, enemy)
+                    }
+                }
+                break
+            }
+        }
+        return super.attackProc(enemy, damage)
+    }
+
+    protected override fun act(): Boolean {
+        if (HP > 0 && HP < HT) {
+            HP++
+        }
+        return super.act()
+    }
+
+    override fun die(cause: Any?) {
+        val ghost = Ghost()
+        ghost.state = ghost.PASSIVE
+        Ghost.replace(this, ghost)
+    }
+
+    override fun description(): String {
+        return "This creature resembles the sad ghost, but it swirls with darkness. " +
+                "Its face bears an expression of despair."
+    }
+
+    companion object {
+        private val IMMUNITIES = HashSet<Class<*>>()
+
+        init {
+            IMMUNITIES.add(Death::class.java)
+            IMMUNITIES.add(Terror::class.java)
+            IMMUNITIES.add(Paralysis::class.java)
+            IMMUNITIES.add(Roots::class.java)
+        }
+    }
+
+    fun immunities(): HashSet<Class<*>> {
+        return IMMUNITIES
+    }
+
+    init {
+        name = "curse personification"
+        spriteClass = CursePersonificationSprite::class.java
+        HT = 10 + Dungeon.depth * 3
+        HP = HT
+        defenseSkill = 10 + Dungeon.depth
+        EXP = 3
+        maxLvl = 5
+        state = HUNTING
+        baseSpeed = 0.5f
+        flying = true
+    }
 }

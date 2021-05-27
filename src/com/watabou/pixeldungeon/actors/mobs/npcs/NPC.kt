@@ -15,38 +15,30 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.mobs.npcs;
+package com.watabou.pixeldungeon.actors.mobs.npcs
 
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.mobs.Mob;
-import com.watabou.pixeldungeon.items.Heap;
-import com.watabou.pixeldungeon.levels.Level;
-import com.watabou.utils.Random;
+import com.watabou.pixeldungeon.Dungeon
 
-public abstract class NPC extends Mob {
-	
-	{
-		HP = HT = 1;
-		EXP = 0;
-	
-		hostile = false;
-		state = PASSIVE;
-	}
-	
-	protected void throwItem() {
-		Heap heap = Dungeon.level.heaps.get( pos );
-		if (heap != null) {
-			int n;
-			do {
-				n = pos + Level.NEIGHBOURS8[Random.Int( 8 )];
-			} while (!Level.passable[n] && !Level.avoid[n]);
-			Dungeon.level.drop( heap.pickUp(), n ).sprite.drop( pos );
-		}
-	}
-	
-	@Override
-	public void beckon( int cell ) {
-	}
-	
-	abstract public void interact();
+abstract class NPC : Mob() {
+    protected fun throwItem() {
+        val heap: Heap = Dungeon.level.heaps.get(pos)
+        if (heap != null) {
+            var n: Int
+            do {
+                n = pos + Level.NEIGHBOURS8.get(Random.Int(8))
+            } while (!Level.passable.get(n) && !Level.avoid.get(n))
+            Dungeon.level.drop(heap.pickUp(), n).sprite.drop(pos)
+        }
+    }
+
+    fun beckon(cell: Int) {}
+    abstract fun interact()
+
+    init {
+        HT = 1
+        HP = HT
+        EXP = 0
+        hostile = false
+        state = PASSIVE
+    }
 }

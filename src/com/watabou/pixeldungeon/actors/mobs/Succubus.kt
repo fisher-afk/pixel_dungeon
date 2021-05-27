@@ -15,128 +15,90 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.mobs;
+package com.watabou.pixeldungeon.actors.mobs
 
-import java.util.HashSet;
+import com.watabou.noosa.audio.Sample
 
-import com.watabou.noosa.audio.Sample;
-import com.watabou.pixeldungeon.Assets;
-import com.watabou.pixeldungeon.actors.Actor;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.buffs.Buff;
-import com.watabou.pixeldungeon.actors.buffs.Charm;
-import com.watabou.pixeldungeon.actors.buffs.Light;
-import com.watabou.pixeldungeon.actors.buffs.Sleep;
-import com.watabou.pixeldungeon.effects.Speck;
-import com.watabou.pixeldungeon.items.scrolls.ScrollOfLullaby;
-import com.watabou.pixeldungeon.items.wands.WandOfBlink;
-import com.watabou.pixeldungeon.items.weapon.enchantments.Leech;
-import com.watabou.pixeldungeon.levels.Level;
-import com.watabou.pixeldungeon.mechanics.Ballistica;
-import com.watabou.pixeldungeon.sprites.SuccubusSprite;
-import com.watabou.utils.Random;
+class Succubus : Mob() {
+    private var delay = 0
+    fun damageRoll(): Int {
+        return Random.NormalIntRange(15, 25)
+    }
 
-public class Succubus extends Mob {
-	
-	private static final int BLINK_DELAY	= 5;
-	
-	private int delay = 0;
-	
-	{
-		name = "succubus";
-		spriteClass = SuccubusSprite.class;
-		
-		HP = HT = 80;
-		defenseSkill = 25;
-		viewDistance = Light.DISTANCE;
-		
-		EXP = 12;
-		maxLvl = 25;
-		
-		loot = new ScrollOfLullaby();
-		lootChance = 0.05f;
-	}
-	
-	@Override
-	public int damageRoll() {
-		return Random.NormalIntRange( 15, 25 );
-	}
-	
-	@Override
-	public int attackProc( Char enemy, int damage ) {
-		
-		if (Random.Int( 3 ) == 0) {
-			Buff.affect( enemy, Charm.class, Charm.durationFactor( enemy ) * Random.IntRange( 3, 7 ) ).object = id();
-			enemy.sprite.centerEmitter().start( Speck.factory( Speck.HEART ), 0.2f, 5 );
-			Sample.INSTANCE.play( Assets.SND_CHARMS );
-		}
-		
-		return damage;
-	}
-	
-	@Override
-	protected boolean getCloser( int target ) {
-		if (Level.fieldOfView[target] && Level.distance( pos, target ) > 2 && delay <= 0) {
-			
-			blink( target );
-			spend( -1 / speed() );
-			return true;
-			
-		} else {
-			
-			delay--;
-			return super.getCloser( target );
-			
-		}
-	}
-	
-	private void blink( int target ) {
-		
-		int cell = Ballistica.cast( pos, target, true, true );
-		
-		if (Actor.findChar( cell ) != null && Ballistica.distance > 1) {
-			cell = Ballistica.trace[Ballistica.distance - 2];
-		}
-		
-		WandOfBlink.appear( this, cell );
-		
-		delay = BLINK_DELAY;
-	}
-	
-	@Override
-	public int attackSkill( Char target ) {
-		return 40;
-	}
-	
-	@Override
-	public int dr() {
-		return 10;
-	}
-	
-	@Override
-	public String description() {
-		return
-			"The succubi are demons that look like seductive (in a slightly gothic way) girls. Using its magic, the succubus " +
-			"can charm a hero, who will become unable to attack anything until the charm wears off.";
-	}
-	
-	private static final HashSet<Class<?>> RESISTANCES = new HashSet<Class<?>>();
-	static {
-		RESISTANCES.add( Leech.class );
-	}
-	
-	@Override
-	public HashSet<Class<?>> resistances() {
-		return RESISTANCES;
-	}
-	
-	private static final HashSet<Class<?>> IMMUNITIES = new HashSet<Class<?>>();
-	static {
-		IMMUNITIES.add( Sleep.class );
-	}
-	
-	@Override
-	public HashSet<Class<?>> immunities() {
-		return IMMUNITIES;
-	}
+    fun attackProc(enemy: Char, damage: Int): Int {
+        if (Random.Int(3) === 0) {
+            Buff.affect(enemy, Charm::class.java, Charm.durationFactor(enemy) * Random.IntRange(3, 7)).`object` = id()
+            enemy.sprite.centerEmitter().start(Speck.factory(Speck.HEART), 0.2f, 5)
+            Sample.INSTANCE.play(Assets.SND_CHARMS)
+        }
+        return damage
+    }
+
+    protected override fun getCloser(target: Int): Boolean {
+        return if (Level.fieldOfView.get(target) && Level.distance(pos, target) > 2 && delay <= 0) {
+            blink(target)
+            spend(-1 / speed())
+            true
+        } else {
+            delay--
+            super.getCloser(target)
+        }
+    }
+
+    private fun blink(target: Int) {
+        var cell: Int = Ballistica.cast(pos, target, true, true)
+        if (Actor.findChar(cell) != null && Ballistica.distance > 1) {
+            cell = Ballistica.trace.get(Ballistica.distance - 2)
+        }
+        WandOfBlink.appear(this, cell)
+        delay = BLINK_DELAY
+    }
+
+    fun attackSkill(target: Char?): Int {
+        return 40
+    }
+
+    fun dr(): Int {
+        return 10
+    }
+
+    override fun description(): String {
+        return "The succubi are demons that look like seductive (in a slightly gothic way) girls. Using its magic, the succubus " +
+                "can charm a hero, who will become unable to attack anything until the charm wears off."
+    }
+
+    companion object {
+        private const val BLINK_DELAY = 5
+        private val RESISTANCES = HashSet<Class<*>>()
+        private val IMMUNITIES = HashSet<Class<*>>()
+
+        init {
+            RESISTANCES.add(Leech::class.java)
+        }
+
+        init {
+            IMMUNITIES.add(Sleep::class.java)
+        }
+    }
+
+    fun resistances(): HashSet<Class<*>> {
+        return RESISTANCES
+    }
+
+    fun immunities(): HashSet<Class<*>> {
+        return IMMUNITIES
+    }
+
+    init {
+        name = "succubus"
+        spriteClass = SuccubusSprite::class.java
+        HT = 80
+        HP = HT
+        defenseSkill = 25
+        viewDistance = Light.DISTANCE
+        EXP = 12
+        maxLvl = 25
+        loot = ScrollOfLullaby()
+        lootChance = 0.05f
+    }
 }

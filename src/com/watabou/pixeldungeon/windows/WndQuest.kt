@@ -15,66 +15,46 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.windows;
+package com.watabou.pixeldungeon.windows
 
-import com.watabou.pixeldungeon.PixelDungeon;
-import com.watabou.pixeldungeon.actors.mobs.npcs.NPC;
-import com.watabou.pixeldungeon.ui.HighlightedText;
-import com.watabou.pixeldungeon.ui.RedButton;
-import com.watabou.pixeldungeon.ui.Window;
-import com.watabou.pixeldungeon.utils.Utils;
+import com.watabou.pixeldungeon.PixelDungeon
 
-public class WndQuest extends Window {
+class WndQuest(questgiver: NPC, text: String?, vararg options: String?) : Window() {
+    protected fun onSelect(index: Int) {}
 
-	private static final int WIDTH_P	= 120;
-	private static final int WIDTH_L	= 144;
-	
-	private static final int BTN_HEIGHT	= 20;
-	private static final int GAP		= 2;
-	
-	public WndQuest( NPC questgiver, String text, String... options ) {
-		
-		super();
-		
-		int width = PixelDungeon.landscape() ? WIDTH_L : WIDTH_P;
-		
-		IconTitle titlebar = new IconTitle( questgiver.sprite(), Utils.capitalize( questgiver.name ) );
-		titlebar.setRect( 0, 0, width, 0 );
-		add( titlebar );
-		
-		HighlightedText hl = new HighlightedText( 6 );
-		hl.text( text, width );
-		hl.setPos( titlebar.left(), titlebar.bottom() + GAP );
-		add( hl );
-		
-		if (options.length > 0) {
-			float pos = hl.bottom();
-			
-			for (int i=0; i < options.length; i++) {
-				
-				pos += GAP;
-				
-				final int index = i;
-				RedButton btn = new RedButton( options[i] ) {
-					@Override
-					protected void onClick() {
-						hide();
-						onSelect( index );
-					}
-				};
-				btn.setRect( 0, pos, width, BTN_HEIGHT );
-				add( btn );
-				
-				pos += BTN_HEIGHT;
-			}
-			
-			resize( width, (int)pos );
-			
-		} else {
-		
-			resize( width, (int)hl.bottom() );
-		}
-	}
-	
-	protected void onSelect( int index ) {};
+    companion object {
+        private const val WIDTH_P = 120
+        private const val WIDTH_L = 144
+        private const val BTN_HEIGHT = 20
+        private const val GAP = 2
+    }
+
+    init {
+        val width = if (PixelDungeon.landscape()) WIDTH_L else WIDTH_P
+        val titlebar = IconTitle(questgiver.sprite(), Utils.capitalize(questgiver.name))
+        titlebar.setRect(0, 0, width, 0)
+        add(titlebar)
+        val hl = HighlightedText(6)
+        hl.text(text, width)
+        hl.setPos(titlebar.left(), titlebar.bottom() + GAP)
+        add(hl)
+        if (options.size > 0) {
+            var pos: Float = hl.bottom()
+            for (i in 0 until options.size) {
+                pos += GAP.toFloat()
+                val btn: RedButton = object : RedButton(options[i]) {
+                    protected fun onClick() {
+                        hide()
+                        onSelect(i)
+                    }
+                }
+                btn.setRect(0, pos, width, BTN_HEIGHT)
+                add(btn)
+                pos += BTN_HEIGHT.toFloat()
+            }
+            resize(width, pos.toInt())
+        } else {
+            resize(width, hl.bottom() as Int)
+        }
+    }
 }

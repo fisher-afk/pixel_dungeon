@@ -15,74 +15,49 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.wands;
+package com.watabou.pixeldungeon.items.wands
 
-import com.watabou.noosa.audio.Sample;
-import com.watabou.pixeldungeon.Assets;
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.Actor;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.effects.MagicMissile;
-import com.watabou.pixeldungeon.items.scrolls.ScrollOfTeleportation;
-import com.watabou.pixeldungeon.utils.GLog;
-import com.watabou.utils.Callback;
+import com.watabou.noosa.audio.Sample
 
-public class WandOfTeleportation extends Wand {
+class WandOfTeleportation : Wand() {
+    protected override fun onZap(cell: Int) {
+        val ch: Char = Actor.findChar(cell)
+        if (ch === curUser) {
+            setKnown()
+            ScrollOfTeleportation.teleportHero(curUser)
+        } else if (ch != null) {
+            var count = 10
+            var pos: Int
+            do {
+                pos = Dungeon.level.randomRespawnCell()
+                if (count-- <= 0) {
+                    break
+                }
+            } while (pos == -1)
+            if (pos == -1) {
+                GLog.w(ScrollOfTeleportation.TXT_NO_TELEPORT)
+            } else {
+                ch.pos = pos
+                ch.sprite.place(ch.pos)
+                ch.sprite.visible = Dungeon.visible.get(pos)
+                GLog.i(curUser.name.toString() + " teleported " + ch.name + " to somewhere")
+            }
+        } else {
+            GLog.i("nothing happened")
+        }
+    }
 
-	{
-		name = "Wand of Teleportation";
-	}
+    protected override fun fx(cell: Int, callback: Callback?) {
+        MagicMissile.coldLight(curUser.sprite.parent, curUser.pos, cell, callback)
+        Sample.INSTANCE.play(Assets.SND_ZAP)
+    }
 
-	@Override
-	protected void onZap( int cell ) {
-		
-		Char ch = Actor.findChar( cell );
-		
-		if (ch == curUser) {
-			
-			setKnown();
-			ScrollOfTeleportation.teleportHero( curUser );
-			
-		} else if (ch != null) {
-			
-			int count = 10;
-			int pos;
-			do {
-				pos = Dungeon.level.randomRespawnCell();
-				if (count-- <= 0) {
-					break;
-				}
-			} while (pos == -1);
-			
-			if (pos == -1) {
-				
-				GLog.w( ScrollOfTeleportation.TXT_NO_TELEPORT );
-				
-			} else {
-			
-				ch.pos = pos;
-				ch.sprite.place( ch.pos );
-				ch.sprite.visible = Dungeon.visible[pos];
-				GLog.i( curUser.name + " teleported " + ch.name + " to somewhere" );
-				
-			}
+    fun desc(): String {
+        return "A blast from this wand will teleport a creature against " +
+                "its will to a random place on the current level."
+    }
 
-		} else {
-			
-			GLog.i( "nothing happened" );
-			
-		}
-	}
-	
-	protected void fx( int cell, Callback callback ) {
-		MagicMissile.coldLight( curUser.sprite.parent, curUser.pos, cell, callback );
-		Sample.INSTANCE.play( Assets.SND_ZAP );
-	}
-	
-	@Override
-	public String desc() {
-		return
-			"A blast from this wand will teleport a creature against " +
-			"its will to a random place on the current level.";
-	}
+    init {
+        name = "Wand of Teleportation"
+    }
 }

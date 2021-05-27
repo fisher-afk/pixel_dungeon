@@ -15,52 +15,32 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.armor.glyphs;
+package com.watabou.pixeldungeon.items.armor.glyphs
 
-import com.watabou.noosa.Camera;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.buffs.Buff;
-import com.watabou.pixeldungeon.actors.buffs.Roots;
-import com.watabou.pixeldungeon.effects.CellEmitter;
-import com.watabou.pixeldungeon.effects.particles.EarthParticle;
-import com.watabou.pixeldungeon.items.armor.Armor;
-import com.watabou.pixeldungeon.items.armor.Armor.Glyph;
-import com.watabou.pixeldungeon.plants.Earthroot;
-import com.watabou.pixeldungeon.sprites.ItemSprite;
-import com.watabou.pixeldungeon.sprites.ItemSprite.Glowing;
-import com.watabou.utils.Random;
+import com.watabou.noosa.Camera
 
-public class Entanglement extends Glyph {
+class Entanglement : Glyph() {
+    fun proc(armor: Armor, attacker: Char?, defender: Char, damage: Int): Int {
+        val level = Math.max(0, armor.effectiveLevel())
+        if (Random.Int(4) === 0) {
+            Buff.prolong(defender, Roots::class.java, 5 - level / 5)
+            Buff.affect(defender, Earthroot.Armor::class.java).level(5 * (level + 1))
+            CellEmitter.bottom(defender.pos).start(EarthParticle.FACTORY, 0.05f, 8)
+            Camera.main.shake(1, 0.4f)
+        }
+        return damage
+    }
 
-	private static final String TXT_ENTANGLEMENT	= "%s of entanglement";
-	
-	private static ItemSprite.Glowing GREEN = new ItemSprite.Glowing( 0x448822 );
-	
-	@Override
-	public int proc( Armor armor, Char attacker, Char defender, int damage ) {
+    fun name(weaponName: String?): String {
+        return String.format(TXT_ENTANGLEMENT, weaponName)
+    }
 
-		int level = Math.max( 0, armor.effectiveLevel() );
-		
-		if (Random.Int( 4 ) == 0) {
-			
-			Buff.prolong( defender, Roots.class, 5 - level / 5 );
-			Buff.affect( defender, Earthroot.Armor.class ).level( 5 * (level + 1) );
-			CellEmitter.bottom( defender.pos ).start( EarthParticle.FACTORY, 0.05f, 8 );
-			Camera.main.shake( 1, 0.4f );
-			
-		}
+    fun glowing(): Glowing {
+        return GREEN
+    }
 
-		return damage;
-	}
-	
-	@Override
-	public String name( String weaponName) {
-		return String.format( TXT_ENTANGLEMENT, weaponName );
-	}
-
-	@Override
-	public Glowing glowing() {
-		return GREEN;
-	}
-		
+    companion object {
+        private const val TXT_ENTANGLEMENT = "%s of entanglement"
+        private val GREEN: ItemSprite.Glowing = Glowing(0x448822)
+    }
 }

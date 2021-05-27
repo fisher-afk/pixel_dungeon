@@ -15,42 +15,29 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.effects;
+package com.watabou.pixeldungeon.effects
 
-import com.watabou.noosa.particles.Emitter;
-import com.watabou.pixeldungeon.DungeonTilemap;
-import com.watabou.pixeldungeon.scenes.GameScene;
-import com.watabou.utils.PointF;
+import com.watabou.noosa.particles.Emitter
 
-public class CellEmitter {
+object CellEmitter {
+    operator fun get(cell: Int): Emitter {
+        val p: PointF = DungeonTilemap.tileToWorld(cell)
+        val emitter: Emitter = GameScene.emitter()
+        emitter.pos(p.x, p.y, DungeonTilemap.SIZE, DungeonTilemap.SIZE)
+        return emitter
+    }
 
-	public static Emitter get( int cell ) {
-		
-		PointF p = DungeonTilemap.tileToWorld( cell );
-		
-		Emitter emitter = GameScene.emitter();
-		emitter.pos( p.x, p.y, DungeonTilemap.SIZE, DungeonTilemap.SIZE );
-		
-		return emitter;
-	}
-	
-	public static Emitter center( int cell ) {
-		
-		PointF p = DungeonTilemap.tileToWorld( cell );
-		
-		Emitter emitter = GameScene.emitter();
-		emitter.pos( p.x + DungeonTilemap.SIZE / 2, p.y + DungeonTilemap.SIZE / 2 );
-		
-		return emitter;
-	}
-	
-	public static Emitter bottom( int cell ) {
-		
-		PointF p = DungeonTilemap.tileToWorld( cell );
-		
-		Emitter emitter = GameScene.emitter();
-		emitter.pos( p.x, p.y + DungeonTilemap.SIZE, DungeonTilemap.SIZE, 0 );
-		
-		return emitter;
-	}
+    fun center(cell: Int): Emitter {
+        val p: PointF = DungeonTilemap.tileToWorld(cell)
+        val emitter: Emitter = GameScene.emitter()
+        emitter.pos(p.x + DungeonTilemap.SIZE / 2, p.y + DungeonTilemap.SIZE / 2)
+        return emitter
+    }
+
+    fun bottom(cell: Int): Emitter {
+        val p: PointF = DungeonTilemap.tileToWorld(cell)
+        val emitter: Emitter = GameScene.emitter()
+        emitter.pos(p.x, p.y + DungeonTilemap.SIZE, DungeonTilemap.SIZE, 0)
+        return emitter
+    }
 }

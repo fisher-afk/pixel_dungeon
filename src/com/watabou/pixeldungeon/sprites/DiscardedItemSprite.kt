@@ -15,34 +15,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.sprites;
+package com.watabou.pixeldungeon.sprites
 
-import com.watabou.noosa.Game;
+import com.watabou.noosa.Game
 
-public class DiscardedItemSprite extends ItemSprite {
-	
-	public DiscardedItemSprite() {
-		
-		super();
-		
-		originToCenter();
-		angularSpeed = 720;
-	}
-	
-	@Override
-	public void drop() {
-		scale.set( 1 );
-		am = 1;
-	}
-	
-	@Override
-	public void update() {
-		
-		super.update();
-		
-		scale.set( scale.x * 0.9f );
-		if ((am -= Game.elapsed) <= 0) {
-			remove();
-		}
-	}
+class DiscardedItemSprite : ItemSprite() {
+    override fun drop() {
+        scale.set(1)
+        am = 1
+    }
+
+    override fun update() {
+        super.update()
+        scale.set(scale.x * 0.9f)
+        if (Game.elapsed.let { am -= it; am } <= 0) {
+            remove()
+        }
+    }
+
+    init {
+        originToCenter()
+        angularSpeed = 720
+    }
 }

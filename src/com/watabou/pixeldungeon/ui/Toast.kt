@@ -15,70 +15,57 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.ui;
+package com.watabou.pixeldungeon.ui
 
-import com.watabou.noosa.BitmapText;
-import com.watabou.noosa.NinePatch;
-import com.watabou.noosa.ui.Component;
-import com.watabou.pixeldungeon.Chrome;
-import com.watabou.pixeldungeon.scenes.PixelScene;
+import com.watabou.noosa.BitmapText
 
-public class Toast extends Component {
+class Toast(text: String?) : Component() {
+    protected var bg: NinePatch? = null
+    protected var close: SimpleButton? = null
+    protected var text: BitmapText? = null
+    protected fun createChildren() {
+        super.createChildren()
+        bg = Chrome.get(Chrome.Type.TOAST_TR)
+        add(bg)
+        close = object : SimpleButton(Icons.get(Icons.CLOSE)) {
+            protected override fun onClick() {
+                onClose()
+            }
+        }
+        add(close)
+        text = PixelScene.createText(8)
+        add(text)
+    }
 
-	private static final float MARGIN_HOR	= 2;
-	private static final float MARGIN_VER	= 2;
-	
-	protected NinePatch bg;
-	protected SimpleButton close;
-	protected BitmapText text;
-	
-	public Toast( String text ) {
-		super();
-		text( text );
-		
-		width = this.text.width() + close.width() + bg.marginHor() + MARGIN_HOR * 3;
-		height = Math.max( this.text.height(), close.height() ) + bg.marginVer() + MARGIN_VER * 2;
-	}
-	
-	@Override
-	protected void createChildren() {
-		super.createChildren();
-		
-		bg = Chrome.get( Chrome.Type.TOAST_TR );
-		add( bg );
-		
-		close = new SimpleButton( Icons.get( Icons.CLOSE ) ) {
-			protected void onClick() {
-				onClose();
-			};
-		};
-		add( close );
-		
-		text = PixelScene.createText( 8 );
-		add( text );
-	}
-	
-	@Override
-	protected void layout() {
-		super.layout();
-		
-		bg.x = x;
-		bg.y = y;
-		bg.size( width, height );
-		
-		close.setPos( 
-			bg.x + bg.width() - bg.marginHor() / 2 - MARGIN_HOR - close.width(),
-			y + (height - close.height()) / 2 );
-		
-		text.x = close.left() - MARGIN_HOR - text.width();
-		text.y = y + (height - text.height()) / 2;
-		PixelScene.align( text );
-	}
-	
-	public void text( String txt ) {
-		text.text( txt );
-		text.measure();
-	}
-	
-	protected void onClose() {};
+    protected fun layout() {
+        super.layout()
+        bg.x = x
+        bg.y = y
+        bg.size(width, height)
+        close.setPos(
+            bg.x + bg.width() - bg.marginHor() / 2 - MARGIN_HOR - close.width(),
+            y + (height - close.height()) / 2
+        )
+        text.x = close.left() - MARGIN_HOR - text.width()
+        text.y = y + (height - text.height()) / 2
+        PixelScene.align(text)
+    }
+
+    fun text(txt: String?) {
+        text.text(txt)
+        text.measure()
+    }
+
+    protected fun onClose() {}
+
+    companion object {
+        private const val MARGIN_HOR = 2f
+        private const val MARGIN_VER = 2f
+    }
+
+    init {
+        text(text)
+        width = this.text.width() + close.width() + bg.marginHor() + MARGIN_HOR * 3
+        height = Math.max(this.text.height(), close.height()) + bg.marginVer() + MARGIN_VER * 2
+    }
 }

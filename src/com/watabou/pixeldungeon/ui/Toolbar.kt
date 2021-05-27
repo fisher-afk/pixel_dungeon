@@ -15,362 +15,283 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.ui;
+package com.watabou.pixeldungeon.ui
 
-import com.watabou.noosa.Game;
-import com.watabou.noosa.Gizmo;
-import com.watabou.noosa.Image;
-import com.watabou.noosa.ui.Button;
-import com.watabou.noosa.ui.Component;
-import com.watabou.pixeldungeon.Assets;
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.DungeonTilemap;
-import com.watabou.pixeldungeon.actors.Actor;
-import com.watabou.pixeldungeon.actors.mobs.Mob;
-import com.watabou.pixeldungeon.items.Heap;
-import com.watabou.pixeldungeon.items.Item;
-import com.watabou.pixeldungeon.levels.Level;
-import com.watabou.pixeldungeon.plants.Plant;
-import com.watabou.pixeldungeon.scenes.CellSelector;
-import com.watabou.pixeldungeon.scenes.GameScene;
-import com.watabou.pixeldungeon.sprites.ItemSprite;
-import com.watabou.pixeldungeon.windows.WndCatalogus;
-import com.watabou.pixeldungeon.windows.WndHero;
-import com.watabou.pixeldungeon.windows.WndInfoCell;
-import com.watabou.pixeldungeon.windows.WndInfoItem;
-import com.watabou.pixeldungeon.windows.WndInfoMob;
-import com.watabou.pixeldungeon.windows.WndInfoPlant;
-import com.watabou.pixeldungeon.windows.WndBag;
-import com.watabou.pixeldungeon.windows.WndMessage;
-import com.watabou.pixeldungeon.windows.WndTradeItem;
+import com.watabou.noosa.Game
 
-public class Toolbar extends Component {
+class Toolbar : Component() {
+    private var btnWait: Tool? = null
+    private var btnSearch: Tool? = null
+    private var btnInfo: Tool? = null
+    private var btnInventory: Tool? = null
+    private var btnQuick1: Tool? = null
+    private var btnQuick2: Tool? = null
+    private var pickedUp: PickedUpItem? = null
+    private var lastEnabled = true
+    protected fun createChildren() {
+        add(object : Tool(0, 7, 20, 25) {
+            protected fun onClick() {
+                Dungeon.hero.rest(false)
+            }
 
-	private Tool btnWait;
-	private Tool btnSearch;
-	private Tool btnInfo;
-	private Tool btnInventory;
-	private Tool btnQuick1;
-	private Tool btnQuick2;
-	
-	private PickedUpItem pickedUp;
-	
-	private boolean lastEnabled = true;
-	
-	private static Toolbar instance;
-	
-	public Toolbar() {
-		super();
-		
-		instance = this;
-		
-		height = btnInventory.height();
-	}
-	
-	@Override
-	protected void createChildren() {
-		
-		add( btnWait = new Tool( 0, 7, 20, 25 ) {
-			@Override
-			protected void onClick() {
-				Dungeon.hero.rest( false );
-			};
-			protected boolean onLongClick() {
-				Dungeon.hero.rest( true );
-				return true;
-			};
-		} );
-		
-		add( btnSearch = new Tool( 20, 7, 20, 25 ) {
-			@Override
-			protected void onClick() {
-				Dungeon.hero.search( true );
-			}
-		} );
-		
-		add( btnInfo = new Tool( 40, 7, 21, 25 ) {
-			@Override
-			protected void onClick() {
-				GameScene.selectCell( informer );
-			}
-		} );
-		
-		add( btnInventory = new Tool( 60, 7, 23, 25 ) {
-			private GoldIndicator gold;
-			@Override
-			protected void onClick() {
-				GameScene.show( new WndBag( Dungeon.hero.belongings.backpack, null, WndBag.Mode.ALL, null ) );
-			}
-			protected boolean onLongClick() {
-				GameScene.show( new WndCatalogus() );
-				return true;
-			};
-			@Override
-			protected void createChildren() {
-				super.createChildren();
-				gold = new GoldIndicator();
-				add( gold );
-			};
-			@Override
-			protected void layout() {
-				super.layout();
-				gold.fill( this );
-			};
-		} );
-		
-		add( btnQuick1 = new QuickslotTool( 83, 7, 22, 25, true ) );
-		add( btnQuick2 = new QuickslotTool( 83, 7, 22, 25, false ) );
-		btnQuick2.visible = (QuickSlot.secondaryValue != null);
-		
-		add( pickedUp = new PickedUpItem() );
-	}
-	
-	@Override
-	protected void layout() {
-		btnWait.setPos( x, y );
-		btnSearch.setPos( btnWait.right(), y );
-		btnInfo.setPos( btnSearch.right(), y );
-		btnQuick1.setPos( width - btnQuick1.width(), y );
-		if (btnQuick2.visible) {
-			btnQuick2.setPos(btnQuick1.left() - btnQuick2.width(), y );
-			btnInventory.setPos( btnQuick2.left() - btnInventory.width(), y );
-		} else {
-			btnInventory.setPos( btnQuick1.left() - btnInventory.width(), y );
-		}
-	}
-	
-	@Override
-	public void update() {
-		super.update();
-		
-		if (lastEnabled != Dungeon.hero.ready) {
-			lastEnabled = Dungeon.hero.ready;
-			
-			for (Gizmo tool : members) {
-				if (tool instanceof Tool) {
-					((Tool)tool).enable( lastEnabled );
-				}
-			}
-		}
-		
-		if (!Dungeon.hero.isAlive()) {
-			btnInventory.enable( true );
-		}
-	}
-	
-	public void pickup( Item item ) {
-		pickedUp.reset( item, 
-			btnInventory.centerX(), 
-			btnInventory.centerY() );
-	}
-	
-	public static boolean secondQuickslot() {
-		return instance.btnQuick2.visible;
-	}
-	
-	public static void secondQuickslot( boolean value ) {
-		instance.btnQuick2.visible = 
-		instance.btnQuick2.active = 
-			value;
-		instance.layout();
-	}
-	
-	private static CellSelector.Listener informer = new CellSelector.Listener() {
-		@Override
-		public void onSelect( Integer cell ) {
-			
-			if (cell == null) {
-				return;
-			}
-			
-			if (cell < 0 || cell > Level.LENGTH || (!Dungeon.level.visited[cell] && !Dungeon.level.mapped[cell])) {
-				GameScene.show( new WndMessage( "You don't know what is there." ) ) ;
-				return;
-			}
-			
-			if (!Dungeon.visible[cell]) {
-				GameScene.show( new WndInfoCell( cell ) );
-				return;
-			}
-			
-			if (cell == Dungeon.hero.pos) {
-				GameScene.show( new WndHero() );
-				return;
-			}
-			
-			Mob mob = (Mob)Actor.findChar( cell );
-			if (mob != null) {
-				GameScene.show( new WndInfoMob( mob ) );
-				return;
-			}
-			
-			Heap heap = Dungeon.level.heaps.get( cell );
-			if (heap != null && heap.type != Heap.Type.HIDDEN) {
-				if (heap.type == Heap.Type.FOR_SALE && heap.size() == 1 && heap.peek().price() > 0) {
-					GameScene.show( new WndTradeItem( heap, false ) );
-				} else {
-					GameScene.show( new WndInfoItem( heap ) );
-				}
-				return;
-			}
-			
-			Plant plant = Dungeon.level.plants.get( cell );
-			if (plant != null) {
-				GameScene.show( new WndInfoPlant( plant ) );
-				return;
-			}
-			
-			GameScene.show( new WndInfoCell( cell ) );
-		}	
-		@Override
-		public String prompt() {
-			return "Select a cell to examine";
-		}
-	};
-	
-	private static class Tool extends Button {
-		
-		private static final int BGCOLOR = 0x7B8073;
-		
-		protected Image base;
-		
-		public Tool( int x, int y, int width, int height ) {
-			super();
-			
-			base.frame( x, y, width, height );
-			
-			this.width = width;
-			this.height = height;
-		}
-		
-		@Override
-		protected void createChildren() {
-			super.createChildren();
-			
-			base = new Image( Assets.TOOLBAR );
-			add( base );
-		}
-		
-		@Override
-		protected void layout() {
-			super.layout();
-			
-			base.x = x;
-			base.y = y;
-		}
-		
-		@Override
-		protected void onTouchDown() {
-			base.brightness( 1.4f );
-		}
-		
-		@Override
-		protected void onTouchUp() {
-			if (active) {
-				base.resetColor();
-			} else {
-				base.tint( BGCOLOR, 0.7f );
-			}
-		}
-		
-		public void enable( boolean value ) {
-			if (value != active) {
-				if (value) {
-					base.resetColor();
-				} else {
-					base.tint( BGCOLOR, 0.7f );
-				}
-				active = value;
-			}
-		}
-	}
-	
-	private static class QuickslotTool extends Tool {
-		
-		private QuickSlot slot;
-		
-		public QuickslotTool( int x, int y, int width, int height, boolean primary ) {
-			super( x, y, width, height );
-			if (primary) {
-				slot.primary();
-			} else {
-				slot.secondary();
-			}
-		}
-		
-		@Override
-		protected void createChildren() {
-			super.createChildren();
-			
-			slot = new QuickSlot();
-			add( slot );
-		}
-		
-		@Override
-		protected void layout() {
-			super.layout();
-			slot.setRect( x + 1, y + 2, width - 2, height - 2 );
-		}
-		
-		@Override
-		public void enable( boolean value ) {
-			slot.enable( value );
-			super.enable( value );
-		}
-	}
-	
-	private static class PickedUpItem extends ItemSprite {
-		
-		private static final float DISTANCE = DungeonTilemap.SIZE;
-		private static final float DURATION = 0.2f;
-		
-		private float dstX;
-		private float dstY;
-		private float left;
-		
-		public PickedUpItem() {
-			super();
-			
-			originToCenter();
-			
-			active = 
-			visible = 
-				false;
-		}
-		
-		public void reset( Item item, float dstX, float dstY ) {
-			view( item.image(), item.glowing() );
-			
-			active = 
-			visible = 
-				true;
-			
-			this.dstX = dstX - ItemSprite.SIZE / 2;
-			this.dstY = dstY - ItemSprite.SIZE / 2;
-			left = DURATION;
-			
-			x = this.dstX - DISTANCE;
-			y = this.dstY - DISTANCE;
-			alpha( 1 );
-		}
-		
-		@Override
-		public void update() {
-			super.update();
-			
-			if ((left -= Game.elapsed) <= 0) {
-				
-				visible = 
-				active = 
-					false;
-				
-			} else {
-				float p = left / DURATION; 
-				scale.set( (float)Math.sqrt( p ) );
-				float offset = DISTANCE * p;
-				x = dstX - offset;
-				y = dstY - offset;
-			}
-		}
-	}
+            protected fun onLongClick(): Boolean {
+                Dungeon.hero.rest(true)
+                return true
+            }
+        }.also { btnWait = it })
+        add(object : Tool(20, 7, 20, 25) {
+            protected fun onClick() {
+                Dungeon.hero.search(true)
+            }
+        }.also { btnSearch = it })
+        add(object : Tool(40, 7, 21, 25) {
+            protected fun onClick() {
+                GameScene.selectCell(informer)
+            }
+        }.also { btnInfo = it })
+        add(object : Tool(60, 7, 23, 25) {
+            private var gold: GoldIndicator? = null
+            protected fun onClick() {
+                GameScene.show(WndBag(Dungeon.hero.belongings.backpack, null, WndBag.Mode.ALL, null))
+            }
+
+            protected fun onLongClick(): Boolean {
+                GameScene.show(WndCatalogus())
+                return true
+            }
+
+            override fun createChildren() {
+                super.createChildren()
+                gold = GoldIndicator()
+                add(gold)
+            }
+
+            override fun layout() {
+                super.layout()
+                gold.fill(this)
+            }
+        }.also { btnInventory = it })
+        add(QuickslotTool(83, 7, 22, 25, true).also { btnQuick1 = it })
+        add(QuickslotTool(83, 7, 22, 25, false).also { btnQuick2 = it })
+        btnQuick2.visible = QuickSlot.secondaryValue != null
+        add(PickedUpItem().also { pickedUp = it })
+    }
+
+    protected fun layout() {
+        btnWait.setPos(x, y)
+        btnSearch.setPos(btnWait.right(), y)
+        btnInfo.setPos(btnSearch.right(), y)
+        btnQuick1.setPos(width - btnQuick1.width(), y)
+        if (btnQuick2.visible) {
+            btnQuick2.setPos(btnQuick1.left() - btnQuick2.width(), y)
+            btnInventory.setPos(btnQuick2.left() - btnInventory.width(), y)
+        } else {
+            btnInventory.setPos(btnQuick1.left() - btnInventory.width(), y)
+        }
+    }
+
+    fun update() {
+        super.update()
+        if (lastEnabled != Dungeon.hero.ready) {
+            lastEnabled = Dungeon.hero.ready
+            for (tool in members) {
+                if (tool is Tool) {
+                    (tool as Tool).enable(lastEnabled)
+                }
+            }
+        }
+        if (!Dungeon.hero.isAlive()) {
+            btnInventory!!.enable(true)
+        }
+    }
+
+    fun pickup(item: Item) {
+        pickedUp!!.reset(
+            item,
+            btnInventory.centerX(),
+            btnInventory.centerY()
+        )
+    }
+
+    private class Tool(x: Int, y: Int, width: Int, height: Int) : Button() {
+        protected var base: Image? = null
+        protected fun createChildren() {
+            super.createChildren()
+            base = Image(Assets.TOOLBAR)
+            add(base)
+        }
+
+        protected fun layout() {
+            super.layout()
+            base.x = x
+            base.y = y
+        }
+
+        protected fun onTouchDown() {
+            base.brightness(1.4f)
+        }
+
+        protected fun onTouchUp() {
+            if (active) {
+                base.resetColor()
+            } else {
+                base.tint(BGCOLOR, 0.7f)
+            }
+        }
+
+        fun enable(value: Boolean) {
+            if (value != active) {
+                if (value) {
+                    base.resetColor()
+                } else {
+                    base.tint(BGCOLOR, 0.7f)
+                }
+                active = value
+            }
+        }
+
+        companion object {
+            private const val BGCOLOR = 0x7B8073
+        }
+
+        init {
+            base.frame(x, y, width, height)
+            width = width
+            height = height
+        }
+    }
+
+    private class QuickslotTool(x: Int, y: Int, width: Int, height: Int, primary: Boolean) : Tool(x, y, width, height) {
+        private var slot: QuickSlot? = null
+        override fun createChildren() {
+            super.createChildren()
+            slot = QuickSlot()
+            add(slot)
+        }
+
+        override fun layout() {
+            super.layout()
+            slot.setRect(x + 1, y + 2, width - 2, height - 2)
+        }
+
+        override fun enable(value: Boolean) {
+            slot!!.enable(value)
+            super.enable(value)
+        }
+
+        init {
+            if (primary) {
+                slot!!.primary()
+            } else {
+                slot!!.secondary()
+            }
+        }
+    }
+
+    private class PickedUpItem : ItemSprite() {
+        private var dstX = 0f
+        private var dstY = 0f
+        private var left = 0f
+        fun reset(item: Item, dstX: Float, dstY: Float) {
+            view(item.image(), item.glowing())
+            visible = true
+            active = visible
+            this.dstX = dstX - ItemSprite.SIZE / 2
+            this.dstY = dstY - ItemSprite.SIZE / 2
+            left = DURATION
+            x = this.dstX - DISTANCE
+            y = this.dstY - DISTANCE
+            alpha(1)
+        }
+
+        fun update() {
+            super.update()
+            if (Game.elapsed.let { left -= it; left } <= 0) {
+                active = false
+                visible = active
+            } else {
+                val p = left / DURATION
+                scale.set(Math.sqrt(p.toDouble()).toFloat())
+                val offset = DISTANCE * p
+                x = dstX - offset
+                y = dstY - offset
+            }
+        }
+
+        companion object {
+            private val DISTANCE: Float = DungeonTilemap.SIZE
+            private const val DURATION = 0.2f
+        }
+
+        init {
+            originToCenter()
+            visible = false
+            active = visible
+        }
+    }
+
+    companion object {
+        private var instance: Toolbar
+        fun secondQuickslot(): Boolean {
+            return instance.btnQuick2.visible
+        }
+
+        fun secondQuickslot(value: Boolean) {
+            instance.btnQuick2.active = value
+            instance.btnQuick2.visible = instance.btnQuick2.active
+            instance.layout()
+        }
+
+        private val informer: CellSelector.Listener = object : Listener() {
+            fun onSelect(cell: Int?) {
+                if (cell == null) {
+                    return
+                }
+                if (cell < 0 || cell > Level.LENGTH || !Dungeon.level.visited.get(cell) && !Dungeon.level.mapped.get(
+                        cell
+                    )
+                ) {
+                    GameScene.show(WndMessage("You don't know what is there."))
+                    return
+                }
+                if (!Dungeon.visible.get(cell)) {
+                    GameScene.show(WndInfoCell(cell))
+                    return
+                }
+                if (cell === Dungeon.hero.pos) {
+                    GameScene.show(WndHero())
+                    return
+                }
+                val mob: Mob = Actor.findChar(cell) as Mob
+                if (mob != null) {
+                    GameScene.show(WndInfoMob(mob))
+                    return
+                }
+                val heap: Heap = Dungeon.level.heaps.get(cell)
+                if (heap != null && heap.type !== Heap.Type.HIDDEN) {
+                    if (heap.type === Heap.Type.FOR_SALE && heap.size() === 1 && heap.peek().price() > 0) {
+                        GameScene.show(WndTradeItem(heap, false))
+                    } else {
+                        GameScene.show(WndInfoItem(heap))
+                    }
+                    return
+                }
+                val plant: Plant = Dungeon.level.plants.get(cell)
+                if (plant != null) {
+                    GameScene.show(WndInfoPlant(plant))
+                    return
+                }
+                GameScene.show(WndInfoCell(cell))
+            }
+
+            fun prompt(): String {
+                return "Select a cell to examine"
+            }
+        }
+    }
+
+    init {
+        instance = this
+        height = btnInventory.height()
+    }
 }

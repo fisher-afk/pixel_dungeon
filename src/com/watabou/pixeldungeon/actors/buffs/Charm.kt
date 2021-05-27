@@ -15,44 +15,33 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.buffs;
+package com.watabou.pixeldungeon.actors.buffs
 
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.items.rings.RingOfElements.Resistance;
-import com.watabou.pixeldungeon.ui.BuffIndicator;
-import com.watabou.utils.Bundle;
+class Charm : FlavourBuff() {
+    var `object` = 0
+    override fun storeInBundle(bundle: Bundle) {
+        super.storeInBundle(bundle)
+        bundle.put(OBJECT, `object`)
+    }
 
-public class Charm extends FlavourBuff {
-	
-	public int object = 0;
-	
-	private static final String OBJECT	= "object";
-	
-	@Override
-	public void storeInBundle( Bundle bundle ) {
-		super.storeInBundle( bundle );
-		bundle.put( OBJECT, object );
-		
-	}
-	
-	@Override
-	public void restoreFromBundle( Bundle bundle ) {
-		super.restoreFromBundle( bundle );
-		object = bundle.getInt( OBJECT );
-	}
-	
-	@Override
-	public int icon() {
-		return BuffIndicator.HEART;
-	}
-	
-	@Override
-	public String toString() {
-		return "Charmed";
-	}
-	
-	public static float durationFactor( Char ch ) {
-		Resistance r = ch.buff( Resistance.class );
-		return r != null ? r.durationFactor() : 1;
-	}
+    override fun restoreFromBundle(bundle: Bundle) {
+        super.restoreFromBundle(bundle)
+        `object` = bundle.getInt(OBJECT)
+    }
+
+    override fun icon(): Int {
+        return BuffIndicator.HEART
+    }
+
+    override fun toString(): String {
+        return "Charmed"
+    }
+
+    companion object {
+        private const val OBJECT = "object"
+        fun durationFactor(ch: Char): Float {
+            val r: Resistance = ch.buff(Resistance::class.java)
+            return if (r != null) r.durationFactor() else 1
+        }
+    }
 }

@@ -15,58 +15,45 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.rings;
+package com.watabou.pixeldungeon.items.rings
 
-import com.watabou.pixeldungeon.Badges;
-import com.watabou.pixeldungeon.actors.hero.Hero;
-import com.watabou.pixeldungeon.items.Item;
+import com.watabou.pixeldungeon.Badges
 
-public class RingOfHaggler extends Ring {
+class RingOfHaggler : Ring() {
+    protected override fun buff(): RingBuff {
+        return Haggling()
+    }
 
-	{
-		name = "Ring of Haggler";
-	}
-	
-	@Override
-	protected RingBuff buff( ) {
-		return new Haggling();
-	}
-	
-	@Override
-	public Item random() {
-		level( +1 );
-		return this;
-	}
-	
-	@Override
-	public boolean doPickUp( Hero hero ) {
-		identify();
-		Badges.validateRingOfHaggler();
-		Badges.validateItemLevelAquired( this );
-		return super.doPickUp(hero);
-	}
-	
-	@Override
-	public boolean isUpgradable() {
-		return false;
-	}
-	
-	@Override
-	public void use() {
-		// Do nothing (it can't degrade)
-	}
-	
-	@Override
-	public String desc() {
-		return isKnown() ?
-			"In fact this ring doesn't provide any magic effect, but it demonstrates " +
-			"to shopkeepers and vendors, that the owner of the ring is a member of " +
-			"The Thieves' Guild. Usually they are glad to give a discount in exchange " +
-			"for temporary immunity guarantee. Upgrading this ring won't give any additional " +
-			"bonuses." :
-			super.desc();
-	}
-	
-	public class Haggling extends RingBuff {	
-	}
+    override fun random(): Item {
+        level(+1)
+        return this
+    }
+
+    fun doPickUp(hero: Hero?): Boolean {
+        identify()
+        Badges.validateRingOfHaggler()
+        Badges.validateItemLevelAquired(this)
+        return super.doPickUp(hero)
+    }
+
+    val isUpgradable: Boolean
+        get() = false
+
+    fun use() {
+        // Do nothing (it can't degrade)
+    }
+
+    override fun desc(): String {
+        return if (isKnown()) "In fact this ring doesn't provide any magic effect, but it demonstrates " +
+                "to shopkeepers and vendors, that the owner of the ring is a member of " +
+                "The Thieves' Guild. Usually they are glad to give a discount in exchange " +
+                "for temporary immunity guarantee. Upgrading this ring won't give any additional " +
+                "bonuses." else super.desc()
+    }
+
+    inner class Haggling : RingBuff()
+
+    init {
+        name = "Ring of Haggler"
+    }
 }

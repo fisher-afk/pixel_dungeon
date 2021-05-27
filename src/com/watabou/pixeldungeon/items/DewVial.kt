@@ -15,173 +15,128 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items;
+package com.watabou.pixeldungeon.items
 
-import java.util.ArrayList;
+import com.watabou.noosa.audio.Sample
 
-import com.watabou.noosa.audio.Sample;
-import com.watabou.pixeldungeon.Assets;
-import com.watabou.pixeldungeon.actors.hero.Hero;
-import com.watabou.pixeldungeon.effects.Speck;
-import com.watabou.pixeldungeon.effects.particles.ShaftParticle;
-import com.watabou.pixeldungeon.sprites.CharSprite;
-import com.watabou.pixeldungeon.sprites.ItemSprite.Glowing;
-import com.watabou.pixeldungeon.sprites.ItemSpriteSheet;
-import com.watabou.pixeldungeon.utils.GLog;
-import com.watabou.pixeldungeon.utils.Utils;
-import com.watabou.utils.Bundle;
+class DewVial : Item() {
+    private var volume = 0
+    override fun storeInBundle(bundle: Bundle) {
+        super.storeInBundle(bundle)
+        bundle.put(VOLUME, volume)
+    }
 
-public class DewVial extends Item {
+    override fun restoreFromBundle(bundle: Bundle) {
+        super.restoreFromBundle(bundle)
+        volume = bundle.getInt(VOLUME)
+    }
 
-	private static final int MAX_VOLUME	= 10;
-	
-	private static final String AC_DRINK	= "DRINK";
-	
-	private static final float TIME_TO_DRINK = 1f;
-	
-	private static final String TXT_VALUE	= "%+dHP";
-	private static final String TXT_STATUS	= "%d/%d";
-	
-	private static final String TXT_AUTO_DRINK	= "The dew vial was emptied to heal your wounds.";
-	private static final String TXT_COLLECTED	= "You collected a dewdrop into your dew vial.";
-	private static final String TXT_FULL		= "Your dew vial is full!";
-	private static final String TXT_EMPTY		= "Your dew vial is empty!";
-	
-	{
-		name = "dew vial";
-		image = ItemSpriteSheet.VIAL;
-		
-		defaultAction = AC_DRINK;
-		
-		unique = true;
-	}
-	
-	private int volume = 0;
-	
-	private static final String VOLUME	= "volume";
-	
-	@Override
-	public void storeInBundle( Bundle bundle ) {
-		super.storeInBundle( bundle );
-		bundle.put( VOLUME, volume );
-	}
-	
-	@Override
-	public void restoreFromBundle( Bundle bundle ) {
-		super.restoreFromBundle( bundle );
-		volume	= bundle.getInt( VOLUME );
-	}
-	
-	@Override
-	public ArrayList<String> actions( Hero hero ) {
-		ArrayList<String> actions = super.actions( hero );
-		if (volume > 0) {
-			actions.add( AC_DRINK );
-		}
-		return actions;
-	}
-	
-	private static final double NUM = 20;
-	private static final double POW = Math.log10( NUM );
-	
-	@Override
-	public void execute( final Hero hero, String action ) {
-		if (action.equals( AC_DRINK )) {
-			
-			if (volume > 0) {
+    override fun actions(hero: Hero?): ArrayList<String> {
+        val actions: ArrayList<String> = super.actions(hero)
+        if (volume > 0) {
+            actions.add(AC_DRINK)
+        }
+        return actions
+    }
 
-				int value = (int)Math.ceil( Math.pow( volume, POW ) / NUM * hero.HT );
-				int effect = Math.min( hero.HT - hero.HP, value );
-				if (effect > 0) {
-					hero.HP += effect;
-					hero.sprite.emitter().burst( Speck.factory( Speck.HEALING ), volume > 5 ? 2 : 1 );
-					hero.sprite.showStatus( CharSprite.POSITIVE, TXT_VALUE, effect );
-				}
-				
-				volume = 0;
-				
-				hero.spend( TIME_TO_DRINK );
-				hero.busy();
-				
-				Sample.INSTANCE.play( Assets.SND_DRINK );
-				hero.sprite.operate( hero.pos );
-				
-				updateQuickslot();
-				
-			} else {
-				GLog.w( TXT_EMPTY );
-			}
-			
-		} else {
-			
-			super.execute( hero, action );
-			
-		}
-	}
-	
-	@Override
-	public boolean isUpgradable() {
-		return false;
-	}
-	
-	@Override
-	public boolean isIdentified() {
-		return true;
-	}
-	
-	public boolean isFull() {
-		return volume >= MAX_VOLUME;
-	}
-	
-	public void collectDew( Dewdrop dew ) {
-		
-		GLog.i( TXT_COLLECTED );
-		volume += dew.quantity;
-		if (volume >= MAX_VOLUME) {
-			volume = MAX_VOLUME;
-			GLog.p( TXT_FULL );
-		}
-		
-		updateQuickslot();
-	}
-	
-	public void fill() {
-		volume = MAX_VOLUME;
-		updateQuickslot();
-	}
-	
-	public static void autoDrink( Hero hero ) {
-		DewVial vial = hero.belongings.getItem( DewVial.class );
-		if (vial != null && vial.isFull()) {
-			vial.execute( hero );
-			hero.sprite.emitter().start( ShaftParticle.FACTORY, 0.2f, 3 );
-			
-			GLog.w( TXT_AUTO_DRINK );
-		}
-	}
-	
-	private static final Glowing WHITE = new Glowing( 0xFFFFCC );
-	
-	@Override
-	public Glowing glowing() {
-		return isFull() ? WHITE : null;
-	}
-	
-	@Override
-	public String status() {
-		return Utils.format( TXT_STATUS, volume, MAX_VOLUME );
-	}
-	
-	@Override
-	public String info() {
-		return 
-			"You can store excess dew in this tiny vessel for drinking it later. " +
-			"If the vial is full, in a moment of deadly peril the dew will be " +
-			"consumed automatically.";
-	}
-	
-	@Override
-	public String toString() {
-		return super.toString() + " (" + status() +  ")" ;
-	}
+    fun execute(hero: Hero, action: String) {
+        if (action == AC_DRINK) {
+            if (volume > 0) {
+                val value = Math.ceil(
+                    Math.pow(
+                        volume.toDouble(),
+                        POW
+                    ) / NUM * hero.HT
+                ).toInt()
+                val effect = Math.min(hero.HT - hero.HP, value)
+                if (effect > 0) {
+                    hero.HP += effect
+                    hero.sprite.emitter().burst(Speck.factory(Speck.HEALING), if (volume > 5) 2 else 1)
+                    hero.sprite.showStatus(CharSprite.POSITIVE, TXT_VALUE, effect)
+                }
+                volume = 0
+                hero.spend(TIME_TO_DRINK)
+                hero.busy()
+                Sample.INSTANCE.play(Assets.SND_DRINK)
+                hero.sprite.operate(hero.pos)
+                updateQuickslot()
+            } else {
+                GLog.w(TXT_EMPTY)
+            }
+        } else {
+            super.execute(hero, action)
+        }
+    }
+
+    override val isUpgradable: Boolean
+        get() = false
+    override val isIdentified: Boolean
+        get() = true
+    val isFull: Boolean
+        get() = volume >= MAX_VOLUME
+
+    fun collectDew(dew: Dewdrop) {
+        GLog.i(TXT_COLLECTED)
+        volume += dew.quantity
+        if (volume >= MAX_VOLUME) {
+            volume = MAX_VOLUME
+            GLog.p(TXT_FULL)
+        }
+        updateQuickslot()
+    }
+
+    fun fill() {
+        volume = MAX_VOLUME
+        updateQuickslot()
+    }
+
+    override fun glowing(): Glowing? {
+        return if (isFull) WHITE else null
+    }
+
+    override fun status(): String {
+        return Utils.format(TXT_STATUS, volume, MAX_VOLUME)
+    }
+
+    override fun info(): String {
+        return "You can store excess dew in this tiny vessel for drinking it later. " +
+                "If the vial is full, in a moment of deadly peril the dew will be " +
+                "consumed automatically."
+    }
+
+    override fun toString(): String {
+        return super.toString() + " (" + status() + ")"
+    }
+
+    companion object {
+        private const val MAX_VOLUME = 10
+        private const val AC_DRINK = "DRINK"
+        private const val TIME_TO_DRINK = 1f
+        private const val TXT_VALUE = "%+dHP"
+        private const val TXT_STATUS = "%d/%d"
+        private const val TXT_AUTO_DRINK = "The dew vial was emptied to heal your wounds."
+        private const val TXT_COLLECTED = "You collected a dewdrop into your dew vial."
+        private const val TXT_FULL = "Your dew vial is full!"
+        private const val TXT_EMPTY = "Your dew vial is empty!"
+        private const val VOLUME = "volume"
+        private const val NUM = 20.0
+        private val POW = Math.log10(NUM)
+        fun autoDrink(hero: Hero) {
+            val vial: DewVial = hero.belongings.getItem(DewVial::class.java)
+            if (vial != null && vial.isFull) {
+                vial.execute(hero)
+                hero.sprite.emitter().start(ShaftParticle.FACTORY, 0.2f, 3)
+                GLog.w(TXT_AUTO_DRINK)
+            }
+        }
+
+        private val WHITE: Glowing = Glowing(0xFFFFCC)
+    }
+
+    init {
+        name = "dew vial"
+        image = ItemSpriteSheet.VIAL
+        defaultAction = AC_DRINK
+        unique = true
+    }
 }

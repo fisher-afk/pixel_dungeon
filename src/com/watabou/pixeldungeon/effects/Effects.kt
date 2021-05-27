@@ -15,36 +15,23 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.effects;
+package com.watabou.pixeldungeon.effects
 
-import com.watabou.noosa.Image;
-import com.watabou.pixeldungeon.Assets;
+import com.watabou.noosa.Image
 
-public class Effects {
+object Effects {
+    operator fun get(type: Type?): Image {
+        val icon = Image(Assets.EFFECTS)
+        when (type) {
+            Type.RIPPLE -> icon.frame(icon.texture.uvRect(0, 0, 16, 16))
+            Type.LIGHTNING -> icon.frame(icon.texture.uvRect(16, 0, 32, 8))
+            Type.WOUND -> icon.frame(icon.texture.uvRect(16, 8, 32, 16))
+            Type.RAY -> icon.frame(icon.texture.uvRect(16, 16, 32, 24))
+        }
+        return icon
+    }
 
-	public enum  Type {
-		RIPPLE,
-		LIGHTNING,
-		WOUND,
-		RAY
-	};
-	
-	public static Image get( Type type ) {
-		Image icon = new Image( Assets.EFFECTS );
-		switch (type) {
-		case RIPPLE:
-			icon.frame( icon.texture.uvRect( 0, 0, 16, 16 ) );
-			break;
-		case LIGHTNING:
-			icon.frame( icon.texture.uvRect( 16, 0, 32, 8 ) );
-			break;
-		case WOUND:
-			icon.frame( icon.texture.uvRect( 16, 8, 32, 16 ) );
-			break;
-		case RAY:
-			icon.frame( icon.texture.uvRect( 16, 16, 32, 24 ) );
-			break;
-		}
-		return icon;
-	}
+    enum class Type {
+        RIPPLE, LIGHTNING, WOUND, RAY
+    }
 }

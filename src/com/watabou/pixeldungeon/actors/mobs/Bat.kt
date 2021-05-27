@@ -15,83 +15,64 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.mobs;
+package com.watabou.pixeldungeon.actors.mobs
 
-import java.util.HashSet;
+import com.watabou.pixeldungeon.actors.Char
 
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.effects.Speck;
-import com.watabou.pixeldungeon.items.potions.PotionOfHealing;
-import com.watabou.pixeldungeon.items.weapon.enchantments.Leech;
-import com.watabou.pixeldungeon.sprites.BatSprite;
-import com.watabou.utils.Random;
+class Bat : Mob() {
+    fun damageRoll(): Int {
+        return Random.NormalIntRange(6, 12)
+    }
 
-public class Bat extends Mob {
+    fun attackSkill(target: Char?): Int {
+        return 16
+    }
 
-	{
-		name = "vampire bat";
-		spriteClass = BatSprite.class;
-		
-		HP = HT = 30;
-		defenseSkill = 15;
-		baseSpeed = 2f;
-		
-		EXP = 7;
-		maxLvl = 15;
-		
-		flying = true;
-		
-		loot = new PotionOfHealing();
-		lootChance = 0.125f;
-	}
-	
-	@Override
-	public int damageRoll() {
-		return Random.NormalIntRange( 6, 12 );
-	}
-	
-	@Override
-	public int attackSkill( Char target ) {
-		return 16;
-	}
-	
-	@Override
-	public int dr() {
-		return 4;
-	}
-	
-	@Override
-	public String defenseVerb() {
-		return "evaded";
-	}
-	
-	@Override
-	public int attackProc( Char enemy, int damage ) {
-		
-		int reg = Math.min( damage, HT - HP );
-		
-		if (reg > 0) {
-			HP += reg;
-			sprite.emitter().burst( Speck.factory( Speck.HEALING ), 1 );
-		}
-		
-		return damage;
-	}
-	
-	@Override
-	public String description() {
-		return
-			"These brisk and tenacious inhabitants of cave domes may defeat much larger opponents by " +
-			"replenishing their health with each successful attack.";
-	}
-	
-	private static final HashSet<Class<?>> RESISTANCES = new HashSet<Class<?>>();
-	static {
-		RESISTANCES.add( Leech.class );
-	}
-	
-	@Override
-	public HashSet<Class<?>> resistances() {
-		return RESISTANCES;
-	}
+    fun dr(): Int {
+        return 4
+    }
+
+    fun defenseVerb(): String {
+        return "evaded"
+    }
+
+    fun attackProc(enemy: Char?, damage: Int): Int {
+        val reg = Math.min(damage, HT - HP)
+        if (reg > 0) {
+            HP += reg
+            sprite.emitter().burst(Speck.factory(Speck.HEALING), 1)
+        }
+        return damage
+    }
+
+    override fun description(): String {
+        return "These brisk and tenacious inhabitants of cave domes may defeat much larger opponents by " +
+                "replenishing their health with each successful attack."
+    }
+
+    companion object {
+        private val RESISTANCES = HashSet<Class<*>>()
+
+        init {
+            RESISTANCES.add(Leech::class.java)
+        }
+    }
+
+    fun resistances(): HashSet<Class<*>> {
+        return RESISTANCES
+    }
+
+    init {
+        name = "vampire bat"
+        spriteClass = BatSprite::class.java
+        HT = 30
+        HP = HT
+        defenseSkill = 15
+        baseSpeed = 2f
+        EXP = 7
+        maxLvl = 15
+        flying = true
+        loot = PotionOfHealing()
+        lootChance = 0.125f
+    }
 }

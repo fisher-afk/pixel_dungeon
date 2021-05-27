@@ -15,39 +15,29 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.potions;
+package com.watabou.pixeldungeon.items.potions
 
-import com.watabou.pixeldungeon.Badges;
-import com.watabou.pixeldungeon.actors.hero.Hero;
-import com.watabou.pixeldungeon.sprites.CharSprite;
-import com.watabou.pixeldungeon.utils.GLog;
+import com.watabou.pixeldungeon.Badges
 
-public class PotionOfStrength extends Potion {
+class PotionOfStrength : Potion() {
+    protected override fun apply(hero: Hero) {
+        setKnown()
+        hero.STR++
+        hero.sprite.showStatus(CharSprite.POSITIVE, "+1 str")
+        GLog.p("Newfound strength surges through your body.")
+        Badges.validateStrengthAttained()
+    }
 
-	{
-		name = "Potion of Strength";
-	}
-	
-	@Override
-	protected void apply( Hero hero ) {
-		setKnown();
-		
-		hero.STR++;
-		hero.sprite.showStatus( CharSprite.POSITIVE, "+1 str" );
-		GLog.p( "Newfound strength surges through your body." );
-		
-		Badges.validateStrengthAttained();
-	}
-	
-	@Override
-	public String desc() {
-		return
-			"This powerful liquid will course through your muscles, " +
-			"permanently increasing your strength by one point.";
-	}
-	
-	@Override
-	public int price() {
-		return isKnown() ? 100 * quantity : super.price();
-	}
+    fun desc(): String {
+        return "This powerful liquid will course through your muscles, " +
+                "permanently increasing your strength by one point."
+    }
+
+    override fun price(): Int {
+        return if (isKnown()) 100 * quantity else super.price()
+    }
+
+    init {
+        name = "Potion of Strength"
+    }
 }

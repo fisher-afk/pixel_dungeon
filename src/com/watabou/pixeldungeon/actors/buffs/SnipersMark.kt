@@ -15,37 +15,31 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.buffs;
+package com.watabou.pixeldungeon.actors.buffs
 
-import com.watabou.pixeldungeon.ui.BuffIndicator;
-import com.watabou.utils.Bundle;
+import com.watabou.pixeldungeon.ui.BuffIndicator
 
-public class SnipersMark extends FlavourBuff {
-	
-public int object = 0;
-	
-	private static final String OBJECT	= "object";
-	
-	@Override
-	public void storeInBundle( Bundle bundle ) {
-		super.storeInBundle( bundle );
-		bundle.put( OBJECT, object );
-		
-	}
-	
-	@Override
-	public void restoreFromBundle( Bundle bundle ) {
-		super.restoreFromBundle( bundle );
-		object = bundle.getInt( OBJECT );
-	}
-	
-	@Override
-	public int icon() {
-		return BuffIndicator.MARK;
-	}
-	
-	@Override
-	public String toString() {
-		return "Zeroed in";
-	}
+class SnipersMark : FlavourBuff() {
+    var `object` = 0
+    override fun storeInBundle(bundle: Bundle) {
+        super.storeInBundle(bundle)
+        bundle.put(OBJECT, `object`)
+    }
+
+    override fun restoreFromBundle(bundle: Bundle) {
+        super.restoreFromBundle(bundle)
+        `object` = bundle.getInt(OBJECT)
+    }
+
+    override fun icon(): Int {
+        return BuffIndicator.MARK
+    }
+
+    override fun toString(): String {
+        return "Zeroed in"
+    }
+
+    companion object {
+        private const val OBJECT = "object"
+    }
 }

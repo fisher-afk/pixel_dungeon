@@ -15,68 +15,51 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.sprites;
+package com.watabou.pixeldungeon.sprites
 
-import com.watabou.noosa.tweeners.PosTweener;
-import com.watabou.noosa.tweeners.Tweener;
-import com.watabou.pixeldungeon.DungeonTilemap;
-import com.watabou.pixeldungeon.items.Item;
-import com.watabou.utils.Callback;
-import com.watabou.utils.PointF;
+import com.watabou.noosa.tweeners.PosTweener
 
-public class MissileSprite extends ItemSprite implements Tweener.Listener {
+class MissileSprite : ItemSprite(), Tweener.Listener {
+    private var callback: Callback? = null
+    fun reset(from: Int, to: Int, item: Item?, listener: Callback?) {
+        if (item == null) {
+            reset(from, to, 0, null, listener)
+        } else {
+            reset(from, to, item.image(), item.glowing(), listener)
+        }
+    }
 
-	private static final float SPEED	= 240f;
-	
-	private Callback callback;
-	
-	public MissileSprite() {
-		super();
-		originToCenter();
-	}
-	
-	public void reset( int from, int to, Item item, Callback listener ) {
-		if (item == null) {
-			reset( from, to, 0, null, listener );
-		} else {
-			reset( from, to, item.image(), item.glowing(), listener );
-		}
-	}
-	
-	public void reset( int from, int to, int image, Glowing glowing, Callback listener ) {
-		revive();
-		
-		view( image, glowing );
-		
-		this.callback = listener;
+    fun reset(from: Int, to: Int, image: Int, glowing: Glowing?, listener: Callback?) {
+        revive()
+        view(image, glowing)
+        callback = listener
+        point(DungeonTilemap.tileToWorld(from))
+        val dest: PointF = DungeonTilemap.tileToWorld(to)
+        val d: PointF = PointF.diff(dest, point())
+        speed.set(d).normalize().scale(SPEED)
+        if (image == 31 || image == 108 || image == 109 || image == 110) {
+            angularSpeed = 0
+            angle = 135 - (Math.atan2(d.x, d.y) / 3.1415926 * 180).toFloat()
+        } else {
+            angularSpeed = if (image == 15 || image == 106) 1440 else 720
+        }
+        val tweener = PosTweener(this, dest, d.length() / SPEED)
+        tweener.listener = this
+        parent.add(tweener)
+    }
 
-		point( DungeonTilemap.tileToWorld( from ) );
-		PointF dest = DungeonTilemap.tileToWorld( to );
-		
-		PointF d = PointF.diff( dest, point() ); 
-		speed.set( d ).normalize().scale( SPEED );
-		
-		if (image == 31 || image == 108 || image == 109 || image == 110) {
+    fun onComplete(tweener: Tweener?) {
+        kill()
+        if (callback != null) {
+            callback.call()
+        }
+    }
 
-			angularSpeed = 0;
-			angle = 135 - (float)(Math.atan2( d.x, d.y ) / 3.1415926 * 180);
-			
-		} else {
-			
-			angularSpeed = image == 15 || image == 106 ? 1440 : 720;
-			
-		}
-		
-		PosTweener tweener = new PosTweener( this, dest, d.length() / SPEED );
-		tweener.listener = this;
-		parent.add( tweener );
-	}
+    companion object {
+        private const val SPEED = 240f
+    }
 
-	@Override
-	public void onComplete( Tweener tweener ) {
-		kill();
-		if (callback != null) {
-			callback.call();
-		}
-	}
+    init {
+        originToCenter()
+    }
 }

@@ -15,209 +15,148 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.levels;
+package com.watabou.pixeldungeon.levels
 
-import javax.microedition.khronos.opengles.GL10;
+import com.watabou.noosa.Game
 
-import android.opengl.GLES20;
+class HallsLevel : RegularLevel() {
+    override fun create() {
+        addItemToSpawn(Torch())
+        super.create()
+    }
 
-import com.watabou.noosa.Game;
-import com.watabou.noosa.Group;
-import com.watabou.noosa.Scene;
-import com.watabou.noosa.particles.PixelParticle;
-import com.watabou.pixeldungeon.Assets;
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.DungeonTilemap;
-import com.watabou.pixeldungeon.items.Torch;
-import com.watabou.utils.PointF;
-import com.watabou.utils.Random;
+    override fun tilesTex(): String {
+        return Assets.TILES_HALLS
+    }
 
-public class HallsLevel extends RegularLevel {
+    override fun waterTex(): String {
+        return Assets.WATER_HALLS
+    }
 
-	{
-		minRoomSize = 6;
-		
-		viewDistance = Math.max( 25 - Dungeon.depth, 1 );
-		
-		color1 = 0x801500;
-		color2 = 0xa68521;
-	}
-	
-	@Override
-	public void create() {
-		addItemToSpawn( new Torch() );
-		super.create();
-	}
-	
-	@Override
-	public String tilesTex() {
-		return Assets.TILES_HALLS;
-	}
-	
-	@Override
-	public String waterTex() {
-		return Assets.WATER_HALLS;
-	}
-	
-	protected boolean[] water() {
-		return Patch.generate( feeling == Feeling.WATER ? 0.55f : 0.40f, 6 );
-	}
-	
-	protected boolean[] grass() {
-		return Patch.generate( feeling == Feeling.GRASS ? 0.55f : 0.30f, 3 );
-	}
-	
-	@Override
-	protected void decorate() {
-		
-		for (int i=WIDTH + 1; i < LENGTH - WIDTH - 1; i++) {
-			if (map[i] == Terrain.EMPTY) { 
-				
-				int count = 0;
-				for (int j=0; j < NEIGHBOURS8.length; j++) {
-					if ((Terrain.flags[map[i + NEIGHBOURS8[j]]] & Terrain.PASSABLE) > 0) {
-						count++;
-					}
-				}
-				
-				if (Random.Int( 80 ) < count) {
-					map[i] = Terrain.EMPTY_DECO;
-				}
-				
-			} else
-			if (map[i] == Terrain.WALL && 
-				map[i-1] != Terrain.WALL_DECO && map[i-WIDTH] != Terrain.WALL_DECO && 
-				Random.Int( 20 ) == 0) {
-				
-				map[i] = Terrain.WALL_DECO;
-				
-			}
-		}
-		
-		while (true) {
-			int pos = roomEntrance.random();
-			if (pos != entrance) {
-				map[pos] = Terrain.SIGN;
-				break;
-			}
-		}
-	}
-	
-	@Override
-	public String tileName( int tile ) {
-		switch (tile) {
-		case Terrain.WATER:
-			return "Cold lava";
-		case Terrain.GRASS:
-			return "Embermoss";
-		case Terrain.HIGH_GRASS:
-			return "Emberfungi";
-		case Terrain.STATUE:
-		case Terrain.STATUE_SP:
-			return "Pillar";
-		default:
-			return super.tileName( tile );
-		}
-	}
-	
-	@Override
-	public String tileDesc(int tile) {
-		switch (tile) {
-		case Terrain.WATER:
-			return "It looks like lava, but it's cold and probably safe to touch.";
-		case Terrain.STATUE:
-		case Terrain.STATUE_SP:
-			return "The pillar is made of real humanoid skulls. Awesome."; 
-		case Terrain.BOOKSHELF:
-			return "Books in ancient languages smoulder in the bookshelf.";
-		default:
-			return super.tileDesc( tile );
-		}
-	}
-	
-	@Override
-	public void addVisuals( Scene scene ) {
-		super.addVisuals( scene );
-		addVisuals( this, scene );
-	}
-	
-	public static void addVisuals( Level level, Scene scene ) {
-		for (int i=0; i < LENGTH; i++) {
-			if (level.map[i] == 63) {
-				scene.add( new Stream( i ) );
-			}
-		}
-	}
-	
-	private static class Stream extends Group {
-		
-		private int pos;
-		
-		private float delay;
-		
-		public Stream( int pos ) {
-			super();
-			
-			this.pos = pos;
-			
-			delay = Random.Float( 2 );
-		}
-		
-		@Override
-		public void update() {
-			
-			if (visible = Dungeon.visible[pos]) {
-				
-				super.update();
-				
-				if ((delay -= Game.elapsed) <= 0) {
-					
-					delay = Random.Float( 2 );
-					
-					PointF p = DungeonTilemap.tileToWorld( pos );
-					((FireParticle)recycle( FireParticle.class )).reset( 
-						p.x + Random.Float( DungeonTilemap.SIZE ), 
-						p.y + Random.Float( DungeonTilemap.SIZE ) );
-				}
-			}
-		}
-		
-		@Override
-		public void draw() {
-			GLES20.glBlendFunc( GL10.GL_SRC_ALPHA, GL10.GL_ONE );
-			super.draw();
-			GLES20.glBlendFunc( GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA );
-		}
-	}
-	
-	public static class FireParticle extends PixelParticle.Shrinking {
-		
-		public FireParticle() {
-			super();
-			
-			color( 0xEE7722 );
-			lifespan = 1f;
-			
-			acc.set( 0, +80 );
-		}
-		
-		public void reset( float x, float y ) {
-			revive();
-			
-			this.x = x;
-			this.y = y;
-			
-			left = lifespan;
-			
-			speed.set( 0, -40 );
-			size = 4;
-		}
-		
-		@Override
-		public void update() {
-			super.update();
-			float p = left / lifespan;
-			am = p > 0.8f ? (1 - p) * 5 : 1;
-		}
-	}
+    protected override fun water(): BooleanArray {
+        return Patch.generate(if (feeling === Feeling.WATER) 0.55f else 0.40f, 6)
+    }
+
+    protected override fun grass(): BooleanArray {
+        return Patch.generate(if (feeling === Feeling.GRASS) 0.55f else 0.30f, 3)
+    }
+
+    protected override fun decorate() {
+        for (i in WIDTH + 1 until LENGTH - WIDTH - 1) {
+            if (map.get(i) === Terrain.EMPTY) {
+                var count = 0
+                for (j in 0 until NEIGHBOURS8.length) {
+                    if (Terrain.flags.get(map.get(i + NEIGHBOURS8.get(j))) and Terrain.PASSABLE > 0) {
+                        count++
+                    }
+                }
+                if (Random.Int(80) < count) {
+                    map.get(i) = Terrain.EMPTY_DECO
+                }
+            } else if (map.get(i) === Terrain.WALL && map.get(i - 1) !== Terrain.WALL_DECO && map.get(i - WIDTH) !== Terrain.WALL_DECO && Random.Int(
+                    20
+                ) === 0
+            ) {
+                map.get(i) = Terrain.WALL_DECO
+            }
+        }
+        while (true) {
+            val pos: Int = roomEntrance!!.random()
+            if (pos != entrance) {
+                map.get(pos) = Terrain.SIGN
+                break
+            }
+        }
+    }
+
+    override fun tileName(tile: Int): String {
+        return when (tile) {
+            Terrain.WATER -> "Cold lava"
+            Terrain.GRASS -> "Embermoss"
+            Terrain.HIGH_GRASS -> "Emberfungi"
+            Terrain.STATUE, Terrain.STATUE_SP -> "Pillar"
+            else -> super.tileName(tile)
+        }
+    }
+
+    override fun tileDesc(tile: Int): String {
+        return when (tile) {
+            Terrain.WATER -> "It looks like lava, but it's cold and probably safe to touch."
+            Terrain.STATUE, Terrain.STATUE_SP -> "The pillar is made of real humanoid skulls. Awesome."
+            Terrain.BOOKSHELF -> "Books in ancient languages smoulder in the bookshelf."
+            else -> super.tileDesc(tile)
+        }
+    }
+
+    override fun addVisuals(scene: Scene) {
+        super.addVisuals(scene)
+        addVisuals(this, scene)
+    }
+
+    private class Stream(private val pos: Int) : Group() {
+        private var delay: Float
+        fun update() {
+            if (Dungeon.visible.get(pos).also { visible = it }) {
+                super.update()
+                if (Game.elapsed.let { delay -= it; delay } <= 0) {
+                    delay = Random.Float(2)
+                    val p: PointF = DungeonTilemap.tileToWorld(pos)
+                    (recycle(FireParticle::class.java) as FireParticle).reset(
+                        p.x + Random.Float(DungeonTilemap.SIZE),
+                        p.y + Random.Float(DungeonTilemap.SIZE)
+                    )
+                }
+            }
+        }
+
+        fun draw() {
+            GLES20.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE)
+            super.draw()
+            GLES20.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA)
+        }
+
+        init {
+            delay = Random.Float(2)
+        }
+    }
+
+    class FireParticle : PixelParticle.Shrinking() {
+        fun reset(x: Float, y: Float) {
+            revive()
+            x = x
+            y = y
+            left = lifespan
+            speed.set(0, -40)
+            size = 4
+        }
+
+        fun update() {
+            super.update()
+            val p: Float = left / lifespan
+            am = if (p > 0.8f) (1 - p) * 5 else 1
+        }
+
+        init {
+            color(0xEE7722)
+            lifespan = 1f
+            acc.set(0, +80)
+        }
+    }
+
+    companion object {
+        fun addVisuals(level: Level, scene: Scene) {
+            for (i in 0 until LENGTH) {
+                if (level.map.get(i) === 63) {
+                    scene.add(Stream(i))
+                }
+            }
+        }
+    }
+
+    init {
+        minRoomSize = 6
+        viewDistance = Math.max(25 - Dungeon.depth, 1)
+        color1 = 0x801500
+        color2 = 0xa68521
+    }
 }

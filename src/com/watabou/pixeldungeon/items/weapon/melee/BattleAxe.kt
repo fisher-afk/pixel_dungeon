@@ -15,23 +15,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.weapon.melee;
+package com.watabou.pixeldungeon.items.weapon.melee
 
-import com.watabou.pixeldungeon.sprites.ItemSpriteSheet;
+import com.watabou.pixeldungeon.sprites.ItemSpriteSheet
 
-public class BattleAxe extends MeleeWeapon {
+class BattleAxe : MeleeWeapon(4, 1.2f, 1f) {
+    fun desc(): String {
+        return "The enormous steel head of this battle axe puts considerable heft behind each stroke."
+    }
 
-	{
-		name = "battle axe";
-		image = ItemSpriteSheet.BATTLE_AXE;
-	}
-	
-	public BattleAxe() {
-		super( 4, 1.2f, 1f );
-	}
-	
-	@Override
-	public String desc() {
-		return "The enormous steel head of this battle axe puts considerable heft behind each stroke.";
-	}
+    init {
+        name = "battle axe"
+        image = ItemSpriteSheet.BATTLE_AXE
+    }
 }

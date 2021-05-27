@@ -15,152 +15,114 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.ui;
+package com.watabou.pixeldungeon.ui
 
-import com.watabou.input.Touchscreen.Touch;
-import com.watabou.noosa.Camera;
-import com.watabou.noosa.ColorBlock;
-import com.watabou.noosa.TouchArea;
-import com.watabou.noosa.ui.Component;
-import com.watabou.pixeldungeon.scenes.PixelScene;
-import com.watabou.utils.Point;
-import com.watabou.utils.PointF;
+import com.watabou.input.Touchscreen.Touch
 
-public class ScrollPane extends Component {
+class ScrollPane(content: Component) : Component() {
+    protected var controller: TouchController? = null
+    protected var content: Component
+    protected var thumb: ColorBlock? = null
+    protected var minX = 0f
+    protected var minY = 0f
+    protected var maxX = 0f
+    protected var maxY = 0f
+    fun destroy() {
+        super.destroy()
+        Camera.remove(content.camera)
+    }
 
-	protected static final int THUMB_COLOR		= 0xFF7b8073;
-	protected static final float THUMB_ALPHA	= 0.5f;
-	
-	protected TouchController controller;
-	protected Component content;
-	protected ColorBlock thumb;
-	
-	protected float minX;
-	protected float minY;
-	protected float maxX;
-	protected float maxY;
-	
-	public ScrollPane( Component content ) {
-		super();
-		
-		this.content = content;
-		addToBack( content );
-		
-		width = content.width();
-		height = content.height();
-		
-		content.camera = new Camera( 0, 0, 1, 1, PixelScene.defaultZoom );
-		Camera.add( content.camera );
-	}
-	
-	@Override
-	public void destroy() {
-		super.destroy();
-		Camera.remove( content.camera );
-	}
-	
-	public void scrollTo( float x, float y ) {
-		content.camera.scroll.set( x, y );
-	}
-	
-	@Override
-	protected void createChildren() {
-		controller = new TouchController();
-		add( controller );
-		
-		thumb = new ColorBlock( 1, 1,THUMB_COLOR );
-		thumb.am = THUMB_ALPHA;
-		add( thumb );
-	}
-	
-	@Override
-	protected void layout() {
-		
-		content.setPos( 0, 0 );
-		controller.x = x;
-		controller.y = y;
-		controller.width = width;
-		controller.height = height;
-		
-		Point p = camera().cameraToScreen( x, y );
-		Camera cs = content.camera;
-		cs.x = p.x;
-		cs.y = p.y;
-		cs.resize( (int)width, (int)height );
-		
-		thumb.visible = height < content.height();
-		if (thumb.visible) {
-			thumb.scale.set( 2, height * height / content.height() );
-			thumb.x = right() - thumb.width();
-			thumb.y = y;
-		}
-	}
-	
-	public Component content() {
-		return content;
-	}
-	
-	public void onClick( float x, float y ) {		
-	}
-	
-	public class TouchController extends TouchArea {
-		
-		private float dragThreshold;
-		
-		public TouchController() {
-			super( 0, 0, 0, 0 );
-			dragThreshold = PixelScene.defaultZoom * 8;
-		}
-		
-		@Override
-		protected void onClick( Touch touch ) {
-			if (dragging) {
-				
-				dragging = false;
-				thumb.am = THUMB_ALPHA;
-				
-			} else {
-				
-				PointF p = content.camera.screenToCamera( (int)touch.current.x, (int)touch.current.y );
-				ScrollPane.this.onClick( p.x, p.y );
+    fun scrollTo(x: Float, y: Float) {
+        content.camera.scroll.set(x, y)
+    }
 
-			}
-		}	
-		
-		private boolean dragging = false;
-		private PointF lastPos = new PointF();
-		
-		@Override
-		protected void onDrag( Touch t ) {		
-			if (dragging) {
-				
-				Camera c = content.camera;
-				
-				c.scroll.offset( PointF.diff( lastPos, t.current ).invScale( c.zoom ) );
-				if (c.scroll.x + width > content.width()) {
-					c.scroll.x = content.width() - width;
-				}
-				if (c.scroll.x < 0) {
-					c.scroll.x = 0;
-				}
-				if (c.scroll.y + height > content.height()) {
-					c.scroll.y = content.height() - height;
-				}
-				if (c.scroll.y < 0) {
-					c.scroll.y = 0;
-				}
-				
-				thumb.y = y + height * c.scroll.y / content.height();
-				
-				lastPos.set( t.current );	
-				
-			} else if (PointF.distance( t.current, t.start ) > dragThreshold) {
-				
-				dragging = true;
-				lastPos.set( t.current );
-				thumb.am = 1;
-				
-			}
-		}	
-	}
+    protected fun createChildren() {
+        controller = TouchController()
+        add(controller)
+        thumb = ColorBlock(1, 1, THUMB_COLOR)
+        thumb.am = THUMB_ALPHA
+        add(thumb)
+    }
+
+    protected fun layout() {
+        content.setPos(0, 0)
+        controller.x = x
+        controller.y = y
+        controller.width = width
+        controller.height = height
+        val p: Point = camera().cameraToScreen(x, y)
+        val cs: Camera = content.camera
+        cs.x = p.x
+        cs.y = p.y
+        cs.resize(width as Int, height as Int)
+        thumb.visible = height < content.height()
+        if (thumb.visible) {
+            thumb.scale.set(2, height * height / content.height())
+            thumb.x = right() - thumb.width()
+            thumb.y = y
+        }
+    }
+
+    fun content(): Component {
+        return content
+    }
+
+    fun onClick(x: Float, y: Float) {}
+    inner class TouchController : TouchArea(0, 0, 0, 0) {
+        private val dragThreshold: Float
+        protected fun onClick(touch: Touch) {
+            if (dragging) {
+                dragging = false
+                thumb.am = THUMB_ALPHA
+            } else {
+                val p: PointF = content.camera.screenToCamera(touch.current.x as Int, touch.current.y as Int)
+                this@ScrollPane.onClick(p.x, p.y)
+            }
+        }
+
+        private var dragging = false
+        private val lastPos: PointF = PointF()
+        protected fun onDrag(t: Touch) {
+            if (dragging) {
+                val c: Camera = content.camera
+                c.scroll.offset(PointF.diff(lastPos, t.current).invScale(c.zoom))
+                if (c.scroll.x + width > content.width()) {
+                    c.scroll.x = content.width() - width
+                }
+                if (c.scroll.x < 0) {
+                    c.scroll.x = 0
+                }
+                if (c.scroll.y + height > content.height()) {
+                    c.scroll.y = content.height() - height
+                }
+                if (c.scroll.y < 0) {
+                    c.scroll.y = 0
+                }
+                thumb.y = y + height * c.scroll.y / content.height()
+                lastPos.set(t.current)
+            } else if (PointF.distance(t.current, t.start) > dragThreshold) {
+                dragging = true
+                lastPos.set(t.current)
+                thumb.am = 1
+            }
+        }
+
+        init {
+            dragThreshold = PixelScene.defaultZoom * 8
+        }
+    }
+
+    companion object {
+        protected const val THUMB_COLOR = -0x847f8d
+        protected const val THUMB_ALPHA = 0.5f
+    }
+
+    init {
+        this.content = content
+        addToBack(content)
+        width = content.width()
+        height = content.height()
+        content.camera = Camera(0, 0, 1, 1, PixelScene.defaultZoom)
+        Camera.add(content.camera)
+    }
 }

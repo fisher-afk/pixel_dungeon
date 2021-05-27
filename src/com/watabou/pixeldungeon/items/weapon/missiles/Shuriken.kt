@@ -15,57 +15,41 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.weapon.missiles;
+package com.watabou.pixeldungeon.items.weapon.missiles
 
-import com.watabou.pixeldungeon.items.Item;
-import com.watabou.pixeldungeon.sprites.ItemSpriteSheet;
-import com.watabou.utils.Random;
+import com.watabou.pixeldungeon.items.Item
 
-public class Shuriken extends MissileWeapon {
+class Shuriken @JvmOverloads constructor(number: Int = 1) : MissileWeapon() {
+    fun min(): Int {
+        return 2
+    }
 
-	{
-		name = "shuriken";
-		image = ItemSpriteSheet.SHURIKEN;
-		
-		STR = 13;
-		
-		DLY = 0.5f;
-	}
-	
-	public Shuriken() {
-		this( 1 );
-	}
-	
-	public Shuriken( int number ) {
-		super();
-		quantity = number;
-	}
-	
-	@Override
-	public int min() {
-		return 2;
-	}
-	
-	@Override
-	public int max() {
-		return 6;
-	}
-	
-	@Override
-	public String desc() {
-		return 
-			"Star-shaped pieces of metal with razor-sharp blades do significant damage " +
-			"when they hit a target. They can be thrown at very high rate.";
-	}
-	
-	@Override
-	public Item random() {
-		quantity = Random.Int( 5, 15 );
-		return this;
-	}
-	
-	@Override
-	public int price() {
-		return 15 * quantity;
-	}
+    fun max(): Int {
+        return 6
+    }
+
+    fun desc(): String {
+        return "Star-shaped pieces of metal with razor-sharp blades do significant damage " +
+                "when they hit a target. They can be thrown at very high rate."
+    }
+
+    override fun random(): Item {
+        quantity = Random.Int(5, 15)
+        return this
+    }
+
+    fun price(): Int {
+        return 15 * quantity
+    }
+
+    init {
+        name = "shuriken"
+        image = ItemSpriteSheet.SHURIKEN
+        STR = 13
+        DLY = 0.5f
+    }
+
+    init {
+        quantity = number
+    }
 }

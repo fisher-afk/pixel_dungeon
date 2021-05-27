@@ -15,72 +15,43 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.wands;
+package com.watabou.pixeldungeon.items.wands
 
-import com.watabou.noosa.audio.Sample;
-import com.watabou.pixeldungeon.Assets;
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.ResultDescriptions;
-import com.watabou.pixeldungeon.actors.Actor;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.blobs.Blob;
-import com.watabou.pixeldungeon.actors.blobs.Fire;
-import com.watabou.pixeldungeon.actors.buffs.Buff;
-import com.watabou.pixeldungeon.actors.buffs.Burning;
-import com.watabou.pixeldungeon.effects.MagicMissile;
-import com.watabou.pixeldungeon.effects.particles.FlameParticle;
-import com.watabou.pixeldungeon.levels.Level;
-import com.watabou.pixeldungeon.mechanics.Ballistica;
-import com.watabou.pixeldungeon.scenes.GameScene;
-import com.watabou.pixeldungeon.utils.GLog;
-import com.watabou.pixeldungeon.utils.Utils;
-import com.watabou.utils.Callback;
-import com.watabou.utils.Random;
+import com.watabou.noosa.audio.Sample
 
-public class WandOfFirebolt extends Wand {
+class WandOfFirebolt : Wand() {
+    protected override fun onZap(cell: Int) {
+        val level: Int = power()
+        for (i in 1 until Ballistica.distance - 1) {
+            val c: Int = Ballistica.trace.get(i)
+            if (Level.flamable.get(c)) {
+                GameScene.add(Blob.seed(c, 1, Fire::class.java))
+            }
+        }
+        GameScene.add(Blob.seed(cell, 1, Fire::class.java))
+        val ch: Char = Actor.findChar(cell)
+        if (ch != null) {
+            ch.damage(Random.Int(1, 8 + level * level), this)
+            Buff.affect(ch, Burning::class.java).reignite(ch)
+            ch.sprite.emitter().burst(FlameParticle.FACTORY, 5)
+            if (ch === curUser && !ch.isAlive()) {
+                Dungeon.fail(Utils.format(ResultDescriptions.WAND, name, Dungeon.depth))
+                GLog.n("You killed yourself with your own Wand of Firebolt...")
+            }
+        }
+    }
 
-	{
-		name = "Wand of Firebolt";
-	}
-	
-	@Override
-	protected void onZap( int cell ) {
+    protected override fun fx(cell: Int, callback: Callback?) {
+        MagicMissile.fire(curUser.sprite.parent, curUser.pos, cell, callback)
+        Sample.INSTANCE.play(Assets.SND_ZAP)
+    }
 
-		int level = power();
-		
-		for (int i=1; i < Ballistica.distance - 1; i++) {
-			int c = Ballistica.trace[i];
-			if (Level.flamable[c]) {
-				GameScene.add( Blob.seed( c, 1, Fire.class ) );
-			}
-		}
-		
-		GameScene.add( Blob.seed( cell, 1, Fire.class ) );
-					
-		Char ch = Actor.findChar( cell );
-		if (ch != null) {	
-			
-			ch.damage( Random.Int( 1, 8 + level * level ), this );
-			Buff.affect( ch, Burning.class ).reignite( ch );
+    fun desc(): String {
+        return "This wand unleashes bursts of magical fire. It will ignite " +
+                "flammable terrain, and will damage and burn a creature it hits."
+    }
 
-			ch.sprite.emitter().burst( FlameParticle.FACTORY, 5 );
-			
-			if (ch == curUser && !ch.isAlive()) {
-				Dungeon.fail( Utils.format( ResultDescriptions.WAND, name, Dungeon.depth ) );
-				GLog.n( "You killed yourself with your own Wand of Firebolt..." );
-			}
-		}
-	}
-	
-	protected void fx( int cell, Callback callback ) {
-		MagicMissile.fire( curUser.sprite.parent, curUser.pos, cell, callback );
-		Sample.INSTANCE.play( Assets.SND_ZAP );
-	}
-	
-	@Override
-	public String desc() {
-		return
-			"This wand unleashes bursts of magical fire. It will ignite " +
-			"flammable terrain, and will damage and burn a creature it hits.";
-	}
+    init {
+        name = "Wand of Firebolt"
+    }
 }

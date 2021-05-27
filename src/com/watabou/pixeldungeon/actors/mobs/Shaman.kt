@@ -15,130 +15,96 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.mobs;
+package com.watabou.pixeldungeon.actors.mobs
 
-import java.util.HashSet;
+import com.watabou.noosa.Camera
 
-import com.watabou.noosa.Camera;
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.ResultDescriptions;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.effects.particles.SparkParticle;
-import com.watabou.pixeldungeon.items.Generator;
-import com.watabou.pixeldungeon.levels.Level;
-import com.watabou.pixeldungeon.levels.traps.LightningTrap;
-import com.watabou.pixeldungeon.mechanics.Ballistica;
-import com.watabou.pixeldungeon.sprites.CharSprite;
-import com.watabou.pixeldungeon.sprites.ShamanSprite;
-import com.watabou.pixeldungeon.utils.GLog;
-import com.watabou.pixeldungeon.utils.Utils;
-import com.watabou.utils.Callback;
-import com.watabou.utils.Random;
+class Shaman : Mob(), Callback {
+    fun damageRoll(): Int {
+        return Random.NormalIntRange(2, 6)
+    }
 
-public class Shaman extends Mob implements Callback {
+    fun attackSkill(target: Char?): Int {
+        return 11
+    }
 
-	private static final float TIME_TO_ZAP	= 2f;
-	
-	private static final String TXT_LIGHTNING_KILLED = "%s's lightning bolt killed you...";
-	
-	{
-		name = "gnoll shaman";
-		spriteClass = ShamanSprite.class;
-		
-		HP = HT = 18;
-		defenseSkill = 8;
-		
-		EXP = 6;
-		maxLvl = 14;
-		
-		loot = Generator.Category.SCROLL;
-		lootChance = 0.33f;
-	}
-	
-	@Override
-	public int damageRoll() {
-		return Random.NormalIntRange( 2, 6 );
-	}
-	
-	@Override
-	public int attackSkill( Char target ) {
-		return 11;
-	}
-	
-	@Override
-	public int dr() {
-		return 4;
-	}
-	
-	@Override
-	protected boolean canAttack( Char enemy ) {
-		return Ballistica.cast( pos, enemy.pos, false, true ) == enemy.pos;
-	}
-	
-	@Override
-	protected boolean doAttack( Char enemy ) {
+    fun dr(): Int {
+        return 4
+    }
 
-		if (Level.distance( pos, enemy.pos ) <= 1) {
-			
-			return super.doAttack( enemy );
-			
-		} else {
-			
-			boolean visible = Level.fieldOfView[pos] || Level.fieldOfView[enemy.pos]; 
-			if (visible) {
-				((ShamanSprite)sprite).zap( enemy.pos );
-			}
-			
-			spend( TIME_TO_ZAP );
-			
-			if (hit( this, enemy, true )) {
-				int dmg = Random.Int( 2, 12 );
-				if (Level.water[enemy.pos] && !enemy.flying) {
-					dmg *= 1.5f;
-				}
-				enemy.damage( dmg, LightningTrap.LIGHTNING );
-				
-				enemy.sprite.centerEmitter().burst( SparkParticle.FACTORY, 3 );
-				enemy.sprite.flash();
-				
-				if (enemy == Dungeon.hero) {
-					
-					Camera.main.shake( 2, 0.3f );
-					
-					if (!enemy.isAlive()) {
-						Dungeon.fail( Utils.format( ResultDescriptions.MOB, 
-							Utils.indefinite( name ), Dungeon.depth ) );
-						GLog.n( TXT_LIGHTNING_KILLED, name );
-					}
-				}
-			} else {
-				enemy.sprite.showStatus( CharSprite.NEUTRAL,  enemy.defenseVerb() );
-			}
-			
-			return !visible;
-		}
-	}
-	
-	@Override
-	public void call() {
-		next();
-	}
-	
-	@Override
-	public String description() {
-		return
-			"The most intelligent gnolls can master shamanistic magic. Gnoll shamans prefer " +
-			"battle spells to compensate for lack of might, not hesitating to use them " +
-			"on those who question their status in a tribe.";
-	}
-	
-	private static final HashSet<Class<?>> RESISTANCES = new HashSet<Class<?>>();
-	static {
-		RESISTANCES.add( LightningTrap.Electricity.class );
-	}
-	
-	@Override
-	public HashSet<Class<?>> resistances() {
-		return RESISTANCES;
-	}
+    protected fun canAttack(enemy: Char): Boolean {
+        return Ballistica.cast(pos, enemy.pos, false, true) === enemy.pos
+    }
+
+    protected fun doAttack(enemy: Char): Boolean {
+        return if (Level.distance(pos, enemy.pos) <= 1) {
+            super.doAttack(enemy)
+        } else {
+            val visible = Level.fieldOfView.get(pos) || Level.fieldOfView.get(enemy.pos)
+            if (visible) {
+                (sprite as ShamanSprite).zap(enemy.pos)
+            }
+            spend(TIME_TO_ZAP)
+            if (hit(this, enemy, true)) {
+                var dmg: Int = Random.Int(2, 12)
+                if (Level.water.get(enemy.pos) && !enemy.flying) {
+                    (dmg *= 1.5f).toInt()
+                }
+                enemy.damage(dmg, LightningTrap.LIGHTNING)
+                enemy.sprite.centerEmitter().burst(SparkParticle.FACTORY, 3)
+                enemy.sprite.flash()
+                if (enemy === Dungeon.hero) {
+                    Camera.main.shake(2, 0.3f)
+                    if (!enemy.isAlive()) {
+                        Dungeon.fail(
+                            Utils.format(
+                                ResultDescriptions.MOB,
+                                Utils.indefinite(name), Dungeon.depth
+                            )
+                        )
+                        GLog.n(TXT_LIGHTNING_KILLED, name)
+                    }
+                }
+            } else {
+                enemy.sprite.showStatus(CharSprite.NEUTRAL, enemy.defenseVerb())
+            }
+            !visible
+        }
+    }
+
+    fun call() {
+        next()
+    }
+
+    override fun description(): String {
+        return "The most intelligent gnolls can master shamanistic magic. Gnoll shamans prefer " +
+                "battle spells to compensate for lack of might, not hesitating to use them " +
+                "on those who question their status in a tribe."
+    }
+
+    companion object {
+        private const val TIME_TO_ZAP = 2f
+        private const val TXT_LIGHTNING_KILLED = "%s's lightning bolt killed you..."
+        private val RESISTANCES = HashSet<Class<*>>()
+
+        init {
+            RESISTANCES.add(LightningTrap.Electricity::class.java)
+        }
+    }
+
+    fun resistances(): HashSet<Class<*>> {
+        return RESISTANCES
+    }
+
+    init {
+        name = "gnoll shaman"
+        spriteClass = ShamanSprite::class.java
+        HT = 18
+        HP = HT
+        defenseSkill = 8
+        EXP = 6
+        maxLvl = 14
+        loot = Generator.Category.SCROLL
+        lootChance = 0.33f
+    }
 }

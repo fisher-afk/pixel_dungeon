@@ -15,46 +15,37 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.effects.particles;
+package com.watabou.pixeldungeon.effects.particles
 
-import com.watabou.noosa.particles.Emitter;
-import com.watabou.noosa.particles.PixelParticle;
-import com.watabou.noosa.particles.Emitter.Factory;
-import com.watabou.utils.Random;
+import com.watabou.noosa.particles.Emitter
 
-public class SmokeParticle extends PixelParticle {
-	
-	public static final Emitter.Factory FACTORY = new Factory() {	
-		@Override
-		public void emit( Emitter emitter, int index, float x, float y ) {
-			((SmokeParticle)emitter.recycle( SmokeParticle.class )).reset( x, y );
-		}
-	};
-	
-	public SmokeParticle() {
-		super();
-		
-		color( 0x222222 );
-		
-		acc.set( 0, -40 );
-	}
-	
-	public void reset( float x, float y ) {
-		revive();
-		
-		this.x = x;
-		this.y = y;
-		
-		left = lifespan = Random.Float( 0.6f, 1f );
-		speed.set( Random.Float( -4, +4 ), Random.Float( -8, +8 ) );
-	}
-	
-	@Override
-	public void update() {
-		super.update();
-		
-		float p = left / lifespan;
-		am = p > 0.8f ? 2 - 2*p : p * 0.5f;
-		size( 16 - p * 8 );
-	}
+class SmokeParticle : PixelParticle() {
+    fun reset(x: Float, y: Float) {
+        revive()
+        x = x
+        y = y
+        lifespan = Random.Float(0.6f, 1f)
+        left = lifespan
+        speed.set(Random.Float(-4, +4), Random.Float(-8, +8))
+    }
+
+    fun update() {
+        super.update()
+        val p: Float = left / lifespan
+        am = if (p > 0.8f) 2 - 2 * p else p * 0.5f
+        size(16 - p * 8)
+    }
+
+    companion object {
+        val FACTORY: Emitter.Factory = object : Factory() {
+            fun emit(emitter: Emitter, index: Int, x: Float, y: Float) {
+                (emitter.recycle(SmokeParticle::class.java) as SmokeParticle).reset(x, y)
+            }
+        }
+    }
+
+    init {
+        color(0x222222)
+        acc.set(0, -40)
+    }
 }

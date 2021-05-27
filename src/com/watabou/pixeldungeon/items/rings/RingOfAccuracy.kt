@@ -15,26 +15,20 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.rings;
+package com.watabou.pixeldungeon.items.rings
 
-public class RingOfAccuracy extends Ring {
+class RingOfAccuracy : Ring() {
+    protected override fun buff(): RingBuff {
+        return Accuracy()
+    }
 
-	{
-		name = "Ring of Accuracy";
-	}
-	
-	@Override
-	protected RingBuff buff( ) {
-		return new Accuracy();
-	}
-	
-	@Override
-	public String desc() {
-		return isKnown() ?
-			"This ring increases your chance to hit the enemy." :
-			super.desc();
-	}
-	
-	public class Accuracy extends RingBuff {
-	}
+    override fun desc(): String {
+        return if (isKnown()) "This ring increases your chance to hit the enemy." else super.desc()
+    }
+
+    inner class Accuracy : RingBuff()
+
+    init {
+        name = "Ring of Accuracy"
+    }
 }

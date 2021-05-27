@@ -15,91 +15,72 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.mobs;
+package com.watabou.pixeldungeon.actors.mobs
 
-import java.util.HashSet;
+import com.watabou.pixeldungeon.actors.Char
 
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.buffs.Amok;
-import com.watabou.pixeldungeon.actors.buffs.Sleep;
-import com.watabou.pixeldungeon.actors.buffs.Terror;
-import com.watabou.pixeldungeon.actors.mobs.npcs.Imp;
-import com.watabou.pixeldungeon.items.scrolls.ScrollOfPsionicBlast;
-import com.watabou.pixeldungeon.sprites.GolemSprite;
-import com.watabou.utils.Random;
+class Golem : Mob() {
+    fun damageRoll(): Int {
+        return Random.NormalIntRange(20, 40)
+    }
 
-public class Golem extends Mob {
-	
-	{
-		name = "golem";
-		spriteClass = GolemSprite.class;
-		
-		HP = HT = 85;
-		defenseSkill = 18;
-		
-		EXP = 12;
-		maxLvl = 22;
-	}
-	
-	@Override
-	public int damageRoll() {
-		return Random.NormalIntRange( 20, 40 );
-	}
-	
-	@Override
-	public int attackSkill( Char target ) {
-		return 28;
-	}
-	
-	@Override
-	protected float attackDelay() {
-		return 1.5f;
-	}
-	
-	@Override
-	public int dr() {
-		return 12;
-	}
-	
-	@Override
-	public String defenseVerb() {
-		return "blocked";
-	}
-	
-	@Override
-	public void die( Object cause ) {
-		Imp.Quest.process( this );
-		
-		super.die( cause );
-	}
-	
-	@Override
-	public String description() {
-		return
-			"The Dwarves tried to combine their knowledge of mechanisms with their newfound power of elemental binding. " +
-			"They used spirits of earth as the \"soul\" for the mechanical bodies of golems, which were believed to be " +
-			"most controllable of all. Despite this, the tiniest mistake in the ritual could cause an outbreak.";
-	}
-	
-	private static final HashSet<Class<?>> RESISTANCES = new HashSet<Class<?>>();
-	static {
-		RESISTANCES.add( ScrollOfPsionicBlast.class );
-	}
-	
-	@Override
-	public HashSet<Class<?>> resistances() {
-		return RESISTANCES;
-	}
-	
-	private static final HashSet<Class<?>> IMMUNITIES = new HashSet<Class<?>>();
-	static {
-		IMMUNITIES.add( Amok.class );
-		IMMUNITIES.add( Terror.class );
-		IMMUNITIES.add( Sleep.class );
-	}
-	
-	@Override
-	public HashSet<Class<?>> immunities() {
-		return IMMUNITIES;
-	}
+    fun attackSkill(target: Char?): Int {
+        return 28
+    }
+
+    protected override fun attackDelay(): Float {
+        return 1.5f
+    }
+
+    fun dr(): Int {
+        return 12
+    }
+
+    fun defenseVerb(): String {
+        return "blocked"
+    }
+
+    override fun die(cause: Any?) {
+        Imp.Quest.process(this)
+        super.die(cause)
+    }
+
+    override fun description(): String {
+        return "The Dwarves tried to combine their knowledge of mechanisms with their newfound power of elemental binding. " +
+                "They used spirits of earth as the \"soul\" for the mechanical bodies of golems, which were believed to be " +
+                "most controllable of all. Despite this, the tiniest mistake in the ritual could cause an outbreak."
+    }
+
+    companion object {
+        private val RESISTANCES = HashSet<Class<*>>()
+        private val IMMUNITIES = HashSet<Class<*>>()
+
+        init {
+            RESISTANCES.add(ScrollOfPsionicBlast::class.java)
+        }
+
+        init {
+            IMMUNITIES.add(Amok::class.java)
+            IMMUNITIES.add(Terror::class.java)
+            IMMUNITIES.add(Sleep::class.java)
+        }
+    }
+
+    fun resistances(): HashSet<Class<*>> {
+        return RESISTANCES
+    }
+
+    fun immunities(): HashSet<Class<*>> {
+        return IMMUNITIES
+    }
+
+    init {
+        name = "golem"
+        spriteClass = GolemSprite::class.java
+        HT = 85
+        HP = HT
+        defenseSkill = 18
+        EXP = 12
+        maxLvl = 22
+    }
 }

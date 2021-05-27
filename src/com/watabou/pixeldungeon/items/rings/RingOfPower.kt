@@ -15,27 +15,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.rings;
+package com.watabou.pixeldungeon.items.rings
 
-public class RingOfPower extends Ring {
-	
-	{
-		name = "Ring of Power";
-	}
-	
-	@Override
-	protected RingBuff buff( ) {
-		return new Power();
-	}
-	
-	@Override
-	public String desc() {
-		return isKnown() ?
-			"Your wands will become more powerful in the energy field " +
-			"that radiates from this ring. Degraded rings of power will instead weaken your wands." :
-			super.desc();
-	}
-	
-	public class Power extends RingBuff {
-	}
+class RingOfPower : Ring() {
+    protected override fun buff(): RingBuff {
+        return Power()
+    }
+
+    override fun desc(): String {
+        return if (isKnown()) "Your wands will become more powerful in the energy field " +
+                "that radiates from this ring. Degraded rings of power will instead weaken your wands." else super.desc()
+    }
+
+    inner class Power : RingBuff()
+
+    init {
+        name = "Ring of Power"
+    }
 }

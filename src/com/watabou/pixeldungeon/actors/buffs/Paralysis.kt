@@ -15,52 +15,44 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.buffs;
+package com.watabou.pixeldungeon.actors.buffs
 
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.items.rings.RingOfElements.Resistance;
-import com.watabou.pixeldungeon.ui.BuffIndicator;
+class Paralysis : FlavourBuff() {
+    fun attachTo(target: Char): Boolean {
+        return if (super.attachTo(target)) {
+            target.paralysed = true
+            true
+        } else {
+            false
+        }
+    }
 
-public class Paralysis extends FlavourBuff {
+    override fun detach() {
+        super.detach()
+        unfreeze(target)
+    }
 
-	private static final float DURATION	= 10f;
-	
-	@Override
-	public boolean attachTo( Char target ) {
-		if (super.attachTo( target )) {
-			target.paralysed = true;
-			return true;
-		} else {
-			return false;
-		}
-	}
-	
-	@Override
-	public void detach() {
-		super.detach();
-		unfreeze( target );
-	}
-	
-	@Override
-	public int icon() {
-		return BuffIndicator.PARALYSIS;
-	}
-	
-	@Override
-	public String toString() {
-		return "Paralysed";
-	}
-	
-	public static float duration( Char ch ) {
-		Resistance r = ch.buff( Resistance.class );
-		return r != null ? r.durationFactor() * DURATION : DURATION;
-	}
-	
-	public static void unfreeze( Char ch ) {
-		if (ch.buff( Paralysis.class ) == null &&
-			ch.buff( Frost.class ) == null) {
-			
-			ch.paralysed = false;
-		}
-	}
+    override fun icon(): Int {
+        return BuffIndicator.PARALYSIS
+    }
+
+    override fun toString(): String {
+        return "Paralysed"
+    }
+
+    companion object {
+        private const val DURATION = 10f
+        fun duration(ch: Char): Float {
+            val r: Resistance = ch.buff(Resistance::class.java)
+            return if (r != null) r.durationFactor() * DURATION else DURATION
+        }
+
+        fun unfreeze(ch: Char) {
+            if (ch.buff(Paralysis::class.java) == null &&
+                ch.buff(Frost::class.java) == null
+            ) {
+                ch.paralysed = false
+            }
+        }
+    }
 }

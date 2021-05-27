@@ -15,38 +15,29 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.armor.glyphs;
+package com.watabou.pixeldungeon.items.armor.glyphs
 
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.hero.Hero;
-import com.watabou.pixeldungeon.items.armor.Armor;
-import com.watabou.pixeldungeon.items.armor.Armor.Glyph;
-import com.watabou.pixeldungeon.sprites.ItemSprite.Glowing;
+import com.watabou.pixeldungeon.Dungeon
 
-public class AutoRepair extends Glyph {
+class AutoRepair : Glyph() {
+    fun proc(armor: Armor, attacker: Char?, defender: Char?, damage: Int): Int {
+        if (defender is Hero && Dungeon.gold >= armor.tier) {
+            Dungeon.gold -= armor.tier
+            armor.polish()
+        }
+        return damage
+    }
 
-	private static final String TXT_AUTO_REPAIR	= "%s of auto-repair";
+    fun name(weaponName: String?): String {
+        return String.format(TXT_AUTO_REPAIR, weaponName)
+    }
 
-	private static Glowing GRAY = new Glowing( 0xCC8888 );
-	
-	@Override
-	public int proc( Armor armor, Char attacker, Char defender, int damage) {
-		if (defender instanceof Hero && Dungeon.gold >= armor.tier) {
-			Dungeon.gold -= armor.tier;
-			armor.polish();
-		}
-		return damage;
-	}
-	
-	@Override
-	public String name( String weaponName) {
-		return String.format( TXT_AUTO_REPAIR, weaponName );
-	}
-	
-	@Override
-	public Glowing glowing() {
-		return GRAY;
-	}
+    fun glowing(): Glowing {
+        return GRAY
+    }
 
+    companion object {
+        private const val TXT_AUTO_REPAIR = "%s of auto-repair"
+        private val GRAY: Glowing = Glowing(0xCC8888)
+    }
 }

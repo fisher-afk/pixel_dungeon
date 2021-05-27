@@ -15,131 +15,95 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.mobs;
+package com.watabou.pixeldungeon.actors.mobs
 
-import java.util.ArrayList;
+import com.watabou.pixeldungeon.Dungeon
 
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.Actor;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.buffs.Buff;
-import com.watabou.pixeldungeon.actors.buffs.Burning;
-import com.watabou.pixeldungeon.actors.buffs.Poison;
-import com.watabou.pixeldungeon.effects.Pushing;
-import com.watabou.pixeldungeon.items.potions.PotionOfHealing;
-import com.watabou.pixeldungeon.levels.Level;
-import com.watabou.pixeldungeon.levels.Terrain;
-import com.watabou.pixeldungeon.levels.features.Door;
-import com.watabou.pixeldungeon.scenes.GameScene;
-import com.watabou.pixeldungeon.sprites.SwarmSprite;
-import com.watabou.utils.Bundle;
-import com.watabou.utils.Random;
+class Swarm : Mob() {
+    var generation = 0
+    override fun storeInBundle(bundle: Bundle) {
+        super.storeInBundle(bundle)
+        bundle.put(GENERATION, generation)
+    }
 
-public class Swarm extends Mob {
+    override fun restoreFromBundle(bundle: Bundle) {
+        super.restoreFromBundle(bundle)
+        generation = bundle.getInt(GENERATION)
+    }
 
-	{
-		name = "swarm of flies";
-		spriteClass = SwarmSprite.class;
-		
-		HP = HT = 80;
-		defenseSkill = 5;
-		
-		maxLvl = 10;
-		
-		flying = true;
-	}
-	
-	private static final float SPLIT_DELAY	= 1f;
-	
-	int generation	= 0;
-	
-	private static final String GENERATION	= "generation";
-	
-	@Override
-	public void storeInBundle( Bundle bundle ) {
-		super.storeInBundle( bundle );
-		bundle.put( GENERATION, generation );
-	}
-	
-	@Override
-	public void restoreFromBundle( Bundle bundle ) {
-		super.restoreFromBundle( bundle );
-		generation = bundle.getInt( GENERATION );
-	}
-	
-	@Override
-	public int damageRoll() {
-		return Random.NormalIntRange( 1, 4 );
-	}
-	
-	@Override
-	public int defenseProc( Char enemy, int damage ) {
+    fun damageRoll(): Int {
+        return Random.NormalIntRange(1, 4)
+    }
 
-		if (HP >= damage + 2) {
-			ArrayList<Integer> candidates = new ArrayList<Integer>();
-			boolean[] passable = Level.passable;
-			
-			int[] neighbours = {pos + 1, pos - 1, pos + Level.WIDTH, pos - Level.WIDTH};
-			for (int n : neighbours) {
-				if (passable[n] && Actor.findChar( n ) == null) {
-					candidates.add( n );
-				}
-			}
-	
-			if (candidates.size() > 0) {
-				
-				Swarm clone = split();
-				clone.HP = (HP - damage) / 2;
-				clone.pos = Random.element( candidates );
-				clone.state = clone.HUNTING;
-				
-				if (Dungeon.level.map[clone.pos] == Terrain.DOOR) {
-					Door.enter( clone.pos );
-				}
-				
-				GameScene.add( clone, SPLIT_DELAY );
-				Actor.addDelayed( new Pushing( clone, pos, clone.pos ), -1 );
-				
-				HP -= clone.HP;
-			}
-		}
-		
-		return damage;
-	}
-	
-	@Override
-	public int attackSkill( Char target ) {
-		return 12;
-	}
-	
-	@Override
-	public String defenseVerb() {
-		return "evaded";
-	}
-	
-	private Swarm split() {
-		Swarm clone = new Swarm();
-		clone.generation = generation + 1;
-		if (buff( Burning.class ) != null) {
-			Buff.affect( clone, Burning.class ).reignite( clone );
-		}
-		if (buff( Poison.class ) != null) {
-			Buff.affect( clone, Poison.class ).set( 2 );
-		}
-		return clone;
-	}
-	
-	@Override
-	protected void dropLoot() {
-		if (Random.Int( 5 * (generation + 1) ) == 0) {
-			Dungeon.level.drop( new PotionOfHealing(), pos ).sprite.drop();
-		}
-	}
-	
-	@Override
-	public String description() {
-		return
-			"The deadly swarm of flies buzzes angrily. Every non-magical attack " +
-			"will split it into two smaller but equally dangerous swarms.";
-	}
+    fun defenseProc(enemy: Char?, damage: Int): Int {
+        if (HP >= damage + 2) {
+            val candidates = ArrayList<Int>()
+            val passable: BooleanArray = Level.passable
+            val neighbours = intArrayOf(pos + 1, pos - 1, pos + Level.WIDTH, pos - Level.WIDTH)
+            for (n in neighbours) {
+                if (passable[n] && Actor.findChar(n) == null) {
+                    candidates.add(n)
+                }
+            }
+            if (candidates.size > 0) {
+                val clone = split()
+                clone.HP = (HP - damage) / 2
+                clone.pos = Random.element(candidates)
+                clone.state = clone.HUNTING
+                if (Dungeon.level.map.get(clone.pos) === Terrain.DOOR) {
+                    Door.enter(clone.pos)
+                }
+                GameScene.add(clone, SPLIT_DELAY)
+                Actor.addDelayed(Pushing(clone, pos, clone.pos), -1)
+                HP -= clone.HP
+            }
+        }
+        return damage
+    }
+
+    fun attackSkill(target: Char?): Int {
+        return 12
+    }
+
+    fun defenseVerb(): String {
+        return "evaded"
+    }
+
+    private fun split(): Swarm {
+        val clone = Swarm()
+        clone.generation = generation + 1
+        if (buff(Burning::class.java) != null) {
+            Buff.affect(clone, Burning::class.java).reignite(clone)
+        }
+        if (buff(Poison::class.java) != null) {
+            Buff.affect(clone, Poison::class.java).set(2)
+        }
+        return clone
+    }
+
+    protected override fun dropLoot() {
+        if (Random.Int(5 * (generation + 1)) === 0) {
+            Dungeon.level.drop(PotionOfHealing(), pos).sprite.drop()
+        }
+    }
+
+    override fun description(): String {
+        return "The deadly swarm of flies buzzes angrily. Every non-magical attack " +
+                "will split it into two smaller but equally dangerous swarms."
+    }
+
+    companion object {
+        private const val SPLIT_DELAY = 1f
+        private const val GENERATION = "generation"
+    }
+
+    init {
+        name = "swarm of flies"
+        spriteClass = SwarmSprite::class.java
+        HT = 80
+        HP = HT
+        defenseSkill = 5
+        maxLvl = 10
+        flying = true
+    }
 }

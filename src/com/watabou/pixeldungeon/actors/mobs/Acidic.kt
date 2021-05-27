@@ -15,34 +15,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.mobs;
+package com.watabou.pixeldungeon.actors.mobs
 
-import com.watabou.pixeldungeon.Badges;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.sprites.AcidicSprite;
-import com.watabou.utils.Random;
+import com.watabou.pixeldungeon.Badges
 
-public class Acidic extends Scorpio {
+class Acidic : Scorpio() {
+    override fun defenseProc(enemy: Char, damage: Int): Int {
+        val dmg: Int = Random.IntRange(0, damage)
+        if (dmg > 0) {
+            enemy.damage(dmg, this)
+        }
+        return super.defenseProc(enemy, damage)
+    }
 
-	{
-		name = "acidic scorpio";
-		spriteClass = AcidicSprite.class;
-	}
-	
-	@Override
-	public int defenseProc( Char enemy, int damage ) {
-		
-		int dmg = Random.IntRange( 0, damage );
-		if (dmg > 0) {
-			enemy.damage( dmg, this );
-		}
-		
-		return super.defenseProc( enemy, damage );
-	}
-	
-	@Override
-	public void die( Object cause ) {
-		super.die( cause );
-		Badges.validateRare( this );
-	}
+    override fun die(cause: Any?) {
+        super.die(cause)
+        Badges.validateRare(this)
+    }
+
+    init {
+        name = "acidic scorpio"
+        spriteClass = AcidicSprite::class.java
+    }
 }

@@ -15,108 +15,79 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.sprites;
+package com.watabou.pixeldungeon.sprites
 
-import com.watabou.noosa.TextureFilm;
-import com.watabou.noosa.particles.Emitter;
-import com.watabou.noosa.particles.PixelParticle;
-import com.watabou.noosa.particles.Emitter.Factory;
-import com.watabou.pixeldungeon.Assets;
-import com.watabou.utils.PointF;
-import com.watabou.utils.Random;
+import com.watabou.noosa.TextureFilm
 
-public class GooSprite extends MobSprite {
-	
-	private Animation pump;
-	private Animation jump;
-	
-	private Emitter spray;
-	
-	public GooSprite() {
-		super();
-		
-		texture( Assets.GOO );
-		
-		TextureFilm frames = new TextureFilm( texture, 20, 14 );
-		
-		idle = new Animation( 10, true );
-		idle.frames( frames, 0, 1 );
-		
-		run = new Animation( 10, true );
-		run.frames( frames, 0, 1 );
-		
-		pump = new Animation( 20, true );
-		pump.frames( frames, 0, 1 );
-		
-		jump = new Animation( 1, true );
-		jump.frames( frames, 6 );
-		
-		attack = new Animation( 10, false );
-		attack.frames( frames, 5, 0, 6 );
-		
-		die = new Animation( 10, false );
-		die.frames( frames, 2, 3, 4 );
-		
-		play( idle );
-	}
-	
-	public void pumpUp() {
-		play( pump );
-	}
-	
-	@Override
-	public void play( Animation anim, boolean force ) {
-		super.play( anim, force );
-		
-		if (anim == pump) {
-			spray = centerEmitter();
-			spray.pour( GooParticle.FACTORY, 0.04f );
-		} else if (spray != null) {
-			spray.on = false;
-			spray = null;
-		}
-	}
-	
-	@Override
-	public int blood() {
-		return 0xFF000000;
-	}
-	
-	public static class GooParticle extends PixelParticle.Shrinking {
-		
-		public static final Emitter.Factory FACTORY = new Factory() {	
-			@Override
-			public void emit( Emitter emitter, int index, float x, float y ) {
-				((GooParticle)emitter.recycle( GooParticle.class )).reset( x, y );
-			}
-		};
-		
-		public GooParticle() {
-			super();
-			
-			color( 0x000000 );
-			lifespan = 0.3f;
-			
-			acc.set( 0, +50 );
-		}
-		
-		public void reset( float x, float y ) {
-			revive();
-			
-			this.x = x;
-			this.y = y;
-			
-			left = lifespan;
-			
-			size = 4;
-			speed.polar( -Random.Float( PointF.PI ), Random.Float( 32, 48 ) );
-		}
-		
-		@Override
-		public void update() {
-			super.update();
-			float p = left / lifespan;
-			am = p > 0.5f ? (1 - p) * 2f : 1;
-		}
-	}
+class GooSprite : MobSprite() {
+    private val pump: Animation
+    private val jump: Animation
+    private var spray: Emitter? = null
+    fun pumpUp() {
+        play(pump)
+    }
+
+    fun play(anim: Animation, force: Boolean) {
+        super.play(anim, force)
+        if (anim === pump) {
+            spray = centerEmitter()
+            spray.pour(GooParticle.FACTORY, 0.04f)
+        } else if (spray != null) {
+            spray.on = false
+            spray = null
+        }
+    }
+
+    override fun blood(): Int {
+        return -0x1000000
+    }
+
+    class GooParticle : PixelParticle.Shrinking() {
+        fun reset(x: Float, y: Float) {
+            revive()
+            x = x
+            y = y
+            left = lifespan
+            size = 4
+            speed.polar(-Random.Float(PointF.PI), Random.Float(32, 48))
+        }
+
+        fun update() {
+            super.update()
+            val p: Float = left / lifespan
+            am = if (p > 0.5f) (1 - p) * 2f else 1
+        }
+
+        companion object {
+            val FACTORY: Emitter.Factory = object : Factory() {
+                fun emit(emitter: Emitter, index: Int, x: Float, y: Float) {
+                    (emitter.recycle(GooParticle::class.java) as GooParticle).reset(x, y)
+                }
+            }
+        }
+
+        init {
+            color(0x000000)
+            lifespan = 0.3f
+            acc.set(0, +50)
+        }
+    }
+
+    init {
+        texture(Assets.GOO)
+        val frames = TextureFilm(texture, 20, 14)
+        idle = Animation(10, true)
+        idle.frames(frames, 0, 1)
+        run = Animation(10, true)
+        run.frames(frames, 0, 1)
+        pump = Animation(20, true)
+        pump.frames(frames, 0, 1)
+        jump = Animation(1, true)
+        jump.frames(frames, 6)
+        attack = Animation(10, false)
+        attack.frames(frames, 5, 0, 6)
+        die = Animation(10, false)
+        die.frames(frames, 2, 3, 4)
+        play(idle)
+    }
 }

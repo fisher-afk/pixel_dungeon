@@ -15,164 +15,113 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items;
+package com.watabou.pixeldungeon.items
 
-import java.util.ArrayList;
+import com.watabou.noosa.Game
 
-import com.watabou.noosa.Game;
-import com.watabou.noosa.audio.Sample;
-import com.watabou.pixeldungeon.Assets;
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.Actor;
-import com.watabou.pixeldungeon.actors.hero.Hero;
-import com.watabou.pixeldungeon.items.wands.WandOfBlink;
-import com.watabou.pixeldungeon.levels.Level;
-import com.watabou.pixeldungeon.scenes.InterlevelScene;
-import com.watabou.pixeldungeon.sprites.ItemSprite.Glowing;
-import com.watabou.pixeldungeon.sprites.ItemSpriteSheet;
-import com.watabou.pixeldungeon.utils.GLog;
-import com.watabou.pixeldungeon.utils.Utils;
-import com.watabou.utils.Bundle;
+class LloydsBeacon : Item() {
+    private var returnDepth = -1
+    private var returnPos = 0
+    override fun storeInBundle(bundle: Bundle) {
+        super.storeInBundle(bundle)
+        bundle.put(DEPTH, returnDepth)
+        if (returnDepth != -1) {
+            bundle.put(POS, returnPos)
+        }
+    }
 
-public class LloydsBeacon extends Item {
+    override fun restoreFromBundle(bundle: Bundle) {
+        super.restoreFromBundle(bundle)
+        returnDepth = bundle.getInt(DEPTH)
+        returnPos = bundle.getInt(POS)
+    }
 
-	private static final String TXT_PREVENTING = 
-		"Strong magic aura of this place prevents you from using the lloyd's beacon!";
-	
-	private static final String TXT_CREATURES = 
-		"Psychic aura of neighbouring creatures doesn't allow you to use the lloyd's beacon at this moment.";
-	
-	private static final String TXT_RETURN = 
-		"The lloyd's beacon is successfully set at your current location, now you can return here anytime.";
-			
-	private static final String TXT_INFO =
-		"Lloyd's beacon is an intricate magic device, that allows you to return to a place you have already been.";
-	
-	private static final String TXT_SET = 
-		"\n\nThis beacon was set somewhere on the level %d of Pixel Dungeon.";
-	
-	public static final float TIME_TO_USE = 1;
-	
-	public static final String AC_SET		= "SET";
-	public static final String AC_RETURN	= "RETURN";
-	
-	private int returnDepth	= -1;
-	private int returnPos;
-	
-	{
-		name = "lloyd's beacon";
-		image = ItemSpriteSheet.BEACON;
-		
-		unique = true;
-	}
-	
-	private static final String DEPTH	= "depth";
-	private static final String POS		= "pos";
-	
-	@Override
-	public void storeInBundle( Bundle bundle ) {
-		super.storeInBundle( bundle );
-		bundle.put( DEPTH, returnDepth );
-		if (returnDepth != -1) {
-			bundle.put( POS, returnPos );
-		}
-	}
-	
-	@Override
-	public void restoreFromBundle( Bundle bundle ) {
-		super.restoreFromBundle(bundle);
-		returnDepth	= bundle.getInt( DEPTH );
-		returnPos	= bundle.getInt( POS );
-	}
-	
-	@Override
-	public ArrayList<String> actions( Hero hero ) {
-		ArrayList<String> actions = super.actions( hero );
-		actions.add( AC_SET );
-		if (returnDepth != -1) {
-			actions.add( AC_RETURN );
-		}
-		return actions;
-	}
-	
-	@Override
-	public void execute( Hero hero, String action ) {
-		
-		if (action == AC_SET || action == AC_RETURN) {
-			
-			if (Dungeon.bossLevel()) {
-				hero.spend( LloydsBeacon.TIME_TO_USE );
-				GLog.w( TXT_PREVENTING );
-				return;
-			}
-			
-			for (int i=0; i < Level.NEIGHBOURS8.length; i++) {
-				if (Actor.findChar( hero.pos + Level.NEIGHBOURS8[i] ) != null) {
-					GLog.w( TXT_CREATURES );
-					return;
-				}
-			}
-		}
-		
-		if (action == AC_SET) {
-			
-			returnDepth = Dungeon.depth;
-			returnPos = hero.pos;
-			
-			hero.spend( LloydsBeacon.TIME_TO_USE );
-			hero.busy();
-			
-			hero.sprite.operate( hero.pos );
-			Sample.INSTANCE.play( Assets.SND_BEACON );
-			
-			GLog.i( TXT_RETURN );
-			
-		} else if (action == AC_RETURN) {
-			
-			if (returnDepth == Dungeon.depth) {
-				reset();
-				WandOfBlink.appear( hero, returnPos );
-				Dungeon.level.press( returnPos, hero );
-				Dungeon.observe();
-			} else {
-				InterlevelScene.mode = InterlevelScene.Mode.RETURN;
-				InterlevelScene.returnDepth = returnDepth;
-				InterlevelScene.returnPos = returnPos;
-				reset();
-				Game.switchScene( InterlevelScene.class );
-			}
-			
-			
-		} else {
-			
-			super.execute( hero, action );
-			
-		}
-	}
-	
-	public void reset() {
-		returnDepth = -1;
-	}
-	
-	@Override
-	public boolean isUpgradable() {
-		return false;
-	}
-	
-	@Override
-	public boolean isIdentified() {
-		return true;
-	}
-	
-	private static final Glowing WHITE = new Glowing( 0xFFFFFF );
-	
-	@Override
-	public Glowing glowing() {
-		return returnDepth != -1 ? WHITE : null;
-	}
-	
-	@Override
-	public String info() {
-		return TXT_INFO + (returnDepth == -1 ? "" : Utils.format( TXT_SET, returnDepth ) );
-	}
+    override fun actions(hero: Hero?): ArrayList<String> {
+        val actions: ArrayList<String> = super.actions(hero)
+        actions.add(AC_SET)
+        if (returnDepth != -1) {
+            actions.add(AC_RETURN)
+        }
+        return actions
+    }
+
+    fun execute(hero: Hero, action: String) {
+        if (action === AC_SET || action === AC_RETURN) {
+            if (Dungeon.bossLevel()) {
+                hero.spend(TIME_TO_USE)
+                GLog.w(TXT_PREVENTING)
+                return
+            }
+            for (i in 0 until Level.NEIGHBOURS8.length) {
+                if (Actor.findChar(hero.pos + Level.NEIGHBOURS8.get(i)) != null) {
+                    GLog.w(TXT_CREATURES)
+                    return
+                }
+            }
+        }
+        if (action === AC_SET) {
+            returnDepth = Dungeon.depth
+            returnPos = hero.pos
+            hero.spend(TIME_TO_USE)
+            hero.busy()
+            hero.sprite.operate(hero.pos)
+            Sample.INSTANCE.play(Assets.SND_BEACON)
+            GLog.i(TXT_RETURN)
+        } else if (action === AC_RETURN) {
+            if (returnDepth == Dungeon.depth) {
+                reset()
+                WandOfBlink.appear(hero, returnPos)
+                Dungeon.level.press(returnPos, hero)
+                Dungeon.observe()
+            } else {
+                InterlevelScene.mode = InterlevelScene.Mode.RETURN
+                InterlevelScene.returnDepth = returnDepth
+                InterlevelScene.returnPos = returnPos
+                reset()
+                Game.switchScene(InterlevelScene::class.java)
+            }
+        } else {
+            super.execute(hero, action)
+        }
+    }
+
+    fun reset() {
+        returnDepth = -1
+    }
+
+    override val isUpgradable: Boolean
+        get() = false
+    override val isIdentified: Boolean
+        get() = true
+
+    override fun glowing(): Glowing? {
+        return if (returnDepth != -1) WHITE else null
+    }
+
+    override fun info(): String {
+        return TXT_INFO + if (returnDepth == -1) "" else Utils.format(TXT_SET, returnDepth)
+    }
+
+    companion object {
+        private const val TXT_PREVENTING = "Strong magic aura of this place prevents you from using the lloyd's beacon!"
+        private const val TXT_CREATURES =
+            "Psychic aura of neighbouring creatures doesn't allow you to use the lloyd's beacon at this moment."
+        private const val TXT_RETURN =
+            "The lloyd's beacon is successfully set at your current location, now you can return here anytime."
+        private const val TXT_INFO =
+            "Lloyd's beacon is an intricate magic device, that allows you to return to a place you have already been."
+        private const val TXT_SET = "\n\nThis beacon was set somewhere on the level %d of Pixel Dungeon."
+        const val TIME_TO_USE = 1f
+        const val AC_SET = "SET"
+        const val AC_RETURN = "RETURN"
+        private const val DEPTH = "depth"
+        private const val POS = "pos"
+        private val WHITE: Glowing = Glowing(0xFFFFFF)
+    }
+
+    init {
+        name = "lloyd's beacon"
+        image = ItemSpriteSheet.BEACON
+        unique = true
+    }
 }

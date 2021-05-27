@@ -15,32 +15,25 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.levels.features;
+package com.watabou.pixeldungeon.levels.features
 
-import com.watabou.noosa.audio.Sample;
-import com.watabou.pixeldungeon.Assets;
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.levels.Level;
-import com.watabou.pixeldungeon.levels.Terrain;
-import com.watabou.pixeldungeon.scenes.GameScene;
+import com.watabou.noosa.audio.Sample
 
-public class Door {
+object Door {
+    fun enter(pos: Int) {
+        Level.set(pos, Terrain.OPEN_DOOR)
+        GameScene.updateMap(pos)
+        Dungeon.observe()
+        if (Dungeon.visible.get(pos)) {
+            Sample.INSTANCE.play(Assets.SND_OPEN)
+        }
+    }
 
-	public static void enter( int pos ) {
-		Level.set( pos, Terrain.OPEN_DOOR );
-		GameScene.updateMap( pos );
-		Dungeon.observe();
-		
-		if (Dungeon.visible[pos]) {
-			Sample.INSTANCE.play( Assets.SND_OPEN );
-		}
-	}
-	
-	public static void leave( int pos ) {
-		if (Dungeon.level.heaps.get( pos ) == null) {
-			Level.set( pos, Terrain.DOOR );
-			GameScene.updateMap( pos );
-			Dungeon.observe();
-		}
-	}
+    fun leave(pos: Int) {
+        if (Dungeon.level.heaps.get(pos) == null) {
+            Level.set(pos, Terrain.DOOR)
+            GameScene.updateMap(pos)
+            Dungeon.observe()
+        }
+    }
 }

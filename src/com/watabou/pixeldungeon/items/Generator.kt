@@ -15,254 +15,212 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items;
+package com.watabou.pixeldungeon.items
 
-import java.util.HashMap;
+import com.watabou.pixeldungeon.Dungeon
 
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.hero.Hero;
-import com.watabou.pixeldungeon.items.armor.*;
-import com.watabou.pixeldungeon.items.bags.Bag;
-import com.watabou.pixeldungeon.items.food.Food;
-import com.watabou.pixeldungeon.items.food.MysteryMeat;
-import com.watabou.pixeldungeon.items.food.Pasty;
-import com.watabou.pixeldungeon.items.potions.*;
-import com.watabou.pixeldungeon.items.rings.*;
-import com.watabou.pixeldungeon.items.scrolls.*;
-import com.watabou.pixeldungeon.items.wands.*;
-import com.watabou.pixeldungeon.items.weapon.*;
-import com.watabou.pixeldungeon.items.weapon.melee.*;
-import com.watabou.pixeldungeon.items.weapon.missiles.*;
-import com.watabou.pixeldungeon.plants.*;
-import com.watabou.utils.Random;
+object Generator {
+    private val categoryProbs = HashMap<Category, Float>()
+    fun reset() {
+        for (cat in Category.values()) {
+            categoryProbs[cat] = cat.prob
+        }
+    }
 
-public class Generator {
+    fun random(): Item {
+        return random(Random.chances(categoryProbs))
+    }
 
-	public static enum Category {
-		WEAPON	( 15,	Weapon.class ),
-		ARMOR	( 10,	Armor.class ),
-		POTION	( 50,	Potion.class ),
-		SCROLL	( 40,	Scroll.class ),
-		WAND	( 4,	Wand.class ),
-		RING	( 2,	Ring.class ),
-		SEED	( 5,	Plant.Seed.class ),
-		FOOD	( 0,	Food.class ),
-		GOLD	( 50,	Gold.class ),
-		MISC	( 5,	Item.class );
-		
-		public Class<?>[] classes;
-		public float[] probs;
-		
-		public float prob;
-		public Class<? extends Item> superClass;
-		
-		private Category( float prob, Class<? extends Item> superClass ) {
-			this.prob = prob;
-			this.superClass = superClass;
-		}
-		
-		public static int order( Item item ) {
-			for (int i=0; i < values().length; i++) {
-				if (values()[i].superClass.isInstance( item )) {
-					return i;
-				}
-			}
-			
-			return item instanceof Bag ? Integer.MAX_VALUE : Integer.MAX_VALUE - 1;
-		}
-	};
-	
-	private static HashMap<Category,Float> categoryProbs = new HashMap<Generator.Category, Float>();
-	
-	static {
-		
-		Category.GOLD.classes = new Class<?>[]{ 
-			Gold.class };
-		Category.GOLD.probs = new float[]{ 1 };
-		
-		Category.SCROLL.classes = new Class<?>[]{ 
-			ScrollOfIdentify.class, 
-			ScrollOfTeleportation.class, 
-			ScrollOfRemoveCurse.class, 
-			ScrollOfRecharging.class,
-			ScrollOfMagicMapping.class,
-			ScrollOfChallenge.class,
-			ScrollOfTerror.class,
-			ScrollOfLullaby.class,
-			ScrollOfPsionicBlast.class,
-			ScrollOfMirrorImage.class,
-			ScrollOfUpgrade.class,
-			ScrollOfEnchantment.class };
-		Category.SCROLL.probs = new float[]{ 30, 10, 15, 10, 15, 12, 8, 8, 4, 6, 0, 1 };
-		
-		Category.POTION.classes = new Class<?>[]{ 
-			PotionOfHealing.class, 
-			PotionOfExperience.class,
-			PotionOfToxicGas.class, 
-			PotionOfParalyticGas.class,
-			PotionOfLiquidFlame.class,
-			PotionOfLevitation.class,
-			PotionOfStrength.class,
-			PotionOfMindVision.class,
-			PotionOfPurity.class,
-			PotionOfInvisibility.class,
-			PotionOfMight.class,
-			PotionOfFrost.class };
-		Category.POTION.probs = new float[]{ 45, 4, 15, 10, 15, 10, 0, 20, 12, 10, 0, 10 };
-		
-		Category.WAND.classes = new Class<?>[]{ 
-			WandOfTeleportation.class, 
-			WandOfSlowness.class,
-			WandOfFirebolt.class,
-			WandOfRegrowth.class,
-			WandOfPoison.class,
-			WandOfBlink.class,
-			WandOfLightning.class,
-			WandOfAmok.class,
-			WandOfReach.class,
-			WandOfFlock.class,
-			WandOfMagicMissile.class,
-			WandOfDisintegration.class,
-			WandOfAvalanche.class };
-		Category.WAND.probs = new float[]{ 10, 10, 15, 6, 10, 11, 15, 10, 6, 10, 0, 5, 5 };
-		
-		Category.WEAPON.classes = new Class<?>[]{ 
-			Dagger.class, 
-			Knuckles.class,
-			Quarterstaff.class, 
-			Spear.class, 
-			Mace.class, 
-			Sword.class, 
-			Longsword.class,
-			BattleAxe.class,
-			WarHammer.class, 
-			Glaive.class,
-			ShortSword.class,
-			Dart.class,
-			Javelin.class,
-			IncendiaryDart.class,
-			CurareDart.class,
-			Shuriken.class,
-			Boomerang.class,
-			Tamahawk.class };
-		Category.WEAPON.probs = new float[]{ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1 };
-		
-		Category.ARMOR.classes = new Class<?>[]{ 
-			ClothArmor.class, 
-			LeatherArmor.class, 
-			MailArmor.class, 
-			ScaleArmor.class, 
-			PlateArmor.class };
-		Category.ARMOR.probs = new float[]{ 1, 1, 1, 1, 1 };
-		
-		Category.FOOD.classes = new Class<?>[]{ 
-			Food.class, 
-			Pasty.class,
-			MysteryMeat.class };
-		Category.FOOD.probs = new float[]{ 4, 1, 0 };
-			
-		Category.RING.classes = new Class<?>[]{ 
-			RingOfMending.class,
-			RingOfDetection.class,
-			RingOfShadows.class,
-			RingOfPower.class,
-			RingOfHerbalism.class,
-			RingOfAccuracy.class,
-			RingOfEvasion.class,
-			RingOfSatiety.class,
-			RingOfHaste.class,
-			RingOfElements.class,
-			RingOfHaggler.class,
-			RingOfThorns.class };
-		Category.RING.probs = new float[]{ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0 };
-		
-		Category.SEED.classes = new Class<?>[]{ 
-			Firebloom.Seed.class,
-			Icecap.Seed.class,
-			Sorrowmoss.Seed.class,
-			Dreamweed.Seed.class,
-			Sungrass.Seed.class,
-			Earthroot.Seed.class,
-			Fadeleaf.Seed.class,
-			Rotberry.Seed.class };
-		Category.SEED.probs = new float[]{ 1, 1, 1, 1, 1, 1, 1, 0 };
-		
-		Category.MISC.classes = new Class<?>[]{ 
-			Bomb.class,
-			Honeypot.class};
-		Category.MISC.probs = new float[]{ 2, 1 };
-	}
-	
-	public static void reset() {
-		for (Category cat : Category.values()) {
-			categoryProbs.put( cat, cat.prob );
-		}
-	}
-	
-	public static Item random() {
-		return random( Random.chances( categoryProbs ) );
-	}
-	
-	public static Item random( Category cat ) {
-		try {
-			
-			categoryProbs.put( cat, categoryProbs.get( cat ) / 2 );
-			
-			switch (cat) {
-			case ARMOR:
-				return randomArmor();
-			case WEAPON:
-				return randomWeapon();
-			default:
-				return ((Item)cat.classes[Random.chances( cat.probs )].newInstance()).random();
-			}
-			
-		} catch (Exception e) {
+    fun random(cat: Category): Item? {
+        return try {
+            categoryProbs[cat] = categoryProbs[cat]!! / 2
+            when (cat) {
+                Category.ARMOR -> randomArmor()
+                Category.WEAPON -> randomWeapon()
+                else -> (cat.classes[Random.chances(cat.probs)].newInstance() as Item).random()
+            }
+        } catch (e: Exception) {
+            null
+        }
+    }
 
-			return null;
-			
-		}
-	}
-	
-	public static Item random( Class<? extends Item> cl ) {
-		try {
-			
-			return ((Item)cl.newInstance()).random();
-			
-		} catch (Exception e) {
+    fun random(cl: Class<out Item?>): Item? {
+        return try {
+            cl.newInstance()!!.random()
+        } catch (e: Exception) {
+            null
+        }
+    }
 
-			return null;
-			
-		}
-	}
-	
-	public static Armor randomArmor() throws Exception {
-		
-		int curStr = Hero.STARTING_STR + Dungeon.potionOfStrength;
-		
-		Category cat = Category.ARMOR;
-		
-		Armor a1 = (Armor)cat.classes[Random.chances( cat.probs )].newInstance();
-		Armor a2 = (Armor)cat.classes[Random.chances( cat.probs )].newInstance();
-		
-		a1.random();
-		a2.random();
-		
-		return Math.abs( curStr - a1.STR ) < Math.abs( curStr - a2.STR ) ? a1 : a2;
-	}
-	
-	public static Weapon randomWeapon() throws Exception {
-		
-		int curStr = Hero.STARTING_STR + Dungeon.potionOfStrength;
-		
-		Category cat = Category.WEAPON;
-		
-		Weapon w1 = (Weapon)cat.classes[Random.chances( cat.probs )].newInstance();
-		Weapon w2 = (Weapon)cat.classes[Random.chances( cat.probs )].newInstance();
-		
-		w1.random();
-		w2.random();
-		
-		return Math.abs( curStr - w1.STR ) < Math.abs( curStr - w2.STR ) ? w1 : w2;
-	}
+    @Throws(Exception::class)
+    fun randomArmor(): Armor {
+        val curStr: Int = Hero.STARTING_STR + Dungeon.potionOfStrength
+        val cat = Category.ARMOR
+        val a1: Armor = cat.classes[Random.chances(cat.probs)].newInstance() as Armor
+        val a2: Armor = cat.classes[Random.chances(cat.probs)].newInstance() as Armor
+        a1.random()
+        a2.random()
+        return if (Math.abs(curStr - a1.STR) < Math.abs(curStr - a2.STR)) a1 else a2
+    }
+
+    @Throws(Exception::class)
+    fun randomWeapon(): Weapon {
+        val curStr: Int = Hero.STARTING_STR + Dungeon.potionOfStrength
+        val cat = Category.WEAPON
+        val w1: Weapon = cat.classes[Random.chances(cat.probs)].newInstance() as Weapon
+        val w2: Weapon = cat.classes[Random.chances(cat.probs)].newInstance() as Weapon
+        w1.random()
+        w2.random()
+        return if (Math.abs(curStr - w1.STR) < Math.abs(curStr - w2.STR)) w1 else w2
+    }
+
+    enum class Category(var prob: Float, superClass: Class<out Item?>) {
+        WEAPON(15, Weapon::class.java), ARMOR(10, Armor::class.java), POTION(50, Potion::class.java), SCROLL(
+            40,
+            Scroll::class.java
+        ),
+        WAND(4, Wand::class.java), RING(2, Ring::class.java), SEED(5, Plant.Seed::class.java), FOOD(
+            0,
+            Food::class.java
+        ),
+        GOLD(50, Gold::class.java), MISC(5, Item::class.java);
+
+        var classes: Array<Class<*>>
+        var probs: FloatArray
+        var superClass: Class<out Item?>
+
+        companion object {
+            fun order(item: Item?): Int {
+                for (i in values().indices) {
+                    if (values()[i].superClass.isInstance(item)) {
+                        return i
+                    }
+                }
+                return if (item is Bag) Int.MAX_VALUE else Int.MAX_VALUE - 1
+            }
+        }
+
+        init {
+            this.superClass = superClass
+        }
+    }
+
+    init {
+        Category.GOLD.classes = arrayOf(
+            Gold::class.java
+        )
+        Category.GOLD.probs = floatArrayOf(1f)
+        Category.SCROLL.classes = arrayOf(
+            ScrollOfIdentify::class.java,
+            ScrollOfTeleportation::class.java,
+            ScrollOfRemoveCurse::class.java,
+            ScrollOfRecharging::class.java,
+            ScrollOfMagicMapping::class.java,
+            ScrollOfChallenge::class.java,
+            ScrollOfTerror::class.java,
+            ScrollOfLullaby::class.java,
+            ScrollOfPsionicBlast::class.java,
+            ScrollOfMirrorImage::class.java,
+            ScrollOfUpgrade::class.java,
+            ScrollOfEnchantment::class.java
+        )
+        Category.SCROLL.probs = floatArrayOf(30f, 10f, 15f, 10f, 15f, 12f, 8f, 8f, 4f, 6f, 0f, 1f)
+        Category.POTION.classes = arrayOf(
+            PotionOfHealing::class.java,
+            PotionOfExperience::class.java,
+            PotionOfToxicGas::class.java,
+            PotionOfParalyticGas::class.java,
+            PotionOfLiquidFlame::class.java,
+            PotionOfLevitation::class.java,
+            PotionOfStrength::class.java,
+            PotionOfMindVision::class.java,
+            PotionOfPurity::class.java,
+            PotionOfInvisibility::class.java,
+            PotionOfMight::class.java,
+            PotionOfFrost::class.java
+        )
+        Category.POTION.probs = floatArrayOf(45f, 4f, 15f, 10f, 15f, 10f, 0f, 20f, 12f, 10f, 0f, 10f)
+        Category.WAND.classes = arrayOf(
+            WandOfTeleportation::class.java,
+            WandOfSlowness::class.java,
+            WandOfFirebolt::class.java,
+            WandOfRegrowth::class.java,
+            WandOfPoison::class.java,
+            WandOfBlink::class.java,
+            WandOfLightning::class.java,
+            WandOfAmok::class.java,
+            WandOfReach::class.java,
+            WandOfFlock::class.java,
+            WandOfMagicMissile::class.java,
+            WandOfDisintegration::class.java,
+            WandOfAvalanche::class.java
+        )
+        Category.WAND.probs = floatArrayOf(10f, 10f, 15f, 6f, 10f, 11f, 15f, 10f, 6f, 10f, 0f, 5f, 5f)
+        Category.WEAPON.classes = arrayOf(
+            Dagger::class.java,
+            Knuckles::class.java,
+            Quarterstaff::class.java,
+            Spear::class.java,
+            Mace::class.java,
+            Sword::class.java,
+            Longsword::class.java,
+            BattleAxe::class.java,
+            WarHammer::class.java,
+            Glaive::class.java,
+            ShortSword::class.java,
+            Dart::class.java,
+            Javelin::class.java,
+            IncendiaryDart::class.java,
+            CurareDart::class.java,
+            Shuriken::class.java,
+            Boomerang::class.java,
+            Tamahawk::class.java
+        )
+        Category.WEAPON.probs = floatArrayOf(1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 0f, 0f, 1f, 1f, 1f, 1f, 0f, 1f)
+        Category.ARMOR.classes = arrayOf(
+            ClothArmor::class.java,
+            LeatherArmor::class.java,
+            MailArmor::class.java,
+            ScaleArmor::class.java,
+            PlateArmor::class.java
+        )
+        Category.ARMOR.probs = floatArrayOf(1f, 1f, 1f, 1f, 1f)
+        Category.FOOD.classes = arrayOf(
+            Food::class.java,
+            Pasty::class.java,
+            MysteryMeat::class.java
+        )
+        Category.FOOD.probs = floatArrayOf(4f, 1f, 0f)
+        Category.RING.classes = arrayOf(
+            RingOfMending::class.java,
+            RingOfDetection::class.java,
+            RingOfShadows::class.java,
+            RingOfPower::class.java,
+            RingOfHerbalism::class.java,
+            RingOfAccuracy::class.java,
+            RingOfEvasion::class.java,
+            RingOfSatiety::class.java,
+            RingOfHaste::class.java,
+            RingOfElements::class.java,
+            RingOfHaggler::class.java,
+            RingOfThorns::class.java
+        )
+        Category.RING.probs = floatArrayOf(1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 0f, 0f)
+        Category.SEED.classes = arrayOf(
+            Firebloom.Seed::class.java,
+            Icecap.Seed::class.java,
+            Sorrowmoss.Seed::class.java,
+            Dreamweed.Seed::class.java,
+            Sungrass.Seed::class.java,
+            Earthroot.Seed::class.java,
+            Fadeleaf.Seed::class.java,
+            Rotberry.Seed::class.java
+        )
+        Category.SEED.probs = floatArrayOf(1f, 1f, 1f, 1f, 1f, 1f, 1f, 0f)
+        Category.MISC.classes = arrayOf(
+            Bomb::class.java,
+            Honeypot::class.java
+        )
+        Category.MISC.probs = floatArrayOf(2f, 1f)
+    }
 }

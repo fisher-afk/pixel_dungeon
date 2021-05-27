@@ -15,27 +15,25 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.utils;
+package com.watabou.pixeldungeon.utils
 
-import java.util.Locale;
+import java.util.*
 
-public class Utils {
+object Utils {
+    fun capitalize(str: String): String {
+        return Character.toUpperCase(str[0]).toString() + str.substring(1)
+    }
 
-	public static String capitalize( String str ) {
-		return Character.toUpperCase( str.charAt( 0 ) ) + str.substring( 1 );
-	}
-	
-	public static String format( String format, Object...args ) {
-		return String.format( Locale.ENGLISH, format, args );
-	}
-	
-	public static String VOWELS	= "aoeiu";
-	
-	public static String indefinite( String noun ) {
-		if (noun.length() == 0) {
-			return "a";
-		} else {
-			return (VOWELS.indexOf( Character.toLowerCase( noun.charAt( 0 ) ) ) != -1 ? "an " : "a ") + noun;
-		}
-	}
+    fun format(format: String?, vararg args: Any?): String {
+        return String.format(Locale.ENGLISH, format!!, *args)
+    }
+
+    var VOWELS = "aoeiu"
+    fun indefinite(noun: String): String {
+        return if (noun.length == 0) {
+            "a"
+        } else {
+            (if (VOWELS.indexOf(Character.toLowerCase(noun[0])) != -1) "an " else "a ") + noun
+        }
+    }
 }

@@ -15,40 +15,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.sprites;
+package com.watabou.pixeldungeon.sprites
 
-import com.watabou.noosa.TextureFilm;
-import com.watabou.pixeldungeon.Assets;
-import com.watabou.pixeldungeon.effects.Splash;
+import com.watabou.noosa.TextureFilm
+class YogSprite : MobSprite() {
+    override fun die() {
+        super.die()
+        Splash.at(center(), blood(), 12)
+    }
 
-public class YogSprite extends MobSprite {
-	
-	public YogSprite() {
-		super();
-		
-		texture( Assets.YOG );
-		
-		TextureFilm frames = new TextureFilm( texture, 20, 19 );
-		
-		idle = new Animation( 10, true );
-		idle.frames( frames, 0, 1, 2, 2, 1, 0, 3, 4, 4, 3, 0, 5, 6, 6, 5 );
-		
-		run = new Animation( 12, true );
-		run.frames( frames, 0 );
-		
-		attack = new Animation( 12, false );
-		attack.frames( frames, 0 );
-		
-		die = new Animation( 10, false );
-		die.frames( frames, 0, 7, 8, 9 );
-		
-		play( idle );
-	}
-	
-	@Override
-	public void die() {
-		super.die();
-		
-		Splash.at( center(), blood(), 12 );
-	}
+    init {
+        texture(Assets.YOG)
+        val frames = TextureFilm(texture, 20, 19)
+        idle = Animation(10, true)
+        idle.frames(frames, 0, 1, 2, 2, 1, 0, 3, 4, 4, 3, 0, 5, 6, 6, 5)
+        run = Animation(12, true)
+        run.frames(frames, 0)
+        attack = Animation(12, false)
+        attack.frames(frames, 0)
+        die = Animation(10, false)
+        die.frames(frames, 0, 7, 8, 9)
+        play(idle)
+    }
 }

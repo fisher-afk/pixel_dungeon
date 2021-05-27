@@ -15,62 +15,51 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.blobs;
+package com.watabou.pixeldungeon.actors.blobs
 
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.Journal;
-import com.watabou.pixeldungeon.effects.BlobEmitter;
-import com.watabou.pixeldungeon.effects.Speck;
-import com.watabou.pixeldungeon.items.Heap;
-import com.watabou.pixeldungeon.items.Item;
-import com.watabou.utils.Bundle;
+import com.watabou.pixeldungeon.Dungeon
 
-public class Alchemy extends Blob {
+class Alchemy : Blob() {
+    protected var pos = 0
+    override fun restoreFromBundle(bundle: Bundle) {
+        super.restoreFromBundle(bundle)
+        for (i in 0 until LENGTH) {
+            if (cur.get(i) > 0) {
+                pos = i
+                break
+            }
+        }
+    }
 
-	protected int pos;
-	
-	@Override
-	public void restoreFromBundle( Bundle bundle ) {
-		super.restoreFromBundle( bundle );
-		
-		for (int i=0; i < LENGTH; i++) {
-			if (cur[i] > 0) {
-				pos = i;
-				break;
-			}
-		}
-	}
-	
-	@Override
-	protected void evolve() {
-		volume = off[pos] = cur[pos];
-		
-		if (Dungeon.visible[pos]) {
-			Journal.add( Journal.Feature.ALCHEMY );
-		}
-	}
-	
-	@Override
-	public void seed( int cell, int amount ) {
-		cur[pos] = 0;
-		pos = cell;
-		volume = cur[pos] = amount;
-	}
-	
-	public static void transmute( int cell ) {
-		Heap heap = Dungeon.level.heaps.get( cell );
-		if (heap != null) {
-			
-			Item result = heap.transmute();
-			if (result != null) {
-				Dungeon.level.drop( result, cell ).sprite.drop( cell );
-			}
-		}
-	}
-	
-	@Override
-	public void use( BlobEmitter emitter ) {
-		super.use( emitter );	
-		emitter.start( Speck.factory( Speck.BUBBLE ), 0.4f, 0 );
-	}
+    protected override fun evolve() {
+        off.get(pos) = cur.get(pos)
+        volume = off.get(pos)
+        if (Dungeon.visible.get(pos)) {
+            Journal.add(Journal.Feature.ALCHEMY)
+        }
+    }
+
+    override fun seed(cell: Int, amount: Int) {
+        cur.get(pos) = 0
+        pos = cell
+        cur.get(pos) = amount
+        volume = cur.get(pos)
+    }
+
+    override fun use(emitter: BlobEmitter) {
+        super.use(emitter)
+        emitter.start(Speck.factory(Speck.BUBBLE), 0.4f, 0)
+    }
+
+    companion object {
+        fun transmute(cell: Int) {
+            val heap: Heap = Dungeon.level.heaps.get(cell)
+            if (heap != null) {
+                val result: Item = heap.transmute()
+                if (result != null) {
+                    Dungeon.level.drop(result, cell).sprite.drop(cell)
+                }
+            }
+        }
+    }
 }

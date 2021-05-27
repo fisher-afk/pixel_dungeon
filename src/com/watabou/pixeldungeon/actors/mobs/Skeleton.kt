@@ -15,115 +15,88 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.mobs;
+package com.watabou.pixeldungeon.actors.mobs
 
-import java.util.HashSet;
+import com.watabou.noosa.audio.Sample
 
-import com.watabou.noosa.audio.Sample;
-import com.watabou.pixeldungeon.Assets;
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.ResultDescriptions;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.items.Generator;
-import com.watabou.pixeldungeon.items.Item;
-import com.watabou.pixeldungeon.items.weapon.enchantments.Death;
-import com.watabou.pixeldungeon.levels.Level;
-import com.watabou.pixeldungeon.sprites.SkeletonSprite;
-import com.watabou.pixeldungeon.utils.GLog;
-import com.watabou.pixeldungeon.utils.Utils;
-import com.watabou.utils.Random;
+class Skeleton : Mob() {
+    fun damageRoll(): Int {
+        return Random.NormalIntRange(3, 8)
+    }
 
-public class Skeleton extends Mob {
+    override fun die(cause: Any?) {
+        super.die(cause)
+        var heroKilled = false
+        for (i in 0 until Level.NEIGHBOURS8.length) {
+            val ch: Char = findChar(pos + Level.NEIGHBOURS8.get(i))
+            if (ch != null && ch.isAlive()) {
+                val damage = Math.max(0, damageRoll() - Random.IntRange(0, ch.dr() / 2))
+                ch.damage(damage, this)
+                if (ch === Dungeon.hero && !ch.isAlive()) {
+                    heroKilled = true
+                }
+            }
+        }
+        if (Dungeon.visible.get(pos)) {
+            Sample.INSTANCE.play(Assets.SND_BONES)
+        }
+        if (heroKilled) {
+            Dungeon.fail(Utils.format(ResultDescriptions.MOB, Utils.indefinite(name), Dungeon.depth))
+            GLog.n(TXT_HERO_KILLED)
+        }
+    }
 
-	private static final String TXT_HERO_KILLED = "You were killed by the explosion of bones...";
-	
-	{
-		name = "skeleton";
-		spriteClass = SkeletonSprite.class;
-		
-		HP = HT = 25;
-		defenseSkill = 9;
-		
-		EXP = 5;
-		maxLvl = 10;
-	}
-	
-	@Override
-	public int damageRoll() {
-		return Random.NormalIntRange( 3, 8 );
-	}
-	
-	@Override
-	public void die( Object cause ) {
-		
-		super.die( cause );
-		
-		boolean heroKilled = false;
-		for (int i=0; i < Level.NEIGHBOURS8.length; i++) {
-			Char ch = findChar( pos + Level.NEIGHBOURS8[i] );
-			if (ch != null && ch.isAlive()) {
-				int damage = Math.max( 0,  damageRoll() - Random.IntRange( 0, ch.dr() / 2 ) );
-				ch.damage( damage, this );
-				if (ch == Dungeon.hero && !ch.isAlive()) {
-					heroKilled = true;
-				}
-			}
-		}
-		
-		if (Dungeon.visible[pos]) {
-			Sample.INSTANCE.play( Assets.SND_BONES );
-		}
-		
-		if (heroKilled) {
-			Dungeon.fail( Utils.format( ResultDescriptions.MOB, Utils.indefinite( name ), Dungeon.depth ) );
-			GLog.n( TXT_HERO_KILLED );
-		}
-	}
-	
-	@Override
-	protected void dropLoot() {
-		if (Random.Int( 5 ) == 0) {
-			Item loot = Generator.random( Generator.Category.WEAPON );
-			for (int i=0; i < 2; i++) {
-				Item l = Generator.random( Generator.Category.WEAPON );
-				if (l.level() < loot.level()) {
-					loot = l;
-				}
-			}
-			Dungeon.level.drop( loot, pos ).sprite.drop();
-		}
-	}
-	
-	@Override
-	public int attackSkill( Char target ) {
-		return 12;
-	}
-	
-	@Override
-	public int dr() {
-		return 5;
-	}
-	
-	@Override
-	public String defenseVerb() {
-		return "blocked";
-	}
-	
-	@Override
-	public String description() {
-		return
-			"Skeletons are composed of corpses bones from unlucky adventurers and inhabitants of the dungeon, " +
-			"animated by emanations of evil magic from the depths below. After they have been " +
-			"damaged enough, they disintegrate in an explosion of bones.";
-	}
-	
-	private static final HashSet<Class<?>> IMMUNITIES = new HashSet<Class<?>>();
-	static {
-		IMMUNITIES.add( Death.class );
-	}
-	
-	@Override
-	public HashSet<Class<?>> immunities() {
-		return IMMUNITIES;
-	}
+    protected override fun dropLoot() {
+        if (Random.Int(5) === 0) {
+            var loot: Item = Generator.random(Generator.Category.WEAPON)
+            for (i in 0..1) {
+                val l: Item = Generator.random(Generator.Category.WEAPON)
+                if (l.level() < loot.level()) {
+                    loot = l
+                }
+            }
+            Dungeon.level.drop(loot, pos).sprite.drop()
+        }
+    }
+
+    fun attackSkill(target: Char?): Int {
+        return 12
+    }
+
+    fun dr(): Int {
+        return 5
+    }
+
+    fun defenseVerb(): String {
+        return "blocked"
+    }
+
+    override fun description(): String {
+        return "Skeletons are composed of corpses bones from unlucky adventurers and inhabitants of the dungeon, " +
+                "animated by emanations of evil magic from the depths below. After they have been " +
+                "damaged enough, they disintegrate in an explosion of bones."
+    }
+
+    companion object {
+        private const val TXT_HERO_KILLED = "You were killed by the explosion of bones..."
+        private val IMMUNITIES = HashSet<Class<*>>()
+
+        init {
+            IMMUNITIES.add(Death::class.java)
+        }
+    }
+
+    fun immunities(): HashSet<Class<*>> {
+        return IMMUNITIES
+    }
+
+    init {
+        name = "skeleton"
+        spriteClass = SkeletonSprite::class.java
+        HT = 25
+        HP = HT
+        defenseSkill = 9
+        EXP = 5
+        maxLvl = 10
+    }
 }

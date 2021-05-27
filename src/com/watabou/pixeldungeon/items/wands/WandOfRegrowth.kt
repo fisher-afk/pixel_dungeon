@@ -15,70 +15,41 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.wands;
+package com.watabou.pixeldungeon.items.wands
 
-import com.watabou.noosa.audio.Sample;
-import com.watabou.pixeldungeon.Assets;
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.blobs.Blob;
-import com.watabou.pixeldungeon.actors.blobs.Regrowth;
-import com.watabou.pixeldungeon.effects.MagicMissile;
-import com.watabou.pixeldungeon.levels.Level;
-import com.watabou.pixeldungeon.levels.Terrain;
-import com.watabou.pixeldungeon.mechanics.Ballistica;
-import com.watabou.pixeldungeon.scenes.GameScene;
-import com.watabou.pixeldungeon.utils.GLog;
-import com.watabou.utils.Callback;
+import com.watabou.noosa.audio.Sample
 
-public class WandOfRegrowth extends Wand {
+class WandOfRegrowth : Wand() {
+    protected override fun onZap(cell: Int) {
+        for (i in 1 until Ballistica.distance - 1) {
+            val p: Int = Ballistica.trace.get(i)
+            val c: Int = Dungeon.level.map.get(p)
+            if (c == Terrain.EMPTY || c == Terrain.EMBERS || c == Terrain.EMPTY_DECO) {
+                Level.set(p, Terrain.GRASS)
+                GameScene.updateMap(p)
+                if (Dungeon.visible.get(p)) {
+                    GameScene.discoverTile(p, c)
+                }
+            }
+        }
+        val c: Int = Dungeon.level.map.get(cell)
+        if (c == Terrain.EMPTY || c == Terrain.EMBERS || c == Terrain.EMPTY_DECO || c == Terrain.GRASS || c == Terrain.HIGH_GRASS) {
+            GameScene.add(Blob.seed(cell, (power() + 2) * 20, Regrowth::class.java))
+        } else {
+            GLog.i("nothing happened")
+        }
+    }
 
-	{
-		name = "Wand of Regrowth";
-	}
-	
-	@Override
-	protected void onZap( int cell ) {
-		
-		for (int i=1; i < Ballistica.distance-1; i++) {
-			int p = Ballistica.trace[i];
-			int c = Dungeon.level.map[p];
-			if (c == Terrain.EMPTY || 
-				c == Terrain.EMBERS || 
-				c == Terrain.EMPTY_DECO) {
-				
-				Level.set( p, Terrain.GRASS );
-				GameScene.updateMap( p );
-				if (Dungeon.visible[p]) {
-					GameScene.discoverTile( p, c );
-				}
-				
-			}
-		}
-		
-		int c = Dungeon.level.map[cell];
-		if (c == Terrain.EMPTY || 
-			c == Terrain.EMBERS || 
-			c == Terrain.EMPTY_DECO || 
-			c == Terrain.GRASS ||
-			c == Terrain.HIGH_GRASS) {
-			
-			GameScene.add( Blob.seed( cell, (power() + 2) * 20, Regrowth.class ) );
-			
-		} else {
-			
-			GLog.i( "nothing happened" );
-			
-		}
-	}
-	
-	protected void fx( int cell, Callback callback ) {
-		MagicMissile.foliage( curUser.sprite.parent, curUser.pos, cell, callback );
-		Sample.INSTANCE.play( Assets.SND_ZAP );
-	}
-	
-	@Override
-	public String desc() {
-		return
-			"\"When life ceases new life always begins to grow... The eternal cycle always remains!\"";
-	}
+    protected override fun fx(cell: Int, callback: Callback?) {
+        MagicMissile.foliage(curUser.sprite.parent, curUser.pos, cell, callback)
+        Sample.INSTANCE.play(Assets.SND_ZAP)
+    }
+
+    fun desc(): String {
+        return "\"When life ceases new life always begins to grow... The eternal cycle always remains!\""
+    }
+
+    init {
+        name = "Wand of Regrowth"
+    }
 }

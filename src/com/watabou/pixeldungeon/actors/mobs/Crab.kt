@@ -15,62 +15,46 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.mobs;
+package com.watabou.pixeldungeon.actors.mobs
 
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.mobs.npcs.Ghost;
-import com.watabou.pixeldungeon.items.food.MysteryMeat;
-import com.watabou.pixeldungeon.sprites.CrabSprite;
-import com.watabou.utils.Random;
+class Crab : Mob() {
+    fun damageRoll(): Int {
+        return Random.NormalIntRange(3, 6)
+    }
 
-public class Crab extends Mob {
+    fun attackSkill(target: Char?): Int {
+        return 12
+    }
 
-	{
-		name = "sewer crab";
-		spriteClass = CrabSprite.class;
-		
-		HP = HT = 15;
-		defenseSkill = 5;
-		baseSpeed = 2f;
-		
-		EXP = 3;
-		maxLvl = 9;
-		
-		loot = new MysteryMeat();
-		lootChance = 0.167f;
-	}
-	
-	@Override
-	public int damageRoll() {
-		return Random.NormalIntRange( 3, 6 );
-	}
-	
-	@Override
-	public int attackSkill( Char target ) {
-		return 12;
-	}
-	
-	@Override
-	public int dr() {
-		return 4;
-	}
-	
-	@Override
-	public String defenseVerb() {
-		return "parried";
-	}
-	
-	@Override
-	public void die( Object cause ) {
-		Ghost.Quest.processSewersKill( pos );
-		super.die( cause );
-	}
-	
-	@Override
-	public String description() {
-		return
-			"These huge crabs are at the top of the food chain in the sewers. " +
-			"They are extremely fast and their thick exoskeleton can withstand " +
-			"heavy blows.";
-	}
+    fun dr(): Int {
+        return 4
+    }
+
+    fun defenseVerb(): String {
+        return "parried"
+    }
+
+    override fun die(cause: Any?) {
+        Ghost.Quest.processSewersKill(pos)
+        super.die(cause)
+    }
+
+    override fun description(): String {
+        return "These huge crabs are at the top of the food chain in the sewers. " +
+                "They are extremely fast and their thick exoskeleton can withstand " +
+                "heavy blows."
+    }
+
+    init {
+        name = "sewer crab"
+        spriteClass = CrabSprite::class.java
+        HT = 15
+        HP = HT
+        defenseSkill = 5
+        baseSpeed = 2f
+        EXP = 3
+        maxLvl = 9
+        loot = MysteryMeat()
+        lootChance = 0.167f
+    }
 }

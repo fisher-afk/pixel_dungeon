@@ -15,37 +15,25 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.sprites;
+package com.watabou.pixeldungeon.sprites
 
-import com.watabou.noosa.TextureFilm;
-import com.watabou.pixeldungeon.Assets;
+import com.watabou.noosa.TextureFilm
+class CrabSprite : MobSprite() {
+    override fun blood(): Int {
+        return -0x1580
+    }
 
-public class CrabSprite extends MobSprite {
-	
-	public CrabSprite() {
-		super();
-		
-		texture( Assets.CRAB );
-		
-		TextureFilm frames = new TextureFilm( texture, 16 );
-		
-		idle = new Animation( 5, true );
-		idle.frames( frames, 0, 1, 0, 2 );
-		
-		run = new Animation( 15, true );
-		run.frames( frames, 3, 4, 5, 6 );
-		
-		attack = new Animation( 12, false );
-		attack.frames( frames, 7, 8, 9 );
-		
-		die = new Animation( 12, false );
-		die.frames( frames, 10, 11, 12, 13 );
-		
-		play( idle );
-	}
-	
-	@Override
-	public int blood() {
-		return 0xFFFFEA80;
-	}
+    init {
+        texture(Assets.CRAB)
+        val frames = TextureFilm(texture, 16)
+        idle = Animation(5, true)
+        idle.frames(frames, 0, 1, 0, 2)
+        run = Animation(15, true)
+        run.frames(frames, 3, 4, 5, 6)
+        attack = Animation(12, false)
+        attack.frames(frames, 7, 8, 9)
+        die = Animation(12, false)
+        die.frames(frames, 10, 11, 12, 13)
+        play(idle)
+    }
 }

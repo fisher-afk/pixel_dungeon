@@ -15,123 +15,82 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.effects;
+package com.watabou.pixeldungeon.effects
 
-import com.watabou.noosa.Game;
-import com.watabou.noosa.Visual;
-import com.watabou.noosa.audio.Sample;
-import com.watabou.pixeldungeon.Assets;
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.Actor;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.mobs.Mob;
-import com.watabou.pixeldungeon.levels.Level;
-import com.watabou.pixeldungeon.sprites.CharSprite;
-import com.watabou.utils.PointF;
+import com.watabou.noosa.Game
 
-public class Swap extends Actor {
+class Swap(private val ch1: Char, private val ch2: Char) : Actor() {
+    private var eff1: Effect?
+    private var eff2: Effect?
+    private val delay: Float
+    protected fun act(): Boolean {
+        return false
+    }
 
-	private Char ch1;
-	private Char ch2;
-	
-	private Effect eff1;
-	private Effect eff2;
-	
-	private float delay;
-	
-	public Swap( Char ch1, Char ch2 ) {
+    private fun finish(eff: Effect) {
+        if (eff === eff1) {
+            eff1 = null
+        }
+        if (eff === eff2) {
+            eff2 = null
+        }
+        if (eff1 == null && eff2 == null) {
+            Actor.remove(this)
+            next()
+            val pos: Int = ch1.pos
+            ch1.pos = ch2.pos
+            ch2.pos = pos
+            if (!ch1.flying) {
+                if (ch1 is Mob) {
+                    Dungeon.level.mobPress(ch1 as Mob)
+                } else {
+                    Dungeon.level.press(ch1.pos, ch1)
+                }
+            }
+            if (!ch2.flying) {
+                if (ch2 is Mob) {
+                    Dungeon.level.mobPress(ch2 as Mob)
+                } else {
+                    Dungeon.level.press(ch2.pos, ch2)
+                }
+            }
+            if (ch1 === Dungeon.hero || ch2 === Dungeon.hero) {
+                Dungeon.observe()
+            }
+        }
+    }
 
-		this.ch1 = ch1;
-		this.ch2 = ch2;
-		
-		delay = Level.distance( ch1.pos,  ch2.pos ) * 0.1f;
-		
-		eff1 = new Effect( ch1.sprite, ch1.pos, ch2.pos );
-		eff2 = new Effect( ch2.sprite, ch2.pos, ch1.pos );
-		Sample.INSTANCE.play( Assets.SND_TELEPORT );
-	}
-	
-	@Override
-	protected boolean act() {
-		return false;
-	}
-	
-	private void finish( Effect eff ) {
-		if (eff == eff1) {
-			eff1 = null;
-		}
-		if (eff == eff2) {
-			eff2 = null;
-		}
-		
-		if (eff1 == null && eff2 == null) {
-			Actor.remove( this );
-			next();
-			
-			int pos = ch1.pos;
-			ch1.pos = ch2.pos;
-			ch2.pos = pos;
-			
-			if (!ch1.flying) {
-				if (ch1 instanceof Mob) {
-					Dungeon.level.mobPress( (Mob)ch1 );
-				} else {
-					Dungeon.level.press( ch1.pos, ch1 );
-				}
-			}
-			if (!ch2.flying) {
-				if (ch2 instanceof Mob) {
-					Dungeon.level.mobPress( (Mob)ch2 );
-				} else {
-					Dungeon.level.press( ch2.pos, ch2 );
-				}
-			}
-			
-			if (ch1 == Dungeon.hero || ch2 == Dungeon.hero) {
-				Dungeon.observe();
-			}
-		}
-	}
+    private inner class Effect(sprite: CharSprite, from: Int, to: Int) : Visual(0, 0, 0, 0) {
+        private val sprite: CharSprite
+        private val end: PointF
+        private var passed: Float
+        fun update() {
+            super.update()
+            if (Game.elapsed.let { passed += it; passed } < delay) {
+                sprite.x = x
+                sprite.y = y
+            } else {
+                sprite.point(end)
+                killAndErase()
+                finish(this)
+            }
+        }
 
-	private class Effect extends Visual {
+        init {
+            this.sprite = sprite
+            point(sprite.worldToCamera(from))
+            end = sprite.worldToCamera(to)
+            speed.set(2 * (end.x - x) / delay, 2 * (end.y - y) / delay)
+            acc.set(-speed.x / delay, -speed.y / delay)
+            passed = 0f
+            sprite.parent.add(this)
+        }
+    }
 
-		private CharSprite sprite;
-		private PointF end;
-		private float passed;
-		
-		public Effect( CharSprite sprite, int from, int to ) {
-			super( 0, 0, 0, 0 );
-		
-			this.sprite = sprite;
-			
-			point( sprite.worldToCamera( from ) );
-			end = sprite.worldToCamera( to );
-			
-			speed.set( 2 * (end.x - x) / delay, 2 * (end.y - y) / delay );
-			acc.set( -speed.x / delay, -speed.y / delay );
-			
-			passed = 0;
-			
-			sprite.parent.add( this );
-		}
-		
-		@Override
-		public void update() {
-			super.update();
-
-			if ((passed += Game.elapsed) < delay) {
-				sprite.x = x;
-				sprite.y = y;
-				
-			} else {
-				
-				sprite.point( end );
-				
-				killAndErase();
-				finish( this );
-				
-			}
-		}
-	}
-
+    init {
+        delay = Level.distance(ch1.pos, ch2.pos) * 0.1f
+        eff1 = Effect(ch1.sprite, ch1.pos, ch2.pos)
+        eff2 = Effect(ch2.sprite, ch2.pos, ch1.pos)
+        Sample.INSTANCE.play(Assets.SND_TELEPORT)
+    }
 }

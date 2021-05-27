@@ -15,37 +15,28 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items;
+package com.watabou.pixeldungeon.items
 
-import com.watabou.pixeldungeon.sprites.ItemSpriteSheet;
+import com.watabou.pixeldungeon.sprites.ItemSpriteSheet
 
-public class Ankh extends Item {
+class Ankh : Item() {
+    override val isUpgradable: Boolean
+        get() = false
+    override val isIdentified: Boolean
+        get() = true
 
-	{
-		stackable = true;
-		name = "Ankh";
-		image = ItemSpriteSheet.ANKH;
-	}
-	
-	@Override
-	public boolean isUpgradable() {
-		return false;
-	}
-	
-	@Override
-	public boolean isIdentified() {
-		return true;
-	}
-	
-	@Override
-	public String info() {
-		return 
-			"The ancient symbol of immortality grants an ability to return to life after death. " +
-			"Upon resurrection all non-equipped items are lost.";
-	}
-	
-	@Override
-	public int price() {
-		return 50 * quantity;
-	}
+    override fun info(): String {
+        return "The ancient symbol of immortality grants an ability to return to life after death. " +
+                "Upon resurrection all non-equipped items are lost."
+    }
+
+    override fun price(): Int {
+        return 50 * quantity
+    }
+
+    init {
+        stackable = true
+        name = "Ankh"
+        image = ItemSpriteSheet.ANKH
+    }
 }

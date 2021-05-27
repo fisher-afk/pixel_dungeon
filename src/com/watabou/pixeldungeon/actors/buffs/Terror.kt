@@ -15,47 +15,38 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.buffs;
+package com.watabou.pixeldungeon.actors.buffs
 
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.ui.BuffIndicator;
-import com.watabou.utils.Bundle;
+import com.watabou.pixeldungeon.actors.Char
 
-public class Terror extends FlavourBuff {
+class Terror : FlavourBuff() {
+    var `object` = 0
+    override fun storeInBundle(bundle: Bundle) {
+        super.storeInBundle(bundle)
+        bundle.put(OBJECT, `object`)
+    }
 
-	public static final float DURATION = 10f;
-	
-	public int object = 0;
-	
-	private static final String OBJECT	= "object";
-	
-	@Override
-	public void storeInBundle( Bundle bundle ) {
-		super.storeInBundle( bundle );
-		bundle.put( OBJECT, object );
-		
-	}
-	
-	@Override
-	public void restoreFromBundle( Bundle bundle ) {
-		super.restoreFromBundle( bundle );
-		object = bundle.getInt( OBJECT );
-	}
-	
-	@Override
-	public int icon() {
-		return BuffIndicator.TERROR;
-	}
-	
-	@Override
-	public String toString() {
-		return "Terror";
-	}
-	
-	public static void recover( Char target ) {
-		Terror terror = target.buff( Terror.class );
-		if (terror != null && terror.cooldown() < DURATION) {
-			target.remove( terror );
-		}
-	}
+    override fun restoreFromBundle(bundle: Bundle) {
+        super.restoreFromBundle(bundle)
+        `object` = bundle.getInt(OBJECT)
+    }
+
+    override fun icon(): Int {
+        return BuffIndicator.TERROR
+    }
+
+    override fun toString(): String {
+        return "Terror"
+    }
+
+    companion object {
+        const val DURATION = 10f
+        private const val OBJECT = "object"
+        fun recover(target: Char) {
+            val terror: Terror = target.buff(Terror::class.java)
+            if (terror != null && terror.cooldown() < DURATION) {
+                target.remove(terror)
+            }
+        }
+    }
 }

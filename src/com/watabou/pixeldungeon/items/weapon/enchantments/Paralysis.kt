@@ -15,47 +15,35 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.weapon.enchantments;
+package com.watabou.pixeldungeon.items.weapon.enchantments
 
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.buffs.Buff;
-import com.watabou.pixeldungeon.items.weapon.Weapon;
-import com.watabou.pixeldungeon.sprites.ItemSprite;
-import com.watabou.pixeldungeon.sprites.ItemSprite.Glowing;
-import com.watabou.utils.Random;
+class Paralysis : Weapon.Enchantment() {
+    fun proc(weapon: Weapon, attacker: Char?, defender: Char?, damage: Int): Boolean {
+        // lvl 0 - 13%
+        // lvl 1 - 22%
+        // lvl 2 - 30%
+        val level = Math.max(0, weapon.effectiveLevel())
+        return if (Random.Int(level + 8) >= 7) {
+            Buff.prolong(
+                defender, com.watabou.pixeldungeon.actors.buffs.Paralysis::class.java,
+                Random.Float(1, 1.5f + level)
+            )
+            true
+        } else {
+            false
+        }
+    }
 
-public class Paralysis extends Weapon.Enchantment {
+    fun glowing(): Glowing {
+        return YELLOW
+    }
 
-	private static final String TXT_STUNNING = "stunning %s";
-	
-	private static ItemSprite.Glowing YELLOW = new ItemSprite.Glowing( 0xCCAA44 );
-	
-	@Override
-	public boolean proc( Weapon weapon, Char attacker, Char defender, int damage ) {
-		// lvl 0 - 13%
-		// lvl 1 - 22%
-		// lvl 2 - 30%
-		int level = Math.max( 0, weapon.effectiveLevel() );
-		
-		if (Random.Int( level + 8 ) >= 7) {
-			
-			Buff.prolong( defender, com.watabou.pixeldungeon.actors.buffs.Paralysis.class, 
-				Random.Float( 1, 1.5f + level ) );
-			
-			return true;
-		} else {
-			return false;
-		}
-	}
-	
-	@Override
-	public Glowing glowing() {
-		return YELLOW;
-	}
-	
-	@Override
-	public String name( String weaponName) {
-		return String.format( TXT_STUNNING, weaponName );
-	}
+    fun name(weaponName: String?): String {
+        return String.format(TXT_STUNNING, weaponName)
+    }
 
+    companion object {
+        private const val TXT_STUNNING = "stunning %s"
+        private val YELLOW: ItemSprite.Glowing = Glowing(0xCCAA44)
+    }
 }

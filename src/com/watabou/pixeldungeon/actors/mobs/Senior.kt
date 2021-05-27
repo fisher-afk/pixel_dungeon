@@ -15,38 +15,29 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.mobs;
+package com.watabou.pixeldungeon.actors.mobs
 
-import com.watabou.pixeldungeon.Badges;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.buffs.Buff;
-import com.watabou.pixeldungeon.actors.buffs.Paralysis;
-import com.watabou.pixeldungeon.sprites.SeniorSprite;
-import com.watabou.utils.Random;
+import com.watabou.pixeldungeon.Badges
 
-public class Senior extends Monk {
+class Senior : Monk() {
+    override fun damageRoll(): Int {
+        return Random.NormalIntRange(12, 20)
+    }
 
-	{
-		name = "senior monk";
-		spriteClass = SeniorSprite.class;
-	}
-	
-	@Override
-	public int damageRoll() {
-		return Random.NormalIntRange( 12, 20 );
-	}
-	
-	@Override
-	public int attackProc( Char enemy, int damage ) {
-		if (Random.Int( 10 ) == 0) {
-			Buff.prolong( enemy, Paralysis.class, 1.1f );
-		}
-		return super.attackProc( enemy, damage );
-	}
-	
-	@Override
-	public void die( Object cause ) {
-		super.die( cause );
-		Badges.validateRare( this );
-	}
+    override fun attackProc(enemy: Char, damage: Int): Int {
+        if (Random.Int(10) === 0) {
+            Buff.prolong(enemy, Paralysis::class.java, 1.1f)
+        }
+        return super.attackProc(enemy, damage)
+    }
+
+    override fun die(cause: Any?) {
+        super.die(cause)
+        Badges.validateRare(this)
+    }
+
+    init {
+        name = "senior monk"
+        spriteClass = SeniorSprite::class.java
+    }
 }

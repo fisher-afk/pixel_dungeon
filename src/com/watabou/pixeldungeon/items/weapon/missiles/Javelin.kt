@@ -15,64 +15,43 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.weapon.missiles;
+package com.watabou.pixeldungeon.items.weapon.missiles
 
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.buffs.Buff;
-import com.watabou.pixeldungeon.actors.buffs.Cripple;
-import com.watabou.pixeldungeon.items.Item;
-import com.watabou.pixeldungeon.sprites.ItemSpriteSheet;
-import com.watabou.utils.Random;
+class Javelin @JvmOverloads constructor(number: Int = 1) : MissileWeapon() {
+    fun min(): Int {
+        return 2
+    }
 
-public class Javelin extends MissileWeapon {
+    fun max(): Int {
+        return 15
+    }
 
-	{
-		name = "javelin";
-		image = ItemSpriteSheet.JAVELIN;
-		
-		STR = 15;
-	}
-	
-	public Javelin() {
-		this( 1 );
-	}
-	
-	public Javelin( int number ) {
-		super();
-		quantity = number;
-	}
-	
-	@Override
-	public int min() {
-		return 2;
-	}
-	
-	@Override
-	public int max() {
-		return 15;
-	}
-	
-	@Override
-	public void proc( Char attacker, Char defender, int damage ) {
-		super.proc( attacker, defender, damage );
-		Buff.prolong( defender, Cripple.class, Cripple.DURATION );
-	}
-	
-	@Override
-	public String desc() {
-		return 
-			"This length of metal is weighted to keep the spike " +
-			"at its tip foremost as it sails through the air.";
-	}
-	
-	@Override
-	public Item random() {
-		quantity = Random.Int( 5, 15 );
-		return this;
-	}
-	
-	@Override
-	public int price() {
-		return 15 * quantity;
-	}
+    fun proc(attacker: Char, defender: Char?, damage: Int) {
+        super.proc(attacker, defender, damage)
+        Buff.prolong(defender, Cripple::class.java, Cripple.DURATION)
+    }
+
+    fun desc(): String {
+        return "This length of metal is weighted to keep the spike " +
+                "at its tip foremost as it sails through the air."
+    }
+
+    override fun random(): Item {
+        quantity = Random.Int(5, 15)
+        return this
+    }
+
+    fun price(): Int {
+        return 15 * quantity
+    }
+
+    init {
+        name = "javelin"
+        image = ItemSpriteSheet.JAVELIN
+        STR = 15
+    }
+
+    init {
+        quantity = number
+    }
 }

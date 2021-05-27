@@ -15,49 +15,33 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.wands;
+package com.watabou.pixeldungeon.items.wands
 
-import com.watabou.noosa.audio.Sample;
-import com.watabou.pixeldungeon.Assets;
-import com.watabou.pixeldungeon.actors.Actor;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.buffs.Buff;
-import com.watabou.pixeldungeon.actors.buffs.Poison;
-import com.watabou.pixeldungeon.effects.MagicMissile;
-import com.watabou.pixeldungeon.utils.GLog;
-import com.watabou.utils.Callback;
+import com.watabou.noosa.audio.Sample
 
-public class WandOfPoison extends Wand {
+class WandOfPoison : Wand() {
+    protected override fun onZap(cell: Int) {
+        val ch: Char = Actor.findChar(cell)
+        if (ch != null) {
+            Buff.affect(ch, Poison::class.java).set(Poison.durationFactor(ch) * (5 + power()))
+        } else {
+            GLog.i("nothing happened")
+        }
+    }
 
-	{
-		name = "Wand of Poison";
-	}
-	
-	@Override
-	protected void onZap( int cell ) {
-		Char ch = Actor.findChar( cell );
-		if (ch != null) {
+    protected override fun fx(cell: Int, callback: Callback?) {
+        MagicMissile.poison(curUser.sprite.parent, curUser.pos, cell, callback)
+        Sample.INSTANCE.play(Assets.SND_ZAP)
+    }
 
-			Buff.affect( ch, Poison.class ).set( Poison.durationFactor( ch ) * (5 + power()) );
-			
-		} else {
-			
-			GLog.i( "nothing happened" );
-			
-		}
-	}
-	
-	protected void fx( int cell, Callback callback ) {
-		MagicMissile.poison( curUser.sprite.parent, curUser.pos, cell, callback );
-		Sample.INSTANCE.play( Assets.SND_ZAP );
-	}
-	
-	@Override
-	public String desc() {
-		return
-			"The vile blast of this twisted bit of wood will imbue its target " +
-			"with a deadly venom. A creature that is poisoned will suffer periodic " +
-			"damage until the effect ends. The duration of the effect increases " +
-			"with the level of the staff.";
-	}
+    fun desc(): String {
+        return "The vile blast of this twisted bit of wood will imbue its target " +
+                "with a deadly venom. A creature that is poisoned will suffer periodic " +
+                "damage until the effect ends. The duration of the effect increases " +
+                "with the level of the staff."
+    }
+
+    init {
+        name = "Wand of Poison"
+    }
 }

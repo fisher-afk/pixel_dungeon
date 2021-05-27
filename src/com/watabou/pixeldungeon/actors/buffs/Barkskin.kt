@@ -15,49 +15,39 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.buffs;
+package com.watabou.pixeldungeon.actors.buffs
 
-import com.watabou.pixeldungeon.ui.BuffIndicator;
+import com.watabou.pixeldungeon.ui.BuffIndicator
 
-public class Barkskin extends Buff {
+class Barkskin : Buff() {
+    private var level = 0
+    override fun act(): Boolean {
+        if (target.isAlive()) {
+            spend(TICK)
+            if (--level <= 0) {
+                detach()
+            }
+        } else {
+            detach()
+        }
+        return true
+    }
 
-	private int level = 0;
-	
-	@Override
-	public boolean act() {
-		if (target.isAlive()) {
+    fun level(): Int {
+        return level
+    }
 
-			spend( TICK );
-			if (--level <= 0) {
-				detach();
-			}
-			
-		} else {
-			
-			detach();
-			
-		}
+    fun level(value: Int) {
+        if (level < value) {
+            level = value
+        }
+    }
 
-		return true;
-	}
-	
-	public int level() {
-		return level;
-	}
-	
-	public void level( int value ) {
-		if (level < value) {
-			level = value;
-		}
-	}
-	
-	@Override
-	public int icon() {
-		return BuffIndicator.BARKSKIN;
-	}
-	
-	@Override
-	public String toString() {
-		return "Barkskin";
-	}
+    override fun icon(): Int {
+        return BuffIndicator.BARKSKIN
+    }
+
+    override fun toString(): String {
+        return "Barkskin"
+    }
 }

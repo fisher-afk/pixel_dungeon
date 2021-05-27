@@ -15,16 +15,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.windows;
+package com.watabou.pixeldungeon.windows
 
-import com.watabou.pixeldungeon.ui.Icons;
+import com.watabou.pixeldungeon.ui.Icons
 
-public class WndError extends WndTitledMessage {
-
-	private static final String TXT_TITLE =  "ERROR";
-	
-	public WndError( String message ) {
-		super( Icons.WARNING.get(), TXT_TITLE, message );
-	}
-
+class WndError(message: String?) : WndTitledMessage(Icons.WARNING.get(), TXT_TITLE, message) {
+    companion object {
+        private const val TXT_TITLE = "ERROR"
+    }
 }

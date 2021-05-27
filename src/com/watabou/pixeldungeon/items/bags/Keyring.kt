@@ -15,35 +15,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.bags;
+package com.watabou.pixeldungeon.items.bags
 
-import com.watabou.pixeldungeon.items.Item;
-import com.watabou.pixeldungeon.items.keys.Key;
-import com.watabou.pixeldungeon.sprites.ItemSpriteSheet;
+import com.watabou.pixeldungeon.items.Item
 
-public class Keyring extends Bag {
+class Keyring : Bag() {
+    override fun grab(item: Item?): Boolean {
+        return item is Key
+    }
 
-	{
-		name = "key ring";
-		image = ItemSpriteSheet.KEYRING;
-		
-		size = 12;
-	}
-	
-	@Override
-	public boolean grab( Item item ) {
-		return item instanceof Key;
-	}
-	
-	@Override
-	public int price() {
-		return 50;
-	}
-	
-	@Override
-	public String info() {
-		return
-			"This is a copper key ring, that lets you keep all your keys " +
-			"separately from the rest of your belongings.";
-	}
+    fun price(): Int {
+        return 50
+    }
+
+    fun info(): String {
+        return "This is a copper key ring, that lets you keep all your keys " +
+                "separately from the rest of your belongings."
+    }
+
+    init {
+        name = "key ring"
+        image = ItemSpriteSheet.KEYRING
+        size = 12
+    }
 }

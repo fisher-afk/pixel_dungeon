@@ -15,68 +15,45 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.sprites;
+package com.watabou.pixeldungeon.sprites
 
-import com.watabou.noosa.TextureFilm;
-import com.watabou.noosa.audio.Sample;
-import com.watabou.noosa.particles.Emitter;
-import com.watabou.pixeldungeon.Assets;
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.effects.Speck;
-import com.watabou.pixeldungeon.levels.Level;
+import com.watabou.noosa.TextureFilm
 
-public class BlacksmithSprite extends MobSprite {
-	
-	private Emitter emitter;
-	
-	public BlacksmithSprite() {
-		super();
-		
-		texture( Assets.TROLL );
-		
-		TextureFilm frames = new TextureFilm( texture, 13, 16 );
-		
-		idle = new Animation( 15, true );
-		idle.frames( frames, 0, 0, 0, 0, 0, 0, 0, 1, 2, 2, 2, 3 );
-		
-		run = new Animation( 20, true );
-		run.frames( frames, 0 );
-		
-		die = new Animation( 20, false );
-		die.frames( frames, 0 );
-		
-		play( idle );
-	}
-	
-	@Override
-	public void link( Char ch ) {
-		super.link( ch );
-		
-		emitter = new Emitter();
-		emitter.autoKill = false;
-		emitter.pos( x + 7, y + 12 );
-		parent.add( emitter );
-	}
-	
-	@Override
-	public void update() {
-		super.update();
-		
-		if (emitter != null) {
-			emitter.visible = visible;
-		}
-	}
-	
-	@Override
-	public void onComplete( Animation anim ) {
-		super.onComplete( anim );
-		
-		if (visible && emitter != null && anim == idle) {
-			emitter.burst( Speck.factory( Speck.FORGE ), 3 );
-			float volume = 0.2f / (Level.distance( ch.pos, Dungeon.hero.pos ));
-			Sample.INSTANCE.play( Assets.SND_EVOKE, volume, volume, 0.8f  );
-		}
-	}
+class BlacksmithSprite : MobSprite() {
+    private var emitter: Emitter? = null
+    fun link(ch: Char?) {
+        super.link(ch)
+        emitter = Emitter()
+        emitter.autoKill = false
+        emitter.pos(x + 7, y + 12)
+        parent.add(emitter)
+    }
 
+    override fun update() {
+        super.update()
+        if (emitter != null) {
+            emitter.visible = visible
+        }
+    }
+
+    override fun onComplete(anim: Animation) {
+        super.onComplete(anim)
+        if (visible && emitter != null && anim === idle) {
+            emitter.burst(Speck.factory(Speck.FORGE), 3)
+            val volume: Float = 0.2f / Level.distance(ch.pos, Dungeon.hero.pos)
+            Sample.INSTANCE.play(Assets.SND_EVOKE, volume, volume, 0.8f)
+        }
+    }
+
+    init {
+        texture(Assets.TROLL)
+        val frames = TextureFilm(texture, 13, 16)
+        idle = Animation(15, true)
+        idle.frames(frames, 0, 0, 0, 0, 0, 0, 0, 1, 2, 2, 2, 3)
+        run = Animation(20, true)
+        run.frames(frames, 0)
+        die = Animation(20, false)
+        die.frames(frames, 0)
+        play(idle)
+    }
 }

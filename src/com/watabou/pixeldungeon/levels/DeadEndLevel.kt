@@ -15,83 +15,61 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.levels;
+package com.watabou.pixeldungeon.levels
 
-import java.util.Arrays;
+import com.watabou.pixeldungeon.Assets
 
-import com.watabou.pixeldungeon.Assets;
-import com.watabou.utils.Random;
+class DeadEndLevel : Level() {
+    override fun tilesTex(): String {
+        return Assets.TILES_CAVES
+    }
 
-public class DeadEndLevel extends Level {
+    override fun waterTex(): String {
+        return Assets.WATER_HALLS
+    }
 
-	private static final int SIZE = 5;
-	
-	{
-		color1 = 0x534f3e;
-		color2 = 0xb9d661;
-	}
-	
-	@Override
-	public String tilesTex() {
-		return Assets.TILES_CAVES;
-	}
-	
-	@Override
-	public String waterTex() {
-		return Assets.WATER_HALLS;
-	}
-	
-	@Override
-	protected boolean build() {
+    protected override fun build(): Boolean {
+        Arrays.fill(map, Terrain.WALL)
+        for (i in 2 until SIZE) {
+            for (j in 2 until SIZE) {
+                map.get(i * WIDTH + j) = Terrain.EMPTY
+            }
+        }
+        for (i in 1..SIZE) {
+            map.get(WIDTH * i + SIZE) = Terrain.WATER
+            map.get(WIDTH * i + 1) = map.get(WIDTH * i + SIZE)
+            map.get(WIDTH * SIZE + i) = map.get(WIDTH * i + 1)
+            map.get(WIDTH + i) = map.get(WIDTH * SIZE + i)
+        }
+        entrance = SIZE * WIDTH + SIZE / 2 + 1
+        map.get(entrance) = Terrain.ENTRANCE
+        exit = -1
+        map.get((SIZE / 2 + 1) * (WIDTH + 1)) = Terrain.SIGN
+        return true
+    }
 
-		Arrays.fill( map, Terrain.WALL );
-		
-		for (int i=2; i < SIZE; i++) {
-			for (int j=2; j < SIZE; j++) {
-				map[i * WIDTH + j] = Terrain.EMPTY;
-			}
-		}
-		
-		for (int i=1; i <= SIZE; i++) {
-			map[WIDTH + i] = 
-			map[WIDTH * SIZE + i] =
-			map[WIDTH * i + 1] =
-			map[WIDTH * i + SIZE] =
-				Terrain.WATER;
-		}
-		
-		entrance = SIZE * WIDTH + SIZE / 2 + 1;
-		map[entrance] = Terrain.ENTRANCE;
-		
-		exit = -1;
-		
-		map[(SIZE / 2 + 1) * (WIDTH + 1)] = Terrain.SIGN;
-		
-		return true;
-	}
+    protected override fun decorate() {
+        for (i in 0 until LENGTH) {
+            if (map.get(i) === Terrain.EMPTY && Random.Int(10) === 0) {
+                map.get(i) = Terrain.EMPTY_DECO
+            } else if (map.get(i) === Terrain.WALL && Random.Int(8) === 0) {
+                map.get(i) = Terrain.WALL_DECO
+            }
+        }
+    }
 
-	@Override
-	protected void decorate() {
-		for (int i=0; i < LENGTH; i++) {
-			if (map[i] == Terrain.EMPTY && Random.Int( 10 ) == 0) { 
-				map[i] = Terrain.EMPTY_DECO;
-			} else if (map[i] == Terrain.WALL && Random.Int( 8 ) == 0) { 
-				map[i] = Terrain.WALL_DECO;
-			}
-		}
-	}
+    protected override fun createMobs() {}
+    protected override fun createItems() {}
+    override fun randomRespawnCell(): Int {
+        return -1
+    }
 
-	@Override
-	protected void createMobs() {
-	}
+    companion object {
+        private const val SIZE = 5
+    }
 
-	@Override
-	protected void createItems() {
-	}
-	
-	@Override
-	public int randomRespawnCell() {
-		return -1;
-	}
-
+    init {
+        color1 = 0x534f3e
+        color2 = 0xb9d661
+    }
 }

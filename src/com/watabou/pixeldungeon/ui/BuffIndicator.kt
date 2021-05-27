@@ -15,132 +15,102 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.ui;
+package com.watabou.pixeldungeon.ui
 
-import com.watabou.gltextures.SmartTexture;
-import com.watabou.gltextures.TextureCache;
-import com.watabou.noosa.Image;
-import com.watabou.noosa.TextureFilm;
-import com.watabou.noosa.tweeners.AlphaTweener;
-import com.watabou.noosa.ui.Component;
-import com.watabou.pixeldungeon.Assets;
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.buffs.Buff;
-import com.watabou.utils.SparseArray;
+import com.watabou.gltextures.SmartTexture
 
-public class BuffIndicator extends Component {
+class BuffIndicator(private val ch: Char) : Component() {
+    private var texture: SmartTexture? = null
+    private var film: TextureFilm? = null
+    private var icons: SparseArray<Image> = SparseArray<Image>()
+    fun destroy() {
+        super.destroy()
+        if (this === heroInstance) {
+            heroInstance = null
+        }
+    }
 
-	public static final int NONE	= -1;
-	
-	public static final int MIND_VISION	= 0;
-	public static final int LEVITATION	= 1;
-	public static final int FIRE		= 2;
-	public static final int POISON		= 3;
-	public static final int PARALYSIS	= 4;
-	public static final int HUNGER		= 5;
-	public static final int STARVATION	= 6;
-	public static final int SLOW		= 7;
-	public static final int OOZE		= 8;
-	public static final int AMOK		= 9;
-	public static final int TERROR		= 10;
-	public static final int ROOTS		= 11;
-	public static final int INVISIBLE	= 12;
-	public static final int SHADOWS		= 13;
-	public static final int WEAKNESS	= 14;
-	public static final int FROST		= 15;
-	public static final int BLINDNESS	= 16;
-	public static final int COMBO		= 17;
-	public static final int FURY		= 18;
-	public static final int HEALING		= 19;
-	public static final int ARMOR		= 20;
-	public static final int HEART		= 21;
-	public static final int LIGHT		= 22;
-	public static final int CRIPPLE		= 23;
-	public static final int BARKSKIN	= 24;
-	public static final int IMMUNITY	= 25;
-	public static final int BLEEDING	= 26;
-	public static final int MARK		= 27;
-	public static final int DEFERRED	= 28;
-	public static final int VERTIGO		= 29;
-	public static final int RAGE		= 30;
-	public static final int SACRIFICE	= 31;
-	
-	public static final int SIZE	= 7;
-	
-	private static BuffIndicator heroInstance;
-	
-	private SmartTexture texture;
-	private TextureFilm film;
-	
-	private SparseArray<Image> icons = new SparseArray<Image>();
-	
-	private Char ch;
-	
-	public BuffIndicator( Char ch ) {
-		super();
-		
-		this.ch = ch;
-		if (ch == Dungeon.hero) {
-			heroInstance = this;
-		}
-	}
-	
-	@Override
-	public void destroy() {
-		super.destroy();
-		
-		if (this == heroInstance) {
-			heroInstance = null;
-		}
-	}
-	
-	@Override
-	protected void createChildren() {
-		texture = TextureCache.get( Assets.BUFFS_SMALL );
-		film = new TextureFilm( texture, SIZE, SIZE );
-	}
-	
-	@Override
-	protected void layout() {
-		clear();
-		
-		SparseArray<Image> newIcons = new SparseArray<Image>();
-		
-		for (Buff buff : ch.buffs()) {
-			int icon = buff.icon();
-			if (icon != NONE) {
-				Image img = new Image( texture );
-				img.frame( film.get( icon ) );
-				img.x = x + members.size() * (SIZE + 2);
-				img.y = y;
-				add( img );
-				
-				newIcons.put( icon, img );
-			}
-		}
-		
-		for (Integer key : icons.keyArray()) {
-			if (newIcons.get( key ) == null) {
-				Image icon = icons.get( key );
-				icon.origin.set( SIZE / 2 );
-				add( icon );
-				add( new AlphaTweener( icon, 0, 0.6f ) {
-					@Override
-					protected void updateValues( float progress ) {
-						super.updateValues( progress );
-						image.scale.set( 1 + 5 * progress );
-					};
-				} );
-			}
-		}
-		
-		icons = newIcons;
-	}
-	
-	public static void refreshHero() {
-		if (heroInstance != null) {
-			heroInstance.layout();
-		}
-	}
+    protected fun createChildren() {
+        texture = TextureCache.get(Assets.BUFFS_SMALL)
+        film = TextureFilm(texture, SIZE, SIZE)
+    }
+
+    protected fun layout() {
+        clear()
+        val newIcons: SparseArray<Image> = SparseArray<Image>()
+        for (buff in ch.buffs()) {
+            val icon: Int = buff.icon()
+            if (icon != NONE) {
+                val img = Image(texture)
+                img.frame(film.get(icon))
+                img.x = x + members.size() * (SIZE + 2)
+                img.y = y
+                add(img)
+                newIcons.put(icon, img)
+            }
+        }
+        for (key in icons.keyArray()) {
+            if (newIcons.get(key) == null) {
+                val icon: Image = icons.get(key)
+                icon.origin.set(SIZE / 2)
+                add(icon)
+                add(object : AlphaTweener(icon, 0, 0.6f) {
+                    protected fun updateValues(progress: Float) {
+                        super.updateValues(progress)
+                        image.scale.set(1 + 5 * progress)
+                    }
+                })
+            }
+        }
+        icons = newIcons
+    }
+
+    companion object {
+        const val NONE = -1
+        const val MIND_VISION = 0
+        const val LEVITATION = 1
+        const val FIRE = 2
+        const val POISON = 3
+        const val PARALYSIS = 4
+        const val HUNGER = 5
+        const val STARVATION = 6
+        const val SLOW = 7
+        const val OOZE = 8
+        const val AMOK = 9
+        const val TERROR = 10
+        const val ROOTS = 11
+        const val INVISIBLE = 12
+        const val SHADOWS = 13
+        const val WEAKNESS = 14
+        const val FROST = 15
+        const val BLINDNESS = 16
+        const val COMBO = 17
+        const val FURY = 18
+        const val HEALING = 19
+        const val ARMOR = 20
+        const val HEART = 21
+        const val LIGHT = 22
+        const val CRIPPLE = 23
+        const val BARKSKIN = 24
+        const val IMMUNITY = 25
+        const val BLEEDING = 26
+        const val MARK = 27
+        const val DEFERRED = 28
+        const val VERTIGO = 29
+        const val RAGE = 30
+        const val SACRIFICE = 31
+        const val SIZE = 7
+        private var heroInstance: BuffIndicator? = null
+        fun refreshHero() {
+            if (heroInstance != null) {
+                heroInstance!!.layout()
+            }
+        }
+    }
+
+    init {
+        if (ch === Dungeon.hero) {
+            heroInstance = this
+        }
+    }
 }

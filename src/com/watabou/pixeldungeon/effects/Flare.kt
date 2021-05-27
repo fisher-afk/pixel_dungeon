@@ -15,164 +15,109 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.effects;
+package com.watabou.pixeldungeon.effects
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-import java.nio.ShortBuffer;
+import com.watabou.gltextures.Gradient
 
-import javax.microedition.khronos.opengles.GL10;
+class Flare @SuppressLint("FloatMath") constructor(nRays: Int, radius: Float) : Visual(0, 0, 0, 0) {
+    private var duration = 0f
+    private var lifespan = 0f
+    private var lightMode = true
+    private val texture: SmartTexture
+    private val vertices: FloatBuffer
+    private val indices: ShortBuffer
+    private val nRays: Int
+    fun color(color: Int, lightMode: Boolean): Flare {
+        this.lightMode = lightMode
+        hardlight(color)
+        return this
+    }
 
-import android.annotation.SuppressLint;
-import android.opengl.GLES20;
-import android.util.FloatMath;
+    fun show(visual: Visual, duration: Float): Flare {
+        point(visual.center())
+        visual.parent.addToBack(this)
+        this.duration = duration
+        lifespan = this.duration
+        return this
+    }
 
-import com.watabou.gltextures.Gradient;
-import com.watabou.gltextures.SmartTexture;
-import com.watabou.noosa.Game;
-import com.watabou.noosa.Group;
-import com.watabou.noosa.NoosaScript;
-import com.watabou.noosa.Visual;
-import com.watabou.utils.PointF;
+    fun show(parent: Group, pos: PointF?, duration: Float): Flare {
+        point(pos)
+        parent.add(this)
+        this.duration = duration
+        lifespan = this.duration
+        return this
+    }
 
-public class Flare extends Visual {
-	
-	private float duration = 0;
-	private float lifespan;
-	
-	private boolean lightMode = true;
-	
-	private SmartTexture texture;
-	
-	private FloatBuffer vertices;
-	private ShortBuffer indices;
-	
-	private int nRays;
-	
-	@SuppressLint("FloatMath")
-	public Flare( int nRays, float radius ) {
-		
-		super( 0, 0, 0, 0 );
-		
-		int gradient[] = {0xFFFFFFFF, 0x00FFFFFF};
-		texture = new Gradient( gradient );
-		
-		this.nRays = nRays;
-		
-		angle = 45;
-		angularSpeed = 180;
-		
-		vertices = ByteBuffer.
-			allocateDirect( (nRays * 2 + 1) * 4 * (Float.SIZE / 8) ).
-			order( ByteOrder.nativeOrder() ).
-			asFloatBuffer();
-		
-		indices = ByteBuffer.
-			allocateDirect( nRays * 3 * Short.SIZE / 8 ).
-			order( ByteOrder.nativeOrder() ).
-			asShortBuffer();
-		
-		float v[] = new float[4];
-		
-		v[0] = 0;
-		v[1] = 0;
-		v[2] = 0.25f;
-		v[3] = 0;
-		vertices.put( v );
-		
-		v[2] = 0.75f;
-		v[3] = 0;
-		
-		for (int i=0; i < nRays; i++) {
-			
-			float a = i * 3.1415926f * 2 / nRays;
-			v[0] = FloatMath.cos( a ) * radius;
-			v[1] = FloatMath.sin( a ) * radius;
-			vertices.put( v );
-			
-			a += 3.1415926f * 2 / nRays / 2;
-			v[0] = FloatMath.cos( a ) * radius;
-			v[1] = FloatMath.sin( a ) * radius;
-			vertices.put( v );
-			
-			indices.put( (short)0 );
-			indices.put( (short)(1 + i * 2) );
-			indices.put( (short)(2 + i * 2) );
-		}
-		
-		indices.position( 0 );
-	}
-	
-	public Flare color( int color, boolean lightMode ) {
-		this.lightMode = lightMode;
-		hardlight( color );
-		
-		return this;
-	}
-	
-	public Flare show( Visual visual, float duration ) {
-		point( visual.center() );
-		visual.parent.addToBack( this );
-		
-		lifespan = this.duration = duration;
-		
-		return this;
-	}
-	
-	public Flare show( Group parent, PointF pos, float duration ) {
-		point( pos );
-		parent.add( this );
-		
-		lifespan = this.duration = duration;
-		
-		return this;
-	}
-	
-	@Override
-	public void update() {
-		super.update();
-		
-		if (duration > 0) {
-			if ((lifespan -= Game.elapsed) > 0) {
-				
-				float p = 1 - lifespan / duration;	// 0 -> 1
-				p =  p < 0.25f ? p * 4 : (1 - p) * 1.333f;
-				scale.set( p );
-				alpha( p );
-				
-			} else {
-				killAndErase();
-			}
-		}
-	}
-	
-	@Override
-	public void draw() {
-		
-		super.draw();
-		
-		if (lightMode) {
-			GLES20.glBlendFunc( GL10.GL_SRC_ALPHA, GL10.GL_ONE );
-			drawRays();
-			GLES20.glBlendFunc( GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA );
-		} else {
-			drawRays();
-		}
-	}
-	
-	private void drawRays() {
-		
-		NoosaScript script = NoosaScript.get();
-		
-		texture.bind();
-		
-		script.uModel.valueM4( matrix );
-		script.lighting( 
-			rm, gm, bm, am, 
-			ra, ga, ba, aa );
-		
-		script.camera( camera );
-		script.drawElements( vertices, indices, nRays * 3 );
-	}
+    fun update() {
+        super.update()
+        if (duration > 0) {
+            if (Game.elapsed.let { lifespan -= it; lifespan } > 0) {
+                var p = 1 - lifespan / duration // 0 -> 1
+                p = if (p < 0.25f) p * 4 else (1 - p) * 1.333f
+                scale.set(p)
+                alpha(p)
+            } else {
+                killAndErase()
+            }
+        }
+    }
+
+    fun draw() {
+        super.draw()
+        if (lightMode) {
+            GLES20.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE)
+            drawRays()
+            GLES20.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA)
+        } else {
+            drawRays()
+        }
+    }
+
+    private fun drawRays() {
+        val script: NoosaScript = NoosaScript.get()
+        texture.bind()
+        script.uModel.valueM4(matrix)
+        script.lighting(
+            rm, gm, bm, am,
+            ra, ga, ba, aa
+        )
+        script.camera(camera)
+        script.drawElements(vertices, indices, nRays * 3)
+    }
+
+    init {
+        val gradient = intArrayOf(-0x1, 0x00FFFFFF)
+        texture = Gradient(gradient)
+        this.nRays = nRays
+        angle = 45
+        angularSpeed = 180
+        vertices =
+            ByteBuffer.allocateDirect((nRays * 2 + 1) * 4 * (java.lang.Float.SIZE / 8)).order(ByteOrder.nativeOrder())
+                .asFloatBuffer()
+        indices = ByteBuffer.allocateDirect(nRays * 3 * java.lang.Short.SIZE / 8).order(ByteOrder.nativeOrder())
+            .asShortBuffer()
+        val v = FloatArray(4)
+        v[0] = 0
+        v[1] = 0
+        v[2] = 0.25f
+        v[3] = 0
+        vertices.put(v)
+        v[2] = 0.75f
+        v[3] = 0
+        for (i in 0 until nRays) {
+            var a = i * 3.1415926f * 2 / nRays
+            v[0] = FloatMath.cos(a) * radius
+            v[1] = FloatMath.sin(a) * radius
+            vertices.put(v)
+            a += 3.1415926f * 2 / nRays / 2
+            v[0] = FloatMath.cos(a) * radius
+            v[1] = FloatMath.sin(a) * radius
+            vertices.put(v)
+            indices.put(0.toShort())
+            indices.put((1 + i * 2).toShort())
+            indices.put((2 + i * 2).toShort())
+        }
+        indices.position(0)
+    }
 }

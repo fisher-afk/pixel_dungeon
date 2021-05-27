@@ -15,28 +15,22 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.buffs;
+package com.watabou.pixeldungeon.actors.buffs
 
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.items.rings.RingOfElements.Resistance;
-import com.watabou.pixeldungeon.ui.BuffIndicator;
+class Slow : FlavourBuff() {
+    override fun icon(): Int {
+        return BuffIndicator.SLOW
+    }
 
-public class Slow extends FlavourBuff {
+    override fun toString(): String {
+        return "Slowed"
+    }
 
-	private static final float DURATION = 10f;
-
-	@Override
-	public int icon() {
-		return BuffIndicator.SLOW;
-	}
-	
-	@Override
-	public String toString() {
-		return "Slowed";
-	}
-
-	public static float duration( Char ch ) {
-		Resistance r = ch.buff( Resistance.class );
-		return r != null ? r.durationFactor() * DURATION : DURATION;
-	}
+    companion object {
+        private const val DURATION = 10f
+        fun duration(ch: Char): Float {
+            val r: Resistance = ch.buff(Resistance::class.java)
+            return if (r != null) r.durationFactor() * DURATION else DURATION
+        }
+    }
 }

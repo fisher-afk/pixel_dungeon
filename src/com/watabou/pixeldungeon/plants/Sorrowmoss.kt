@@ -15,59 +15,46 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.plants;
+package com.watabou.pixeldungeon.plants
 
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.buffs.Buff;
-import com.watabou.pixeldungeon.actors.buffs.Poison;
-import com.watabou.pixeldungeon.effects.CellEmitter;
-import com.watabou.pixeldungeon.effects.particles.PoisonParticle;
-import com.watabou.pixeldungeon.items.potions.PotionOfToxicGas;
-import com.watabou.pixeldungeon.sprites.ItemSpriteSheet;
+import com.watabou.pixeldungeon.Dungeon
 
-public class Sorrowmoss extends Plant {
+class Sorrowmoss : Plant() {
+    override fun activate(ch: Char?) {
+        super.activate(ch)
+        if (ch != null) {
+            Buff.affect(ch, Poison::class.java).set(Poison.durationFactor(ch) * (4 + Dungeon.depth / 2))
+        }
+        if (Dungeon.visible.get(pos)) {
+            CellEmitter.center(pos).burst(PoisonParticle.SPLASH, 3)
+        }
+    }
 
-	private static final String TXT_DESC = 
-		"A Sorrowmoss is a flower (not a moss) with razor-sharp petals, coated with a deadly venom.";
-	
-	{
-		image = 2;
-		plantName = "Sorrowmoss";
-	}
-	
-	@Override
-	public void activate( Char ch ) {
-		super.activate( ch );
-		
-		if (ch != null) {
-			Buff.affect( ch, Poison.class ).set( Poison.durationFactor( ch ) * (4 + Dungeon.depth / 2) );
-		}
-		
-		if (Dungeon.visible[pos]) {
-			CellEmitter.center( pos ).burst( PoisonParticle.SPLASH, 3 );
-		}
-	}
-	
-	@Override
-	public String desc() {
-		return TXT_DESC;
-	}
-	
-	public static class Seed extends Plant.Seed {
-		{
-			plantName = "Sorrowmoss";
-			
-			name = "seed of " + plantName;
-			image = ItemSpriteSheet.SEED_SORROWMOSS;
-			
-			plantClass = Sorrowmoss.class;
-			alchemyClass = PotionOfToxicGas.class;
-		}
-		
-		@Override
-		public String desc() {
-			return TXT_DESC;
-		}
-	}
+    override fun desc(): String {
+        return TXT_DESC
+    }
+
+    class Seed : Plant.Seed() {
+        fun desc(): String {
+            return TXT_DESC
+        }
+
+        init {
+            plantName = "Sorrowmoss"
+            name = "seed of $plantName"
+            image = ItemSpriteSheet.SEED_SORROWMOSS
+            plantClass = Sorrowmoss::class.java
+            alchemyClass = PotionOfToxicGas::class.java
+        }
+    }
+
+    companion object {
+        private const val TXT_DESC =
+            "A Sorrowmoss is a flower (not a moss) with razor-sharp petals, coated with a deadly venom."
+    }
+
+    init {
+        image = 2
+        plantName = "Sorrowmoss"
+    }
 }

@@ -15,39 +15,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.sprites;
+package com.watabou.pixeldungeon.sprites
 
-import com.watabou.noosa.TextureFilm;
-import com.watabou.pixeldungeon.Assets;
+import com.watabou.noosa.TextureFilm
+class AcidicSprite : ScorpioSprite() {
+    override fun blood(): Int {
+        return -0x9900de
+    }
 
-public class AcidicSprite extends ScorpioSprite {
-	
-	public AcidicSprite() {
-		super();
-		
-		texture( Assets.SCORPIO );
-		
-		TextureFilm frames = new TextureFilm( texture, 18, 17 );
-		
-		idle = new Animation( 12, true );
-		idle.frames( frames, 14, 14, 14, 14, 14, 14, 14, 14, 15, 16, 15, 16, 15, 16 );
-		
-		run = new Animation( 4, true );
-		run.frames( frames, 19, 20 );
-		
-		attack = new Animation( 15, false );
-		attack.frames( frames, 14, 17, 18 );
-		
-		zap = attack.clone();
-		
-		die = new Animation( 12, false );
-		die.frames( frames, 14, 21, 22, 23, 24 );
-		
-		play( idle );
-	}
-	
-	@Override
-	public int blood() {
-		return 0xFF66FF22;
-	}
+    init {
+        texture(Assets.SCORPIO)
+        val frames = TextureFilm(texture, 18, 17)
+        idle = Animation(12, true)
+        idle.frames(frames, 14, 14, 14, 14, 14, 14, 14, 14, 15, 16, 15, 16, 15, 16)
+        run = Animation(4, true)
+        run.frames(frames, 19, 20)
+        attack = Animation(15, false)
+        attack.frames(frames, 14, 17, 18)
+        zap = attack.clone()
+        die = Animation(12, false)
+        die.frames(frames, 14, 21, 22, 23, 24)
+        play(idle)
+    }
 }

@@ -15,17 +15,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.buffs;
+package com.watabou.pixeldungeon.actors.buffs
 
-import com.watabou.pixeldungeon.Dungeon;
+import com.watabou.pixeldungeon.Dungeon
 
-public class Awareness extends FlavourBuff {
+class Awareness : FlavourBuff() {
+    override fun detach() {
+        super.detach()
+        Dungeon.observe()
+    }
 
-	public static final float DURATION = 2f;
-
-	@Override
-	public void detach() {
-		super.detach();
-		Dungeon.observe();
-	}
+    companion object {
+        const val DURATION = 2f
+    }
 }

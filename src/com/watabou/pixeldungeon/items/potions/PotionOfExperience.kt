@@ -15,31 +15,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.potions;
+package com.watabou.pixeldungeon.items.potions
 
-import com.watabou.pixeldungeon.actors.hero.Hero;
+import com.watabou.pixeldungeon.actors.hero.Hero
 
-public class PotionOfExperience extends Potion {
+class PotionOfExperience : Potion() {
+    protected override fun apply(hero: Hero) {
+        setKnown()
+        hero.earnExp(hero.maxExp() - hero.exp)
+    }
 
-	{
-		name = "Potion of Experience";
-	}
-	
-	@Override
-	protected void apply( Hero hero ) {
-		setKnown();
-		hero.earnExp( hero.maxExp() - hero.exp );
-	}
-	
-	@Override
-	public String desc() {
-		return
-			"The storied experiences of multitudes of battles reduced to liquid form, " +
-			"this draught will instantly raise your experience level.";
-	}
-	
-	@Override
-	public int price() {
-		return isKnown() ? 80 * quantity : super.price();
-	}
+    fun desc(): String {
+        return "The storied experiences of multitudes of battles reduced to liquid form, " +
+                "this draught will instantly raise your experience level."
+    }
+
+    override fun price(): Int {
+        return if (isKnown()) 80 * quantity else super.price()
+    }
+
+    init {
+        name = "Potion of Experience"
+    }
 }

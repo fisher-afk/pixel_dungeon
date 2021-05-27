@@ -15,252 +15,204 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors;
+package com.watabou.pixeldungeon.actors
 
-import java.util.Arrays;
-import java.util.HashSet;
+import com.watabou.pixeldungeon.Dungeon
 
-import android.util.SparseArray;
+abstract class Actor : Bundlable {
+    private var time = 0f
+    private var id = 0
+    protected abstract fun act(): Boolean
+    protected fun spend(time: Float) {
+        this.time += time
+    }
 
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.Statistics;
-import com.watabou.pixeldungeon.actors.blobs.Blob;
-import com.watabou.pixeldungeon.actors.buffs.Buff;
-import com.watabou.pixeldungeon.actors.mobs.Mob;
-import com.watabou.pixeldungeon.levels.Level;
-import com.watabou.utils.Bundlable;
-import com.watabou.utils.Bundle;
+    protected fun postpone(time: Float) {
+        if (this.time < now + time) {
+            this.time = now + time
+        }
+    }
 
-public abstract class Actor implements Bundlable {
-	
-	public static final float TICK	= 1f;
+    protected fun cooldown(): Float {
+        return time - now
+    }
 
-	private float time;
-	
-	private int id = 0;
-	
-	protected abstract boolean act();
-	
-	protected void spend( float time ) {
-		this.time += time;
-	}
-	
-	protected void postpone( float time ) {
-		if (this.time < now + time) {
-			this.time = now + time;
-		}
-	}
-	
-	protected float cooldown() {
-		return time - now;
-	}
-	
-	protected void diactivate() {
-		time = Float.MAX_VALUE;
-	}
-	
-	protected void onAdd() {}
-	
-	protected void onRemove() {}
-	
-	private static final String TIME	= "time";
-	private static final String ID		= "id";
-	
-	@Override
-	public void storeInBundle( Bundle bundle ) {
-		bundle.put( TIME, time );
-		bundle.put( ID, id );
-	}
-	
-	@Override
-	public void restoreFromBundle( Bundle bundle ) {
-		time = bundle.getFloat( TIME );
-		id = bundle.getInt( ID );
-	}
-	
-	public int id() {
-		if (id > 0) {
-			return id;
-		} else {
-			int max = 0;
-			for (Actor a : all) {
-				if (a.id > max) {
-					max = a.id;
-				}
-			}
-			return (id = max + 1);
-		}
-	}
-	
-	// **********************
-	// *** Static members ***
-	
-	private static HashSet<Actor> all = new HashSet<Actor>();
-	private static Actor current;
-	
-	private static SparseArray<Actor> ids = new SparseArray<Actor>();
-	
-	private static float now = 0;
-	
-	private static Char[] chars = new Char[Level.LENGTH];
-	
-	public static void clear() {
-		
-		now = 0;
-		
-		Arrays.fill( chars, null );
-		all.clear();
-		
-		ids.clear();
-	}
-	
-	public static void fixTime() {
-		
-		if (Dungeon.hero != null && all.contains( Dungeon.hero )) {
-			Statistics.duration += now;
-		}
-		
-		float min = Float.MAX_VALUE;
-		for (Actor a : all) {
-			if (a.time < min) {
-				min = a.time;
-			}
-		}
-		for (Actor a : all) {
-			a.time -= min;
-		}
-		now = 0;
-	}
-	
-	public static void init() {
-		
-		addDelayed( Dungeon.hero, -Float.MIN_VALUE );
-		
-		for (Mob mob : Dungeon.level.mobs) {
-			add( mob );
-		}
-		
-		for (Blob blob : Dungeon.level.blobs.values()) {
-			add( blob );
-		}
-		
-		current = null;
-	}
-	
-	public static void occupyCell( Char ch ) {
-		chars[ch.pos] = ch;
-	}
-	
-	public static void freeCell( int pos ) {
-		chars[pos] = null;
-	}
-	
-	/*protected*/public void next() {
-		if (current == this) {
-			current = null;
-		}
-	}
-	
-	public static void process() {
-		
-		if (current != null) {
-			return;
-		}
-	
-		boolean doNext;
+    protected fun diactivate() {
+        time = Float.MAX_VALUE
+    }
 
-		do {
-			now = Float.MAX_VALUE;
-			current = null;
-			
-			Arrays.fill( chars, null );
-			
-			for (Actor actor : all) {
-				if (actor.time < now) {
-					now = actor.time;
-					current = actor;
-				}
-				
-				if (actor instanceof Char) {
-					Char ch = (Char)actor;
-					chars[ch.pos] = ch;
-				}
-			}
+    protected fun onAdd() {}
+    protected fun onRemove() {}
+    fun storeInBundle(bundle: Bundle) {
+        bundle.put(TIME, time)
+        bundle.put(ID, id)
+    }
 
-			if (current != null) {
-				
-				if (current instanceof Char && ((Char)current).sprite.isMoving) {
-					// If it's character's turn to act, but its sprite 
-					// is moving, wait till the movement is over
-					current = null;
-					break;
-				}
-				
-				doNext = current.act();
-				if (doNext && !Dungeon.hero.isAlive()) {
-					doNext = false;
-					current = null;
-				}
-			} else {
-				doNext = false;
-			}
-			
-		} while (doNext);
-	}
-	
-	public static void add( Actor actor ) {
-		add( actor, now );
-	}
-	
-	public static void addDelayed( Actor actor, float delay ) {
-		add( actor, now + delay );
-	}
-	
-	private static void add( Actor actor, float time ) {
-		
-		if (all.contains( actor )) {
-			return;
-		}
-		
-		if (actor.id > 0) {
-			ids.put( actor.id,  actor );
-		}
-		
-		all.add( actor );
-		actor.time += time;
-		actor.onAdd();
-		
-		if (actor instanceof Char) {
-			Char ch = (Char)actor;
-			chars[ch.pos] = ch;
-			for (Buff buff : ch.buffs()) {
-				all.add( buff );
-				buff.onAdd();
-			}
-		}
-	}
-	
-	public static void remove( Actor actor ) {
-		
-		if (actor != null) {
-			all.remove( actor );
-			actor.onRemove();
-			
-			if (actor.id > 0) {
-				ids.remove( actor.id );
-			}
-		}
-	}
-	
-	public static Char findChar( int pos ) {
-		return chars[pos];
-	}
-	
-	public static Actor findById( int id ) {
-		return ids.get( id );
-	}
-	
-	public static HashSet<Actor> all() {
-		return all;
-	}
+    fun restoreFromBundle(bundle: Bundle) {
+        time = bundle.getFloat(TIME)
+        id = bundle.getInt(ID)
+    }
+
+    fun id(): Int {
+        return if (id > 0) {
+            id
+        } else {
+            var max = 0
+            for (a in all) {
+                if (a.id > max) {
+                    max = a.id
+                }
+            }
+            max + 1.also { id = it }
+        }
+    }
+
+    /*protected*/
+    operator fun next() {
+        if (current === this) {
+            current = null
+        }
+    }
+
+    companion object {
+        const val TICK = 1f
+        private const val TIME = "time"
+        private const val ID = "id"
+
+        // **********************
+        // *** Static members ***
+        private val all = HashSet<Actor>()
+        private var current: Actor? = null
+        private val ids: SparseArray<Actor> = SparseArray<Actor>()
+        private var now = 0f
+        private val chars = arrayOfNulls<Char>(Level.LENGTH)
+        fun clear() {
+            now = 0f
+            Arrays.fill(chars, null)
+            all.clear()
+            ids.clear()
+        }
+
+        fun fixTime() {
+            if (Dungeon.hero != null && all.contains(Dungeon.hero)) {
+                Statistics.duration += now
+            }
+            var min = Float.MAX_VALUE
+            for (a in all) {
+                if (a.time < min) {
+                    min = a.time
+                }
+            }
+            for (a in all) {
+                a.time -= min
+            }
+            now = 0f
+        }
+
+        fun init() {
+            addDelayed(Dungeon.hero, -Float.MIN_VALUE)
+            for (mob in Dungeon.level.mobs) {
+                add(mob)
+            }
+            for (blob in Dungeon.level.blobs.values()) {
+                add(blob)
+            }
+            current = null
+        }
+
+        fun occupyCell(ch: Char) {
+            chars[ch.pos] = ch
+        }
+
+        fun freeCell(pos: Int) {
+            chars[pos] = null
+        }
+
+        fun process() {
+            if (current != null) {
+                return
+            }
+            var doNext: Boolean
+            do {
+                now = Float.MAX_VALUE
+                current = null
+                Arrays.fill(chars, null)
+                for (actor in all) {
+                    if (actor.time < now) {
+                        now = actor.time
+                        current = actor
+                    }
+                    if (actor is Char) {
+                        val ch = actor
+                        chars[ch.pos] = ch
+                    }
+                }
+                if (current != null) {
+                    if (current is Char && (current as Char?)!!.sprite.isMoving) {
+                        // If it's character's turn to act, but its sprite 
+                        // is moving, wait till the movement is over
+                        current = null
+                        break
+                    }
+                    doNext = current.act()
+                    if (doNext && !Dungeon.hero.isAlive()) {
+                        doNext = false
+                        current = null
+                    }
+                } else {
+                    doNext = false
+                }
+            } while (doNext)
+        }
+
+        fun add(actor: Actor) {
+            add(actor, now)
+        }
+
+        fun addDelayed(actor: Actor, delay: Float) {
+            add(actor, now + delay)
+        }
+
+        private fun add(actor: Actor, time: Float) {
+            if (all.contains(actor)) {
+                return
+            }
+            if (actor.id > 0) {
+                ids.put(actor.id, actor)
+            }
+            all.add(actor)
+            actor.time += time
+            actor.onAdd()
+            if (actor is Char) {
+                val ch = actor
+                chars[ch.pos] = ch
+                for (buff in ch.buffs()) {
+                    all.add(buff)
+                    buff.onAdd()
+                }
+            }
+        }
+
+        fun remove(actor: Actor?) {
+            if (actor != null) {
+                all.remove(actor)
+                actor.onRemove()
+                if (actor.id > 0) {
+                    ids.remove(actor.id)
+                }
+            }
+        }
+
+        fun findChar(pos: Int): Char? {
+            return chars[pos]
+        }
+
+        fun findById(id: Int): Actor {
+            return ids.get(id)
+        }
+
+        fun all(): HashSet<Actor> {
+            return all
+        }
+    }
 }

@@ -15,23 +15,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.weapon.enchantments;
+package com.watabou.pixeldungeon.items.weapon.enchantments
 
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.items.weapon.Weapon;
+class Instability : Weapon.Enchantment() {
+    fun proc(weapon: Weapon?, attacker: Char?, defender: Char?, damage: Int): Boolean {
+        return random().proc(weapon, attacker, defender, damage)
+    }
 
-public class Instability extends Weapon.Enchantment {
+    fun name(weaponName: String?): String {
+        return String.format(TXT_UNSTABLE, weaponName)
+    }
 
-	private static final String TXT_UNSTABLE	= "unstable %s";
-	
-	@Override
-	public boolean proc( Weapon weapon, Char attacker, Char defender, int damage ) {
-		return random().proc( weapon, attacker, defender, damage );
-	}
-	
-	@Override
-	public String name( String weaponName) {
-		return String.format( TXT_UNSTABLE, weaponName );
-	}
-
+    companion object {
+        private const val TXT_UNSTABLE = "unstable %s"
+    }
 }

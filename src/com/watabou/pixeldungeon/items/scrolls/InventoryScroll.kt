@@ -15,79 +15,59 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.scrolls;
+package com.watabou.pixeldungeon.items.scrolls
 
-import com.watabou.noosa.audio.Sample;
-import com.watabou.pixeldungeon.Assets;
-import com.watabou.pixeldungeon.actors.buffs.Invisibility;
-import com.watabou.pixeldungeon.items.Item;
-import com.watabou.pixeldungeon.scenes.GameScene;
-import com.watabou.pixeldungeon.windows.WndBag;
-import com.watabou.pixeldungeon.windows.WndOptions;
+import com.watabou.noosa.audio.Sample
 
-public abstract class InventoryScroll extends Scroll {
+abstract class InventoryScroll : Scroll() {
+    protected var inventoryTitle = "Select an item"
+    protected var mode: WndBag.Mode = WndBag.Mode.ALL
+    protected override fun doRead() {
+        if (!isKnown()) {
+            setKnown()
+            identifiedByUse = true
+        } else {
+            identifiedByUse = false
+        }
+        GameScene.selectItem(itemSelector, mode, inventoryTitle)
+    }
 
-	protected String inventoryTitle = "Select an item";
-	protected WndBag.Mode mode = WndBag.Mode.ALL;
-	
-	private static final String TXT_WARNING	= "Do you really want to cancel this scroll usage? It will be consumed anyway.";
-	private static final String TXT_YES		= "Yes, I'm positive";
-	private static final String TXT_NO		= "No, I changed my mind";
-	
-	@Override
-	protected void doRead() {
-		
-		if (!isKnown()) {
-			setKnown();
-			identifiedByUse = true;
-		} else {
-			identifiedByUse = false;
-		}
-		
-		GameScene.selectItem( itemSelector, mode, inventoryTitle );
-	}
-	
-	private void confirmCancelation() {
-		GameScene.show( new WndOptions( name(), TXT_WARNING, TXT_YES, TXT_NO ) {
-			@Override
-			protected void onSelect( int index ) {
-				switch (index) {
-				case 0:
-					curUser.spendAndNext( TIME_TO_READ );
-					identifiedByUse = false;
-					break;
-				case 1:
-					GameScene.selectItem( itemSelector, mode, inventoryTitle );
-					break;
-				}
-			}
-			public void onBackPressed() {};
-		} );
-	}
-	
-	protected abstract void onItemSelected( Item item );
-	
-	protected static boolean identifiedByUse = false;
-	protected static WndBag.Listener itemSelector = new WndBag.Listener() {
-		@Override
-		public void onSelect( Item item ) {
-			if (item != null) {
+    private fun confirmCancelation() {
+        GameScene.show(object : WndOptions(name(), TXT_WARNING, TXT_YES, TXT_NO) {
+            protected fun onSelect(index: Int) {
+                when (index) {
+                    0 -> {
+                        curUser.spendAndNext(TIME_TO_READ)
+                        identifiedByUse = false
+                    }
+                    1 -> GameScene.selectItem(itemSelector, mode, inventoryTitle)
+                }
+            }
 
-				((InventoryScroll)curItem).onItemSelected( item );
-				((InventoryScroll)curItem).readAnimation();
-				
-				Sample.INSTANCE.play( Assets.SND_READ );
-				Invisibility.dispel();
-				
-			} else if (identifiedByUse) {
-				
-				((InventoryScroll)curItem).confirmCancelation();
-				
-			} else {
+            fun onBackPressed() {}
+        })
+    }
 
-				curItem.collect( curUser.belongings.backpack );
-				
-			}
-		}
-	};
+    protected abstract fun onItemSelected(item: Item?)
+
+    companion object {
+        private const val TXT_WARNING = "Do you really want to cancel this scroll usage? It will be consumed anyway."
+        private const val TXT_YES = "Yes, I'm positive"
+        private const val TXT_NO = "No, I changed my mind"
+        protected var identifiedByUse = false
+        protected var itemSelector: WndBag.Listener = object : Listener() {
+            fun onSelect(item: Item?) {
+                if (item != null) {
+                    (curItem as InventoryScroll).onItemSelected(item)
+                    (curItem as InventoryScroll).readAnimation()
+                    Sample.INSTANCE.play(Assets.SND_READ)
+                    Invisibility.dispel()
+                } else if (identifiedByUse) {
+                    (curItem as InventoryScroll).confirmCancelation()
+                } else {
+                    curItem.collect(curUser.belongings.backpack)
+                }
+            }
+        }
+    }
 }

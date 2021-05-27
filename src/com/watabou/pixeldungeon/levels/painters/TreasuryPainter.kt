@@ -15,47 +15,35 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.levels.painters;
+package com.watabou.pixeldungeon.levels.painters
 
-import com.watabou.pixeldungeon.items.Gold;
-import com.watabou.pixeldungeon.items.Heap;
-import com.watabou.pixeldungeon.items.keys.IronKey;
-import com.watabou.pixeldungeon.levels.Level;
-import com.watabou.pixeldungeon.levels.Room;
-import com.watabou.pixeldungeon.levels.Terrain;
-import com.watabou.utils.Random;
+import com.watabou.pixeldungeon.items.Gold
 
-public class TreasuryPainter extends Painter {
-
-	public static void paint( Level level, Room room ) {
-
-		fill( level, room, Terrain.WALL );
-		fill( level, room, 1, Terrain.EMPTY );
-		
-		set( level, room.center(), Terrain.STATUE );
-		
-		Heap.Type heapType = Random.Int( 2 ) == 0 ? Heap.Type.CHEST : Heap.Type.HEAP;
-		
-		int n = Random.IntRange( 2, 3 );
-		for (int i=0; i < n; i++) {
-			int pos;
-			do {
-				pos = room.random();
-			} while (level.map[pos] != Terrain.EMPTY || level.heaps.get( pos ) != null);
-			level.drop( new Gold().random(), pos ).type = (i == 0 && heapType == Heap.Type.CHEST ? Heap.Type.MIMIC : heapType);
-		}
-		
-		if (heapType == Heap.Type.HEAP) {
-			for (int i=0; i < 6; i++) {
-				int pos;
-				do {
-					pos = room.random();
-				} while (level.map[pos] != Terrain.EMPTY);
-				level.drop( new Gold( Random.IntRange( 1, 3 ) ), pos );
-			}
-		}
-		
-		room.entrance().set( Room.Door.Type.LOCKED );
-		level.addItemToSpawn( new IronKey() );
-	}
+object TreasuryPainter : Painter() {
+    fun paint(level: Level, room: Room) {
+        fill(level, room, Terrain.WALL)
+        fill(level, room, 1, Terrain.EMPTY)
+        set(level, room.center(), Terrain.STATUE)
+        val heapType: Heap.Type = if (Random.Int(2) === 0) Heap.Type.CHEST else Heap.Type.HEAP
+        val n: Int = Random.IntRange(2, 3)
+        for (i in 0 until n) {
+            var pos: Int
+            do {
+                pos = room.random()
+            } while (level.map.get(pos) !== Terrain.EMPTY || level.heaps.get(pos) != null)
+            level.drop(Gold().random(), pos).type =
+                if (i == 0 && heapType === Heap.Type.CHEST) Heap.Type.MIMIC else heapType
+        }
+        if (heapType === Heap.Type.HEAP) {
+            for (i in 0..5) {
+                var pos: Int
+                do {
+                    pos = room.random()
+                } while (level.map.get(pos) !== Terrain.EMPTY)
+                level.drop(Gold(Random.IntRange(1, 3)), pos)
+            }
+        }
+        room.entrance().set(Room.Door.Type.LOCKED)
+        level.addItemToSpawn(IronKey())
+    }
 }

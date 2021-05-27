@@ -15,196 +15,146 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon;
+package com.watabou.pixeldungeon
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
+import com.watabou.noosa.Game
 
-import com.watabou.noosa.Game;
-import com.watabou.pixeldungeon.actors.hero.HeroClass;
-import com.watabou.pixeldungeon.utils.Utils;
-import com.watabou.utils.Bundlable;
-import com.watabou.utils.Bundle;
-import com.watabou.utils.SystemTime;
+enum class Rankings {
+    INSTANCE;
 
-public enum Rankings {
-	
-	INSTANCE;
-	
-	public static final int TABLE_SIZE	= 6;
-	
-	public static final String RANKINGS_FILE = "rankings.dat";
-	public static final String DETAILS_FILE = "game_%d.dat";
-	
-	public ArrayList<Record> records;
-	public int lastRecord;
-	public int totalNumber;
-	public int wonNumber;
-	
-	public void submit( boolean win ) {
-		
-		load();
-		
-		Record rec = new Record();
-		
-		rec.info	= Dungeon.resultDescription;
-		rec.win		= win;
-		rec.heroClass	= Dungeon.hero.heroClass;
-		rec.armorTier	= Dungeon.hero.tier();
-		rec.score	= score( win );
-		
-		String gameFile = Utils.format( DETAILS_FILE, SystemTime.now );
-		try {
-			Dungeon.saveGame( gameFile );
-			rec.gameFile = gameFile;
-		} catch (IOException e) {
-			rec.gameFile = "";
-		}
-		
-		records.add( rec );
-		
-		Collections.sort( records, scoreComparator );
-		
-		lastRecord = records.indexOf( rec );
-		int size = records.size();
-		if (size > TABLE_SIZE) {
-			
-			Record removedGame;
-			if (lastRecord == size - 1) {
-				removedGame = records.remove( size - 2 );
-				lastRecord--;
-			} else {
-				removedGame = records.remove( size - 1 );
-			}
-			
-			if (removedGame.gameFile.length() > 0) {
-				Game.instance.deleteFile( removedGame.gameFile );
-			}
-		}
-		
-		totalNumber++;
-		if (win) {
-			wonNumber++;
-		}
-		
-		Badges.validateGamesPlayed();
-		
-		save();
-	}
-	
-	private int score( boolean win ) {
-		return (Statistics.goldCollected + Dungeon.hero.lvl * Statistics.deepestFloor * 100) * (win ? 2 : 1);
-	}
-	
-	private static final String RECORDS	= "records";
-	private static final String LATEST	= "latest";
-	private static final String TOTAL	= "total";
-	private static final String WON		= "won";
-	
-	public void save() {
-		Bundle bundle = new Bundle();
-		bundle.put( RECORDS, records );
-		bundle.put( LATEST, lastRecord );
-		bundle.put( TOTAL, totalNumber );
-		bundle.put( WON, wonNumber );
-		
-		try {
-			OutputStream output = Game.instance.openFileOutput( RANKINGS_FILE, Game.MODE_PRIVATE );
-			Bundle.write( bundle, output );
-			output.close();
-		} catch (Exception e) {
-		}
-	}
-	
-	public void load() {
-		
-		if (records != null) {
-			return;
-		}
-		
-		records = new ArrayList<Rankings.Record>();
-		
-		try {
-			InputStream input = Game.instance.openFileInput( RANKINGS_FILE );
-			Bundle bundle = Bundle.read( input );
-			input.close();
-			
-			for (Bundlable record : bundle.getCollection( RECORDS )) {
-				records.add( (Record)record );
-			}			
-			lastRecord = bundle.getInt( LATEST );
-			
-			totalNumber = bundle.getInt( TOTAL );
-			if (totalNumber == 0) {
-				totalNumber = records.size();
-			}
-			
-			wonNumber = bundle.getInt( WON );
-			if (wonNumber == 0) {
-				for (Record rec : records) {
-					if (rec.win) {
-						wonNumber++;
-					}
-				}
-			}
-			
-		} catch (Exception e) {
-		}
-	}
-	
-	public static class Record implements Bundlable {
-		
-		private static final String REASON	= "reason";
-		private static final String WIN		= "win";
-		private static final String SCORE	= "score";
-		private static final String TIER	= "tier";
-		private static final String GAME	= "gameFile";
-		
-		public String info;
-		public boolean win;
-		
-		public HeroClass heroClass;
-		public int armorTier;
-		
-		public int score;
-		
-		public String gameFile;
-		
-		@Override
-		public void restoreFromBundle( Bundle bundle ) {
-			
-			info	= bundle.getString( REASON );
-			win		= bundle.getBoolean( WIN );
-			score	= bundle.getInt( SCORE );
-			
-			heroClass	= HeroClass.restoreInBundle( bundle );
-			armorTier	= bundle.getInt( TIER );
-			
-			gameFile	= bundle.getString( GAME );
-		}
-		
-		@Override
-		public void storeInBundle( Bundle bundle ) {
-			
-			bundle.put( REASON, info );
-			bundle.put( WIN, win );
-			bundle.put( SCORE, score );
-			
-			heroClass.storeInBundle( bundle );
-			bundle.put( TIER, armorTier );
-			
-			bundle.put( GAME, gameFile );
-		}
-	}
+    var records: ArrayList<Record>? = null
+    var lastRecord = 0
+    var totalNumber = 0
+    var wonNumber = 0
+    fun submit(win: Boolean) {
+        load()
+        val rec = Record()
+        rec.info = Dungeon.resultDescription
+        rec.win = win
+        rec.heroClass = Dungeon.hero.heroClass
+        rec.armorTier = Dungeon.hero.tier()
+        rec.score = score(win)
+        val gameFile: String = Utils.format(DETAILS_FILE, SystemTime.now)
+        try {
+            Dungeon.saveGame(gameFile)
+            rec.gameFile = gameFile
+        } catch (e: IOException) {
+            rec.gameFile = ""
+        }
+        records!!.add(rec)
+        Collections.sort(records, scoreComparator)
+        lastRecord = records!!.indexOf(rec)
+        val size = records!!.size
+        if (size > TABLE_SIZE) {
+            val removedGame: Record
+            if (lastRecord == size - 1) {
+                removedGame = records!!.removeAt(size - 2)
+                lastRecord--
+            } else {
+                removedGame = records!!.removeAt(size - 1)
+            }
+            if (removedGame.gameFile!!.length > 0) {
+                Game.instance.deleteFile(removedGame.gameFile)
+            }
+        }
+        totalNumber++
+        if (win) {
+            wonNumber++
+        }
+        Badges.validateGamesPlayed()
+        save()
+    }
 
-	private static final Comparator<Record> scoreComparator = new Comparator<Rankings.Record>() {
-		@Override
-		public int compare( Record lhs, Record rhs ) {
-			return (int)Math.signum( rhs.score - lhs.score );
-		}
-	};
+    private fun score(win: Boolean): Int {
+        return (Statistics.goldCollected + Dungeon.hero.lvl * Statistics.deepestFloor * 100) * if (win) 2 else 1
+    }
+
+    fun save() {
+        val bundle = Bundle()
+        bundle.put(RECORDS, records)
+        bundle.put(LATEST, lastRecord)
+        bundle.put(TOTAL, totalNumber)
+        bundle.put(WON, wonNumber)
+        try {
+            val output: OutputStream = Game.instance.openFileOutput(RANKINGS_FILE, Game.MODE_PRIVATE)
+            Bundle.write(bundle, output)
+            output.close()
+        } catch (e: Exception) {
+        }
+    }
+
+    fun load() {
+        if (records != null) {
+            return
+        }
+        records = ArrayList()
+        try {
+            val input: InputStream = Game.instance.openFileInput(RANKINGS_FILE)
+            val bundle: Bundle = Bundle.read(input)
+            input.close()
+            for (record in bundle.getCollection(RECORDS)) {
+                records!!.add(record as Record)
+            }
+            lastRecord = bundle.getInt(LATEST)
+            totalNumber = bundle.getInt(TOTAL)
+            if (totalNumber == 0) {
+                totalNumber = records!!.size
+            }
+            wonNumber = bundle.getInt(WON)
+            if (wonNumber == 0) {
+                for (rec in records!!) {
+                    if (rec.win) {
+                        wonNumber++
+                    }
+                }
+            }
+        } catch (e: Exception) {
+        }
+    }
+
+    class Record : Bundlable {
+        var info: String? = null
+        var win = false
+        var heroClass: HeroClass? = null
+        var armorTier = 0
+        var score = 0
+        var gameFile: String? = null
+        fun restoreFromBundle(bundle: Bundle) {
+            info = bundle.getString(REASON)
+            win = bundle.getBoolean(WIN)
+            score = bundle.getInt(SCORE)
+            heroClass = HeroClass.restoreInBundle(bundle)
+            armorTier = bundle.getInt(TIER)
+            gameFile = bundle.getString(GAME)
+        }
+
+        fun storeInBundle(bundle: Bundle) {
+            bundle.put(REASON, info)
+            bundle.put(WIN, win)
+            bundle.put(SCORE, score)
+            heroClass.storeInBundle(bundle)
+            bundle.put(TIER, armorTier)
+            bundle.put(GAME, gameFile)
+        }
+
+        companion object {
+            private const val REASON = "reason"
+            private const val WIN = "win"
+            private const val SCORE = "score"
+            private const val TIER = "tier"
+            private const val GAME = "gameFile"
+        }
+    }
+
+    companion object {
+        const val TABLE_SIZE = 6
+        const val RANKINGS_FILE = "rankings.dat"
+        const val DETAILS_FILE = "game_%d.dat"
+        private const val RECORDS = "records"
+        private const val LATEST = "latest"
+        private const val TOTAL = "total"
+        private const val WON = "won"
+        private val scoreComparator =
+            Comparator<Record> { lhs, rhs -> Math.signum((rhs.score - lhs.score).toFloat()).toInt() }
+    }
 }

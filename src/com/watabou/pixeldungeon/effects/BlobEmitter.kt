@@ -15,45 +15,34 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.effects;
+package com.watabou.pixeldungeon.effects
 
-import com.watabou.noosa.particles.Emitter;
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.DungeonTilemap;
-import com.watabou.pixeldungeon.actors.blobs.Blob;
-import com.watabou.utils.Random;
+import com.watabou.noosa.particles.Emitter
 
-public class BlobEmitter extends Emitter {
+class BlobEmitter(blob: Blob) : Emitter() {
+    private val blob: Blob
+    protected fun emit(index: Int) {
+        if (blob.volume <= 0) {
+            return
+        }
+        val map: IntArray = blob.cur
+        val size: Float = DungeonTilemap.SIZE
+        for (i in 0 until LENGTH) {
+            if (map[i] > 0 && Dungeon.visible.get(i)) {
+                val x: Float = (i % WIDTH + Random.Float()) * size
+                val y: Float = (i / WIDTH + Random.Float()) * size
+                factory.emit(this, index, x, y)
+            }
+        }
+    }
 
-	private static final int WIDTH	= Blob.WIDTH;
-	private static final int LENGTH	= Blob.LENGTH;
-	
-	private Blob blob;
-	
-	public BlobEmitter( Blob blob ) {
-		
-		super();
-		
-		this.blob = blob;
-		blob.use( this );
-	}
-	
-	@Override
-	protected void emit( int index ) {
-		
-		if (blob.volume <= 0) {
-			return;
-		}
-		
-		int[] map = blob.cur;
-		float size = DungeonTilemap.SIZE;
-		
-		for (int i=0; i < LENGTH; i++) {
-			if (map[i] > 0 && Dungeon.visible[i]) {
-				float x = ((i % WIDTH) + Random.Float()) * size;
-				float y = ((i / WIDTH) + Random.Float()) * size;
-				factory.emit( this, index, x, y );
-			}
-		}
-	}
+    companion object {
+        private val WIDTH: Int = Blob.WIDTH
+        private val LENGTH: Int = Blob.LENGTH
+    }
+
+    init {
+        this.blob = blob
+        blob.use(this)
+    }
 }

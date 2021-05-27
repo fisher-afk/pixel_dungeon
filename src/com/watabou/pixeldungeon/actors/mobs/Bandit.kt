@@ -15,42 +15,29 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.mobs;
+package com.watabou.pixeldungeon.actors.mobs
 
-import com.watabou.pixeldungeon.Badges;
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.buffs.Blindness;
-import com.watabou.pixeldungeon.actors.buffs.Buff;
-import com.watabou.pixeldungeon.actors.hero.Hero;
-import com.watabou.pixeldungeon.items.Item;
-import com.watabou.pixeldungeon.sprites.BanditSprite;
-import com.watabou.utils.Random;
+import com.watabou.pixeldungeon.Badges
 
-public class Bandit extends Thief {
-	
-	public Item item;
-	
-	{
-		name = "crazy bandit";
-		spriteClass = BanditSprite.class;
-	}
-	
-	@Override
-	protected boolean steal( Hero hero ) {
-		if (super.steal( hero )) {
-			
-			Buff.prolong( hero, Blindness.class, Random.Int( 5, 12 ) );
-			Dungeon.observe();
-			
-			return true;
-		} else {
-			return false;
-		}
-	}
-	
-	@Override
-	public void die( Object cause ) {
-		super.die( cause );
-		Badges.validateRare( this );
-	}
+class Bandit : Thief() {
+    override var item: Item? = null
+    protected override fun steal(hero: Hero): Boolean {
+        return if (super.steal(hero)) {
+            Buff.prolong(hero, Blindness::class.java, Random.Int(5, 12))
+            Dungeon.observe()
+            true
+        } else {
+            false
+        }
+    }
+
+    override fun die(cause: Any?) {
+        super.die(cause)
+        Badges.validateRare(this)
+    }
+
+    init {
+        name = "crazy bandit"
+        spriteClass = BanditSprite::class.java
+    }
 }

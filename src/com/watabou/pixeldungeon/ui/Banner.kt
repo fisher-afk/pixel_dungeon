@@ -15,87 +15,65 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.ui;
+package com.watabou.pixeldungeon.ui
 
-import com.watabou.noosa.Game;
-import com.watabou.noosa.Image;
+import com.watabou.noosa.Game
 
-public class Banner extends Image {
+class Banner : Image {
+    private enum class State {
+        FADE_IN, STATIC, FADE_OUT
+    }
 
-	private enum State {
-		FADE_IN, STATIC, FADE_OUT
-	};
-	private State state;
-	
-	private float time;
-	
-	private int color;
-	private float fadeTime;
-	private float showTime;
-	
-	public Banner( Image sample ) {
-		super();
-		copy( sample );
-		alpha( 0 );
-	}
-	
-	public Banner( Object tx ) {
-		super( tx );
-		alpha( 0 );
-	}
-	
-	public void show( int color, float fadeTime, float showTime ) {
-		
-		this.color = color;
-		this.fadeTime = fadeTime;
-		this.showTime = showTime;
-		
-		state = State.FADE_IN;
-		
-		time = fadeTime;
-	}
-	
-	public void show( int color, float fadeTime ) {
-		show( color, fadeTime, Float.MAX_VALUE );
-	}
-	
-	@Override
-	public void update() {
-		super.update();
-		
-		time -= Game.elapsed;
-		if (time >= 0) {
-			
-			float p = time / fadeTime;
-			
-			switch (state) {
-			case FADE_IN:
-				tint( color, p );
-				alpha( 1 - p );
-				break;
-			case STATIC:
-				break;
-			case FADE_OUT:
-				alpha( p );
-				break;
-			}
-			
-		} else {
-			
-			switch (state) {
-			case FADE_IN:
-				time = showTime;
-				state = State.STATIC;
-				break;
-			case STATIC:
-				time = fadeTime;
-				state = State.FADE_OUT;
-				break;
-			case FADE_OUT:
-				killAndErase();
-				break;
-			}
-				
-		}
-	}
+    private var state: State? = null
+    private var time = 0f
+    private var color = 0
+    private var fadeTime = 0f
+    private var showTime = 0f
+
+    constructor(sample: Image?) : super() {
+        copy(sample)
+        alpha(0)
+    }
+
+    constructor(tx: Any?) : super(tx) {
+        alpha(0)
+    }
+
+    @JvmOverloads
+    fun show(color: Int, fadeTime: Float, showTime: Float = Float.MAX_VALUE) {
+        this.color = color
+        this.fadeTime = fadeTime
+        this.showTime = showTime
+        state = State.FADE_IN
+        time = fadeTime
+    }
+
+    fun update() {
+        super.update()
+        time -= Game.elapsed
+        if (time >= 0) {
+            val p = time / fadeTime
+            when (state) {
+                State.FADE_IN -> {
+                    tint(color, p)
+                    alpha(1 - p)
+                }
+                State.STATIC -> {
+                }
+                State.FADE_OUT -> alpha(p)
+            }
+        } else {
+            when (state) {
+                State.FADE_IN -> {
+                    time = showTime
+                    state = State.STATIC
+                }
+                State.STATIC -> {
+                    time = fadeTime
+                    state = State.FADE_OUT
+                }
+                State.FADE_OUT -> killAndErase()
+            }
+        }
+    }
 }

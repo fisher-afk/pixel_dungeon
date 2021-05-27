@@ -15,21 +15,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.levels.traps;
+package com.watabou.pixeldungeon.levels.traps
 
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.blobs.Blob;
-import com.watabou.pixeldungeon.actors.blobs.ParalyticGas;
-import com.watabou.pixeldungeon.scenes.GameScene;
+import com.watabou.pixeldungeon.Dungeon
 
-public class ParalyticTrap {
-
-	// 0xCCCC55
-	
-	public static void trigger( int pos, Char ch ) {
-		
-		GameScene.add( Blob.seed( pos, 80 + 5 * Dungeon.depth, ParalyticGas.class ) );
-		
-	}
+object ParalyticTrap {
+    // 0xCCCC55
+    fun trigger(pos: Int, ch: Char?) {
+        GameScene.add(Blob.seed(pos, 80 + 5 * Dungeon.depth, ParalyticGas::class.java))
+    }
 }

@@ -15,55 +15,40 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.mobs;
+package com.watabou.pixeldungeon.actors.mobs
 
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.mobs.npcs.Ghost;
-import com.watabou.pixeldungeon.items.Gold;
-import com.watabou.pixeldungeon.sprites.GnollSprite;
-import com.watabou.utils.Random;
+class Gnoll : Mob() {
+    fun damageRoll(): Int {
+        return Random.NormalIntRange(2, 5)
+    }
 
-public class Gnoll extends Mob {
-	
-	{
-		name = "gnoll scout";
-		spriteClass = GnollSprite.class;
-		
-		HP = HT = 12;
-		defenseSkill = 4;
-		
-		EXP = 2;
-		maxLvl = 8;
-		
-		loot = Gold.class;
-		lootChance = 0.5f;
-	}
-	
-	@Override
-	public int damageRoll() {
-		return Random.NormalIntRange( 2, 5 );
-	}
-	
-	@Override
-	public int attackSkill( Char target ) {
-		return 11;
-	}
-	
-	@Override
-	public int dr() {
-		return 2;
-	}
-	
-	@Override
-	public void die( Object cause ) {
-		Ghost.Quest.processSewersKill( pos );
-		super.die( cause );
-	}
-	
-	@Override
-	public String description() {
-		return
-			"Gnolls are hyena-like humanoids. They dwell in sewers and dungeons, venturing up to raid the surface from time to time. " +
-			"Gnoll scouts are regular members of their pack, they are not as strong as brutes and not as intelligent as shamans.";
-	}
+    fun attackSkill(target: Char?): Int {
+        return 11
+    }
+
+    fun dr(): Int {
+        return 2
+    }
+
+    override fun die(cause: Any?) {
+        Ghost.Quest.processSewersKill(pos)
+        super.die(cause)
+    }
+
+    override fun description(): String {
+        return "Gnolls are hyena-like humanoids. They dwell in sewers and dungeons, venturing up to raid the surface from time to time. " +
+                "Gnoll scouts are regular members of their pack, they are not as strong as brutes and not as intelligent as shamans."
+    }
+
+    init {
+        name = "gnoll scout"
+        spriteClass = GnollSprite::class.java
+        HT = 12
+        HP = HT
+        defenseSkill = 4
+        EXP = 2
+        maxLvl = 8
+        loot = Gold::class.java
+        lootChance = 0.5f
+    }
 }

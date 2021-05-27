@@ -15,94 +15,68 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.levels.painters;
+package com.watabou.pixeldungeon.levels.painters
 
-import com.watabou.pixeldungeon.actors.Actor;
-import com.watabou.pixeldungeon.actors.mobs.Piranha;
-import com.watabou.pixeldungeon.items.Generator;
-import com.watabou.pixeldungeon.items.Heap;
-import com.watabou.pixeldungeon.items.Item;
-import com.watabou.pixeldungeon.items.potions.PotionOfInvisibility;
-import com.watabou.pixeldungeon.levels.Level;
-import com.watabou.pixeldungeon.levels.Room;
-import com.watabou.pixeldungeon.levels.Terrain;
-import com.watabou.utils.Random;
+import com.watabou.pixeldungeon.actors.Actor
 
-public class PoolPainter extends Painter {
+object PoolPainter : Painter() {
+    private const val NPIRANHAS = 3
+    fun paint(level: Level, room: Room) {
+        fill(level, room, Terrain.WALL)
+        fill(level, room, 1, Terrain.WATER)
+        val door: Room.Door = room.entrance()
+        door.set(Room.Door.Type.REGULAR)
+        var x = -1
+        var y = -1
+        if (door.x === room.left) {
+            x = room.right - 1
+            y = room.top + room.height() / 2
+        } else if (door.x === room.right) {
+            x = room.left + 1
+            y = room.top + room.height() / 2
+        } else if (door.y === room.top) {
+            x = room.left + room.width() / 2
+            y = room.bottom - 1
+        } else if (door.y === room.bottom) {
+            x = room.left + room.width() / 2
+            y = room.top + 1
+        }
+        val pos: Int = x + y * Level.WIDTH
+        level.drop(prize(level), pos).type = if (Random.Int(3) === 0) Heap.Type.CHEST else Heap.Type.HEAP
+        set(level, pos, Terrain.PEDESTAL)
+        level.addItemToSpawn(PotionOfInvisibility())
+        for (i in 0 until NPIRANHAS) {
+            val piranha = Piranha()
+            do {
+                piranha.pos = room.random()
+            } while (level.map.get(piranha.pos) !== Terrain.WATER || Actor.findChar(piranha.pos) != null)
+            level.mobs.add(piranha)
+            Actor.occupyCell(piranha)
+        }
+    }
 
-	private static final int NPIRANHAS	= 3;
-	
-	public static void paint( Level level, Room room ) {
-		
-		fill( level, room, Terrain.WALL );
-		fill( level, room, 1, Terrain.WATER );
-		
-		Room.Door door = room.entrance(); 
-		door.set( Room.Door.Type.REGULAR );
-
-		int x = -1;
-		int y = -1;
-		if (door.x == room.left) {
-			
-			x = room.right - 1;
-			y = room.top + room.height() / 2;
-			
-		} else if (door.x == room.right) {
-			
-			x = room.left + 1;
-			y = room.top + room.height() / 2;
-			
-		} else if (door.y == room.top) {
-			
-			x = room.left + room.width() / 2;
-			y = room.bottom - 1;
-			
-		} else if (door.y == room.bottom) {
-			
-			x = room.left + room.width() / 2;
-			y = room.top + 1;
-			
-		}
-		
-		int pos = x + y * Level.WIDTH;
-		level.drop( prize( level ), pos ).type = 
-			Random.Int( 3 ) == 0 ? Heap.Type.CHEST : Heap.Type.HEAP;
-		set( level, pos, Terrain.PEDESTAL );
-		
-		level.addItemToSpawn( new PotionOfInvisibility() );
-		
-		for (int i=0; i < NPIRANHAS; i++) {
-			Piranha piranha = new Piranha();
-			do {
-				piranha.pos = room.random();
-			} while (level.map[piranha.pos] != Terrain.WATER|| Actor.findChar( piranha.pos ) != null);
-			level.mobs.add( piranha );
-			Actor.occupyCell( piranha );
-		}
-	}
-	
-	private static Item prize( Level level ) {
-		
-		Item prize = level.itemToSpanAsPrize();
-		if (prize != null) {
-			return prize;
-		}
-		
-		prize = Generator.random( Random.oneOf(  
-			Generator.Category.WEAPON, 
-			Generator.Category.ARMOR 
-		) );
-
-		for (int i=0; i < 4; i++) {
-			Item another = Generator.random( Random.oneOf(  
-				Generator.Category.WEAPON, 
-				Generator.Category.ARMOR 
-			) );
-			if (another.level() > prize.level()) {
-				prize = another;
-			}
-		}
-		
-		return prize;
-	}
+    private fun prize(level: Level): Item? {
+        var prize: Item? = level.itemToSpanAsPrize()
+        if (prize != null) {
+            return prize
+        }
+        prize = Generator.random(
+            Random.oneOf(
+                Generator.Category.WEAPON,
+                Generator.Category.ARMOR
+            )
+        )
+        for (i in 0..3) {
+            val another: Item = Generator.random(
+                Random.oneOf(
+                    Generator.Category.WEAPON,
+                    Generator.Category.ARMOR
+                )
+            )
+            if (another.level() > prize.level()) {
+                prize = another
+            }
+        }
+        return prize
+    }
 }

@@ -15,153 +15,123 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.ui;
+package com.watabou.pixeldungeon.ui
 
-import java.util.ArrayList;
+import com.watabou.pixeldungeon.Dungeon
 
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.mobs.Mob;
-import com.watabou.pixeldungeon.levels.Level;
-import com.watabou.pixeldungeon.scenes.PixelScene;
-import com.watabou.pixeldungeon.sprites.CharSprite;
-import com.watabou.utils.Random;
+class AttackIndicator : Tag(DangerIndicator.COLOR) {
+    private var sprite: CharSprite? = null
+    private val candidates: ArrayList<Mob?> = ArrayList<Mob?>()
+    protected override fun createChildren() {
+        super.createChildren()
+    }
 
-public class AttackIndicator extends Tag {
-	
-	private static final float ENABLED	= 1.0f;
-	private static final float DISABLED	= 0.3f;
-	
-	private static AttackIndicator instance;
-	
-	private CharSprite sprite = null;
-	
-	private static Mob lastTarget = null;
-	private ArrayList<Mob> candidates = new ArrayList<Mob>();
-	
-	public AttackIndicator() {
-		super( DangerIndicator.COLOR );
-		
-		instance = this;
-		
-		setSize( 24, 24 );
-		visible( false );
-		enable( false );
-	}
-	
-	@Override
-	protected void createChildren() {
-		super.createChildren();
-	}
-	
-	@Override
-	protected void layout() {
-		super.layout();
-		
-		if (sprite != null) {
-			sprite.x = x + (width - sprite.width()) / 2;
-			sprite.y = y + (height - sprite.height()) / 2;
-			PixelScene.align( sprite );
-		}
-	}	
-	
-	@Override
-	public void update() {
-		super.update();
-		
-		if (Dungeon.hero.isAlive()) {
-			
-			if (!Dungeon.hero.ready) {
-				enable( false );
-			}		
-			
-		} else {
-			visible( false );
-			enable( false );
-		}
-	}
-	
-	private void checkEnemies() {
-		
-		int heroPos = Dungeon.hero.pos;
-		candidates.clear();
-		int v = Dungeon.hero.visibleEnemies();
-		for (int i=0; i < v; i++) {
-			Mob mob = Dungeon.hero.visibleEnemy( i );
-			if (Level.adjacent( heroPos, mob.pos )) {
-				candidates.add( mob );
-			}
-		}
-		
-		if (!candidates.contains( lastTarget )) {
-			if (candidates.isEmpty()) {
-				lastTarget = null;
-			} else {
-				lastTarget = Random.element( candidates );
-				updateImage();				
-				flash();
-			}
-		} else {
-			if (!bg.visible) {
-				flash();
-			}
-		}
-		
-		visible( lastTarget != null );
-		enable( bg.visible );
-	}
-	
-	private void updateImage() {
-		
-		if (sprite != null) {
-			sprite.killAndErase();
-			sprite = null;
-		}
-		
-		try {
-			sprite = lastTarget.spriteClass.newInstance();
-			sprite.idle();
-			sprite.paused = true;
-			add( sprite );
+    protected override fun layout() {
+        super.layout()
+        if (sprite != null) {
+            sprite.x = x + (width - sprite.width()) / 2
+            sprite.y = y + (height - sprite.height()) / 2
+            PixelScene.align(sprite)
+        }
+    }
 
-			sprite.x = x + (width - sprite.width()) / 2 + 1;
-			sprite.y = y + (height - sprite.height()) / 2;
-			PixelScene.align( sprite );
-			
-		} catch (Exception e) {
-		}
-	}
-	
-	private boolean enabled = true;
-	private void enable( boolean value ) {
-		enabled = value;
-		if (sprite != null) {
-			sprite.alpha( value ? ENABLED : DISABLED );
-		}
-	}
-	
-	private void visible( boolean value ) {
-		bg.visible = value;
-		if (sprite != null) {
-			sprite.visible = value;
-		}
-	}
-	
-	@Override
-	protected void onClick() {
-		if (enabled) {
-			Dungeon.hero.handle( lastTarget.pos );
-		}
-	}
-	
-	public static void target( Char target ) {
-		lastTarget = (Mob)target;
-		instance.updateImage();
-		
-		HealthIndicator.instance.target( target );
-	}
-	
-	public static void updateState() {
-		instance.checkEnemies();
-	}
+    override fun update() {
+        super.update()
+        if (Dungeon.hero.isAlive()) {
+            if (!Dungeon.hero.ready) {
+                enable(false)
+            }
+        } else {
+            visible(false)
+            enable(false)
+        }
+    }
+
+    private fun checkEnemies() {
+        val heroPos: Int = Dungeon.hero.pos
+        candidates.clear()
+        val v: Int = Dungeon.hero.visibleEnemies()
+        for (i in 0 until v) {
+            val mob: Mob = Dungeon.hero.visibleEnemy(i)
+            if (Level.adjacent(heroPos, mob.pos)) {
+                candidates.add(mob)
+            }
+        }
+        if (!candidates.contains(lastTarget)) {
+            if (candidates.isEmpty()) {
+                lastTarget = null
+            } else {
+                lastTarget = Random.element(candidates)
+                updateImage()
+                flash()
+            }
+        } else {
+            if (!bg.visible) {
+                flash()
+            }
+        }
+        visible(lastTarget != null)
+        enable(bg.visible)
+    }
+
+    private fun updateImage() {
+        if (sprite != null) {
+            sprite.killAndErase()
+            sprite = null
+        }
+        try {
+            sprite = lastTarget.spriteClass.newInstance()
+            sprite.idle()
+            sprite.paused = true
+            add(sprite)
+            sprite.x = x + (width - sprite.width()) / 2 + 1
+            sprite.y = y + (height - sprite.height()) / 2
+            PixelScene.align(sprite)
+        } catch (e: Exception) {
+        }
+    }
+
+    private var enabled = true
+    private fun enable(value: Boolean) {
+        enabled = value
+        if (sprite != null) {
+            sprite.alpha(if (value) ENABLED else DISABLED)
+        }
+    }
+
+    private fun visible(value: Boolean) {
+        bg.visible = value
+        if (sprite != null) {
+            sprite.visible = value
+        }
+    }
+
+    protected fun onClick() {
+        if (enabled) {
+            Dungeon.hero.handle(lastTarget.pos)
+        }
+    }
+
+    companion object {
+        private const val ENABLED = 1.0f
+        private const val DISABLED = 0.3f
+        private var instance: AttackIndicator
+        private var lastTarget: Mob? = null
+        fun target(target: Char?) {
+            lastTarget = target as Mob?
+            instance.updateImage()
+            HealthIndicator.instance.target(target)
+        }
+
+        fun updateState() {
+            instance.checkEnemies()
+        }
+    }
+
+    init {
+        instance = this
+        setSize(24, 24)
+        visible(false)
+        enable(false)
+    }
 }

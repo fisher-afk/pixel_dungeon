@@ -15,79 +15,60 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.windows;
+package com.watabou.pixeldungeon.windows
 
-import com.watabou.noosa.BitmapText;
-import com.watabou.noosa.ui.Component;
-import com.watabou.pixeldungeon.actors.mobs.Mob;
-import com.watabou.pixeldungeon.scenes.PixelScene;
-import com.watabou.pixeldungeon.sprites.CharSprite;
-import com.watabou.pixeldungeon.ui.BuffIndicator;
-import com.watabou.pixeldungeon.ui.HealthBar;
-import com.watabou.pixeldungeon.utils.Utils;
+import com.watabou.noosa.BitmapText
 
-public class WndInfoMob extends WndTitledMessage {
+class WndInfoMob(mob: Mob) : WndTitledMessage(MobTitle(mob), desc(mob)) {
+    private class MobTitle(mob: Mob) : Component() {
+        private val image: CharSprite
+        private val name: BitmapText
+        private val health: HealthBar
+        private val buffs: BuffIndicator
+        protected fun layout() {
+            image.x = 0
+            image.y = Math.max(0, name.height() + GAP + health.height() - image.height)
+            name.x = image.width + GAP
+            name.y = image.height - health.height() - GAP - name.baseLine()
+            val w: Float = width - image.width - GAP
+            health.setRect(image.width + GAP, image.height - health.height(), w, health.height())
+            buffs.setPos(
+                name.x + name.width() + GAP,
+                name.y + name.baseLine() - BuffIndicator.SIZE
+            )
+            height = health.bottom()
+        }
 
-	public WndInfoMob( Mob mob ) {
-		
-		super( new MobTitle( mob ), desc( mob ) );
-		
-	}
-	
-	private static String desc( Mob mob ) {
-		
-		StringBuilder builder = new StringBuilder( mob.description() );
-		
-		builder.append( "\n\n" + mob.state.status() + "." );
-		
-		return builder.toString();
-	}
-	
-	private static class MobTitle extends Component {
-		
-		private static final int GAP	= 2;
-		
-		private CharSprite image;
-		private BitmapText name;
-		private HealthBar health;
-		private BuffIndicator buffs;
-		
-		public MobTitle( Mob mob ) {
-			
-			name = PixelScene.createText( Utils.capitalize( mob.name ), 9 );
-			name.hardlight( TITLE_COLOR );
-			name.measure();	
-			add( name );
-			
-			image = mob.sprite();
-			add( image );
-			
-			health = new HealthBar();
-			health.level( (float)mob.HP / mob.HT );
-			add( health );
-			
-			buffs = new BuffIndicator( mob );
-			add( buffs );
-		}
-		
-		@Override
-		protected void layout() {
-			
-			image.x = 0;
-			image.y = Math.max( 0, name.height() + GAP + health.height() - image.height );
-			
-			name.x = image.width + GAP;
-			name.y = image.height - health.height() - GAP - name.baseLine();
-			
-			float w = width - image.width - GAP;
-			
-			health.setRect( image.width + GAP, image.height - health.height(), w, health.height() ); 
-			
-			buffs.setPos( 
-				name.x + name.width() + GAP, 
-				name.y + name.baseLine() - BuffIndicator.SIZE );
+        companion object {
+            private const val GAP = 2
+        }
 
-			height = health.bottom();
-		}
-	}
+        init {
+            name = PixelScene.createText(Utils.capitalize(mob.name), 9)
+            name.hardlight(TITLE_COLOR)
+            name.measure()
+            add(name)
+            image = mob.sprite()
+            add(image)
+            health = HealthBar()
+            health.level(mob.HP as Float / mob.HT)
+            add(health)
+            buffs = BuffIndicator(mob)
+            add(buffs)
+        }
+    }
+
+    companion object {
+        private fun desc(mob: Mob): String {
+            val builder: StringBuilder = StringBuilder(mob.description())
+            builder.append(
+                """
+    
+    
+    ${mob.state.status().toString()}.
+    """.trimIndent()
+            )
+            return builder.toString()
+        }
+    }
 }

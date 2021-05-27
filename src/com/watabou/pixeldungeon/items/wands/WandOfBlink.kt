@@ -15,68 +15,50 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.wands;
+package com.watabou.pixeldungeon.items.wands
 
-import com.watabou.noosa.audio.Sample;
-import com.watabou.noosa.tweeners.AlphaTweener;
-import com.watabou.pixeldungeon.Assets;
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.Actor;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.effects.MagicMissile;
-import com.watabou.pixeldungeon.effects.Speck;
-import com.watabou.pixeldungeon.mechanics.Ballistica;
-import com.watabou.utils.Callback;
+import com.watabou.noosa.audio.Sample
 
-public class WandOfBlink extends Wand {
+class WandOfBlink : Wand() {
+    protected override fun onZap(cell: Int) {
+        var cell = cell
+        val level: Int = power()
+        if (Ballistica.distance > level + 4) {
+            cell = Ballistica.trace.get(level + 3)
+        } else if (Actor.findChar(cell) != null && Ballistica.distance > 1) {
+            cell = Ballistica.trace.get(Ballistica.distance - 2)
+        }
+        curUser.sprite.visible = true
+        appear(Dungeon.hero, cell)
+        Dungeon.observe()
+    }
 
-	{
-		name = "Wand of Blink";
-	}
-	
-	@Override
-	protected void onZap( int cell ) {
+    protected override fun fx(cell: Int, callback: Callback?) {
+        MagicMissile.whiteLight(curUser.sprite.parent, curUser.pos, cell, callback)
+        Sample.INSTANCE.play(Assets.SND_ZAP)
+        curUser.sprite.visible = false
+    }
 
-		int level = power();
-		
-		if (Ballistica.distance > level + 4) {
-			cell = Ballistica.trace[level + 3];
-		} else if (Actor.findChar( cell ) != null && Ballistica.distance > 1) {
-			cell = Ballistica.trace[Ballistica.distance - 2];
-		}
-		
-		curUser.sprite.visible = true;
-		appear( Dungeon.hero, cell );
-		Dungeon.observe();
-	}
-	
-	@Override
-	protected void fx( int cell, Callback callback ) {
-		MagicMissile.whiteLight( curUser.sprite.parent, curUser.pos, cell, callback );
-		Sample.INSTANCE.play( Assets.SND_ZAP );
-		curUser.sprite.visible = false;
-	}
-	
-	public static void appear( Char ch, int pos ) {
-		
-		ch.sprite.interruptMotion();
-		
-		ch.move( pos );
-		ch.sprite.place( pos );
-		
-		if (ch.invisible == 0) {
-			ch.sprite.alpha( 0 );
-			ch.sprite.parent.add( new AlphaTweener( ch.sprite, 1, 0.4f ) );
-		}
-		
-		ch.sprite.emitter().start( Speck.factory( Speck.LIGHT ), 0.2f, 3 );
-		Sample.INSTANCE.play( Assets.SND_TELEPORT );
-	}
-	
-	@Override
-	public String desc() {
-		return
-			"This wand will allow you to teleport in the chosen direction. " +
-			"Creatures and inanimate obstructions will block the teleportation.";
-	}
+    fun desc(): String {
+        return "This wand will allow you to teleport in the chosen direction. " +
+                "Creatures and inanimate obstructions will block the teleportation."
+    }
+
+    companion object {
+        fun appear(ch: Char, pos: Int) {
+            ch.sprite.interruptMotion()
+            ch.move(pos)
+            ch.sprite.place(pos)
+            if (ch.invisible === 0) {
+                ch.sprite.alpha(0)
+                ch.sprite.parent.add(AlphaTweener(ch.sprite, 1, 0.4f))
+            }
+            ch.sprite.emitter().start(Speck.factory(Speck.LIGHT), 0.2f, 3)
+            Sample.INSTANCE.play(Assets.SND_TELEPORT)
+        }
+    }
+
+    init {
+        name = "Wand of Blink"
+    }
 }

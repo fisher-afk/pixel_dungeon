@@ -15,21 +15,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.keys;
+package com.watabou.pixeldungeon.items.keys
 
-import com.watabou.pixeldungeon.sprites.ItemSpriteSheet;
+import com.watabou.pixeldungeon.sprites.ItemSpriteSheet
 
-public class GoldenKey extends Key {
-	
-	{
-		name = "golden key";
-		image = ItemSpriteSheet.GOLDEN_KEY;
-	}
-	
-	@Override
-	public String info() {
-		return 
-			"The notches on this golden key are tiny and intricate. " +
-			"Maybe it can open some chest lock?";
-	}
+class GoldenKey : Key() {
+    fun info(): String {
+        return "The notches on this golden key are tiny and intricate. " +
+                "Maybe it can open some chest lock?"
+    }
+
+    init {
+        name = "golden key"
+        image = ItemSpriteSheet.GOLDEN_KEY
+    }
 }

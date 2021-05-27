@@ -15,69 +15,53 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.effects.particles;
+package com.watabou.pixeldungeon.effects.particles
 
-import com.watabou.noosa.particles.Emitter;
-import com.watabou.noosa.particles.PixelParticle;
-import com.watabou.noosa.particles.Emitter.Factory;
-import com.watabou.utils.ColorMath;
-import com.watabou.utils.PointF;
-import com.watabou.utils.Random;
+import com.watabou.noosa.particles.Emitter
 
-public class PurpleParticle extends PixelParticle {
-	
-	public static final Emitter.Factory MISSILE = new Factory() {	
-		@Override
-		public void emit( Emitter emitter, int index, float x, float y ) {
-			((PurpleParticle)emitter.recycle( PurpleParticle.class )).reset( x, y );
-		}
-	};
-	
-	public static final Emitter.Factory BURST = new Factory() {	
-		@Override
-		public void emit( Emitter emitter, int index, float x, float y ) {
-			((PurpleParticle)emitter.recycle( PurpleParticle.class )).resetBurst( x, y );
-		}
-		@Override
-		public boolean lightMode() {
-			return true;
-		}
-	};
-	
-	public PurpleParticle() {
-		super();
-		
-		lifespan = 0.5f;
-	}
-	
-	public void reset( float x, float y ) {
-		revive();
-		
-		this.x = x;
-		this.y = y;
-		
-		speed.set( Random.Float( -5, +5 ), Random.Float( -5, +5 ) );
-		
-		left = lifespan;
-	}
-	
-	public void resetBurst( float x, float y ) {
-		revive();
-		
-		this.x = x;
-		this.y = y;
-		
-		speed.polar( Random.Float( PointF.PI2 ), Random.Float( 16, 32 ) );
-		
-		left = lifespan;
-	}
-	
-	@Override
-	public void update() {
-		super.update();
-		// alpha: 1 -> 0; size: 1 -> 5
-		size( 5 - (am = left / lifespan) * 4 );
-		// color: 0xFF0044 -> 0x220066
-		color( ColorMath.interpolate( 0x220066, 0xFF0044, am ) );
-	}
+class PurpleParticle : PixelParticle() {
+    fun reset(x: Float, y: Float) {
+        revive()
+        x = x
+        y = y
+        speed.set(Random.Float(-5, +5), Random.Float(-5, +5))
+        left = lifespan
+    }
+
+    fun resetBurst(x: Float, y: Float) {
+        revive()
+        x = x
+        y = y
+        speed.polar(Random.Float(PointF.PI2), Random.Float(16, 32))
+        left = lifespan
+    }
+
+    fun update() {
+        super.update()
+        // alpha: 1 -> 0; size: 1 -> 5
+        size(5 - left / lifespan.also { am = it } * 4)
+        // color: 0xFF0044 -> 0x220066
+        color(ColorMath.interpolate(0x220066, 0xFF0044, am))
+    }
+
+    companion object {
+        val MISSILE: Emitter.Factory = object : Factory() {
+            fun emit(emitter: Emitter, index: Int, x: Float, y: Float) {
+                (emitter.recycle(PurpleParticle::class.java) as PurpleParticle).reset(x, y)
+            }
+        }
+        val BURST: Emitter.Factory = object : Factory() {
+            fun emit(emitter: Emitter, index: Int, x: Float, y: Float) {
+                (emitter.recycle(PurpleParticle::class.java) as PurpleParticle).resetBurst(x, y)
+            }
+
+            fun lightMode(): Boolean {
+                return true
+            }
+        }
+    }
+
+    init {
+        lifespan = 0.5f
+    }
 }

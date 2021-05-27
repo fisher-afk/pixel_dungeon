@@ -15,40 +15,29 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.quest;
+package com.watabou.pixeldungeon.items.quest
 
-import com.watabou.pixeldungeon.items.Item;
-import com.watabou.pixeldungeon.sprites.ItemSpriteSheet;
+import com.watabou.pixeldungeon.items.Item
 
-public class DwarfToken extends Item {
-	
-	{
-		name = "dwarf token";
-		image = ItemSpriteSheet.TOKEN;
-		
-		stackable = true;
-		unique = true;
-	}
-	
-	@Override
-	public boolean isUpgradable() {
-		return false;
-	}
-	
-	@Override
-	public boolean isIdentified() {
-		return true;
-	}
-	
-	@Override
-	public String info() {
-		return
-			"Many dwarves and some of their larger creations carry these small pieces of metal of unknown purpose. " +
-			"Maybe they are jewelry or maybe some kind of ID. Dwarves are strange folk.";
-	}
-	
-	@Override
-	public int price() {
-		return quantity * 100;
-	}
+class DwarfToken : Item() {
+    override val isUpgradable: Boolean
+        get() = false
+    override val isIdentified: Boolean
+        get() = true
+
+    override fun info(): String {
+        return "Many dwarves and some of their larger creations carry these small pieces of metal of unknown purpose. " +
+                "Maybe they are jewelry or maybe some kind of ID. Dwarves are strange folk."
+    }
+
+    override fun price(): Int {
+        return quantity * 100
+    }
+
+    init {
+        name = "dwarf token"
+        image = ItemSpriteSheet.TOKEN
+        stackable = true
+        unique = true
+    }
 }

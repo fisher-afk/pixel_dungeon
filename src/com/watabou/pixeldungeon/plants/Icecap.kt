@@ -15,61 +15,47 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.plants;
+package com.watabou.pixeldungeon.plants
 
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.blobs.Fire;
-import com.watabou.pixeldungeon.actors.blobs.Freezing;
-import com.watabou.pixeldungeon.items.potions.PotionOfFrost;
-import com.watabou.pixeldungeon.levels.Level;
-import com.watabou.pixeldungeon.sprites.ItemSpriteSheet;
-import com.watabou.pixeldungeon.utils.BArray;
-import com.watabou.utils.PathFinder;
+import com.watabou.pixeldungeon.Dungeon
 
-public class Icecap extends Plant {
+class Icecap : Plant() {
+    override fun activate(ch: Char?) {
+        super.activate(ch)
+        PathFinder.buildDistanceMap(pos, BArray.not(Level.losBlocking, null), 1)
+        val fire: Fire = Dungeon.level.blobs.get(Fire::class.java) as Fire
+        for (i in 0 until Level.LENGTH) {
+            if (PathFinder.distance.get(i) < Int.MAX_VALUE) {
+                Freezing.affect(i, fire)
+            }
+        }
+    }
 
-	private static final String TXT_DESC = "Upon touching an Icecap excretes a pollen, which freezes everything in its vicinity.";
-	
-	{
-		image = 1;
-		plantName = "Icecap";
-	}
-	
-	@Override
-	public void activate( Char ch ) {
-		super.activate( ch );
-		
-		PathFinder.buildDistanceMap( pos, BArray.not( Level.losBlocking, null ), 1 );
-		
-		Fire fire = (Fire)Dungeon.level.blobs.get( Fire.class );
-		
-		for (int i=0; i < Level.LENGTH; i++) {
-			if (PathFinder.distance[i] < Integer.MAX_VALUE) {
-				Freezing.affect( i, fire );
-			}
-		}
-	}
-	
-	@Override
-	public String desc() {
-		return TXT_DESC;
-	}
-	
-	public static class Seed extends Plant.Seed {
-		{
-			plantName = "Icecap";
-			
-			name = "seed of " + plantName;
-			image = ItemSpriteSheet.SEED_ICECAP;
-			
-			plantClass = Icecap.class;
-			alchemyClass = PotionOfFrost.class;
-		}
-		
-		@Override
-		public String desc() {
-			return TXT_DESC;
-		}
-	}
+    override fun desc(): String {
+        return TXT_DESC
+    }
+
+    class Seed : Plant.Seed() {
+        fun desc(): String {
+            return TXT_DESC
+        }
+
+        init {
+            plantName = "Icecap"
+            name = "seed of $plantName"
+            image = ItemSpriteSheet.SEED_ICECAP
+            plantClass = Icecap::class.java
+            alchemyClass = PotionOfFrost::class.java
+        }
+    }
+
+    companion object {
+        private const val TXT_DESC =
+            "Upon touching an Icecap excretes a pollen, which freezes everything in its vicinity."
+    }
+
+    init {
+        image = 1
+        plantName = "Icecap"
+    }
 }

@@ -15,19 +15,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.buffs;
+package com.watabou.pixeldungeon.actors.buffs
 
-import com.watabou.pixeldungeon.ui.BuffIndicator;
+import com.watabou.pixeldungeon.ui.BuffIndicator
+class Rage : FlavourBuff() {
+    override fun icon(): Int {
+        return BuffIndicator.RAGE
+    }
 
-public class Rage extends FlavourBuff {
-	
-	@Override
-	public int icon() {
-		return BuffIndicator.RAGE;
-	}
-	
-	@Override
-	public String toString() {
-		return "Blinded with rage";
-	}
+    override fun toString(): String {
+        return "Blinded with rage"
+    }
 }

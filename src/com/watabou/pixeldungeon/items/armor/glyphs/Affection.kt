@@ -15,54 +15,32 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.armor.glyphs;
+package com.watabou.pixeldungeon.items.armor.glyphs
 
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.buffs.Buff;
-import com.watabou.pixeldungeon.actors.buffs.Charm;
-import com.watabou.pixeldungeon.effects.Speck;
-import com.watabou.pixeldungeon.items.armor.Armor;
-import com.watabou.pixeldungeon.items.armor.Armor.Glyph;
-import com.watabou.pixeldungeon.levels.Level;
-import com.watabou.pixeldungeon.sprites.ItemSprite;
-import com.watabou.pixeldungeon.sprites.ItemSprite.Glowing;
-import com.watabou.utils.GameMath;
-import com.watabou.utils.Random;
+class Affection : Glyph() {
+    fun proc(armor: Armor, attacker: Char, defender: Char, damage: Int): Int {
+        val level = GameMath.gate(0, armor.effectiveLevel(), 6) as Int
+        if (Level.adjacent(attacker.pos, defender.pos) && Random.Int(level / 2 + 5) >= 4) {
+            var duration: Int = Random.IntRange(3, 7)
+            Buff.affect(attacker, Charm::class.java, Charm.durationFactor(attacker) * duration).`object` = defender.id()
+            attacker.sprite.centerEmitter().start(Speck.factory(Speck.HEART), 0.2f, 5)
+            duration *= Random.Float(0.5f, 1)
+            Buff.affect(defender, Charm::class.java, Charm.durationFactor(defender) * duration).`object` = attacker.id()
+            defender.sprite.centerEmitter().start(Speck.factory(Speck.HEART), 0.2f, 5)
+        }
+        return damage
+    }
 
-public class Affection extends Glyph {
+    fun name(weaponName: String?): String {
+        return String.format(TXT_AFFECTION, weaponName)
+    }
 
-	private static final String TXT_AFFECTION	= "%s of affection";
-	
-	private static ItemSprite.Glowing PINK = new ItemSprite.Glowing( 0xFF4488 );
-	
-	@Override
-	public int proc( Armor armor, Char attacker, Char defender, int damage) {
+    fun glowing(): Glowing {
+        return PINK
+    }
 
-		int level = (int)GameMath.gate( 0, armor.effectiveLevel(), 6 );
-		
-		if (Level.adjacent( attacker.pos, defender.pos ) && Random.Int( level / 2 + 5 ) >= 4) {
-			
-			int duration = Random.IntRange( 3, 7 );
-			
-			Buff.affect( attacker, Charm.class, Charm.durationFactor( attacker ) * duration ).object = defender.id();
-			attacker.sprite.centerEmitter().start( Speck.factory( Speck.HEART ), 0.2f, 5 );
-			
-			duration *= Random.Float( 0.5f, 1 );
-			
-			Buff.affect( defender, Charm.class, Charm.durationFactor( defender ) * duration ).object = attacker.id();
-			defender.sprite.centerEmitter().start( Speck.factory( Speck.HEART ), 0.2f, 5 );
-		}
-		
-		return damage;
-	}
-	
-	@Override
-	public String name( String weaponName) {
-		return String.format( TXT_AFFECTION, weaponName );
-	}
-
-	@Override
-	public Glowing glowing() {
-		return PINK;
-	}
+    companion object {
+        private const val TXT_AFFECTION = "%s of affection"
+        private val PINK: ItemSprite.Glowing = Glowing(0xFF4488)
+    }
 }

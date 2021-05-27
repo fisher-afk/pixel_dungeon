@@ -15,53 +15,41 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.keys;
+package com.watabou.pixeldungeon.items.keys
 
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.items.Item;
-import com.watabou.utils.Bundle;
+import com.watabou.pixeldungeon.Dungeon
 
-public class Key extends Item {
+class Key : Item() {
+    var depth: Int
+    fun storeInBundle(bundle: Bundle) {
+        super.storeInBundle(bundle)
+        bundle.put(DEPTH, depth)
+    }
 
-	public static final float TIME_TO_UNLOCK = 1f;
-	
-	{
-		stackable = false;
-	}
-	
-	public int depth;
-	
-	public Key() {
-		super();
-		depth = Dungeon.depth;
-	}
-	
-	private static final String DEPTH = "depth";
-	
-	@Override
-	public void storeInBundle( Bundle bundle ) {
-		super.storeInBundle( bundle );
-		bundle.put( DEPTH, depth );
-	}
-	
-	@Override
-	public void restoreFromBundle( Bundle bundle ) {
-		super.restoreFromBundle( bundle );
-		depth = bundle.getInt( DEPTH );
-	}
-	
-	@Override
-	public boolean isUpgradable() {
-		return false;
-	}
-	
-	@Override
-	public boolean isIdentified() {
-		return true;
-	}
-	
-	@Override
-	public String status() {
-		return depth + "\u007F";
-	}
+    fun restoreFromBundle(bundle: Bundle) {
+        super.restoreFromBundle(bundle)
+        depth = bundle.getInt(DEPTH)
+    }
+
+    val isUpgradable: Boolean
+        get() = false
+    val isIdentified: Boolean
+        get() = true
+
+    fun status(): String {
+        return depth.toString() + "\u007F"
+    }
+
+    companion object {
+        const val TIME_TO_UNLOCK = 1f
+        private const val DEPTH = "depth"
+    }
+
+    init {
+        stackable = false
+    }
+
+    init {
+        depth = Dungeon.depth
+    }
 }

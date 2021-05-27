@@ -15,93 +15,72 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.effects;
+package com.watabou.pixeldungeon.effects
 
-import com.watabou.noosa.Game;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.items.Item;
-import com.watabou.pixeldungeon.sprites.ItemSprite;
+import com.watabou.noosa.Game
 
-public class Enchanting extends ItemSprite {
-	private static final int SIZE	= 16;
+class Enchanting(item: Item) : ItemSprite(item.image(), null) {
+    private enum class Phase {
+        FADE_IN, STATIC, FADE_OUT
+    }
 
-	private enum Phase {
-		FADE_IN, STATIC, FADE_OUT
-	}
+    private val color: Int
+    private var target: Char? = null
+    private var phase: Phase
+    private var duration: Float
+    private var passed: Float
+    fun update() {
+        super.update()
+        x = target.sprite.center().x - SIZE / 2
+        y = target.sprite.y - SIZE
+        when (phase) {
+            Phase.FADE_IN -> {
+                alpha(passed / duration * ALPHA)
+                scale.set(passed / duration)
+            }
+            Phase.STATIC -> tint(color, passed / duration * 0.8f)
+            Phase.FADE_OUT -> {
+                alpha((1 - passed / duration) * ALPHA)
+                scale.set(1 + passed / duration)
+            }
+        }
+        if (Game.elapsed.let { passed += it; passed } > duration) {
+            when (phase) {
+                Phase.FADE_IN -> {
+                    phase = Phase.STATIC
+                    duration = STATIC_TIME
+                }
+                Phase.STATIC -> {
+                    phase = Phase.FADE_OUT
+                    duration = FADE_OUT_TIME
+                }
+                Phase.FADE_OUT -> kill()
+            }
+            passed = 0f
+        }
+    }
 
-	private static final float FADE_IN_TIME		= 0.2f;
-	private static final float STATIC_TIME		= 1.0f;
-	private static final float FADE_OUT_TIME	= 0.4f;
+    companion object {
+        private const val SIZE = 16
+        private const val FADE_IN_TIME = 0.2f
+        private const val STATIC_TIME = 1.0f
+        private const val FADE_OUT_TIME = 0.4f
+        private const val ALPHA = 0.6f
+        fun show(ch: Char, item: Item) {
+            if (!ch.sprite.visible) {
+                return
+            }
+            val sprite = Enchanting(item)
+            sprite.target = ch
+            ch.sprite.parent.add(sprite)
+        }
+    }
 
-	private static final float ALPHA	= 0.6f;
-
-	private int color;
-
-	private Char target;
-
-	private Phase phase;
-	private float duration;
-	private float passed;
-
-	public Enchanting( Item item ) {
-		super( item.image(), null );
-		originToCenter();
-
-		color = item.glowing().color;
-
-		phase = Phase.FADE_IN;
-		duration = FADE_IN_TIME;
-		passed = 0;
-	}
-	
-	@Override
-	public void update() {
-		super.update();
-		
-		x = target.sprite.center().x - SIZE / 2;
-		y = target.sprite.y - SIZE;
-		
-		switch (phase) {
-		case FADE_IN:
-			alpha( passed / duration * ALPHA );
-			scale.set( passed / duration );
-			break;
-		case STATIC:
-			tint( color, passed / duration * 0.8f );
-			break;
-		case FADE_OUT:
-			alpha( (1 - passed / duration) * ALPHA );
-			scale.set( 1 + passed / duration );
-			break;
-		}
-		
-		if ((passed += Game.elapsed) > duration) {
-			switch (phase) {
-			case FADE_IN:
-				phase = Phase.STATIC;
-				duration = STATIC_TIME;
-				break;
-			case STATIC:
-				phase = Phase.FADE_OUT;
-				duration = FADE_OUT_TIME;
-				break;
-			case FADE_OUT:
-				kill();
-				break;
-			}
-			
-			passed = 0;
-		}
-	}
-	
-	public static void show( Char ch, Item item ) {
-		
-		if (!ch.sprite.visible) {
-			return;
-		}
-		
-		Enchanting sprite = new Enchanting( item );
-		sprite.target = ch;
-		ch.sprite.parent.add( sprite );
-	}
+    init {
+        originToCenter()
+        color = item.glowing().color
+        phase = Phase.FADE_IN
+        duration = FADE_IN_TIME
+        passed = 0f
+    }
 }

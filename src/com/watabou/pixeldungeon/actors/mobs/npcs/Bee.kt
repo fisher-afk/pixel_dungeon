@@ -15,168 +15,126 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.mobs.npcs;
+package com.watabou.pixeldungeon.actors.mobs.npcs
 
-import java.util.HashSet;
+import com.watabou.pixeldungeon.Dungeon
 
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.buffs.Poison;
-import com.watabou.pixeldungeon.actors.mobs.Mob;
-import com.watabou.pixeldungeon.levels.Level;
-import com.watabou.pixeldungeon.sprites.BeeSprite;
-import com.watabou.pixeldungeon.utils.Utils;
-import com.watabou.utils.Bundle;
-import com.watabou.utils.Random;
+class Bee : NPC() {
+    private var level = 0
+    fun storeInBundle(bundle: Bundle) {
+        super.storeInBundle(bundle)
+        bundle.put(LEVEL, level)
+    }
 
-public class Bee extends NPC {
-	
-	{
-		name = "golden bee";
-		spriteClass = BeeSprite.class;
-		
-		viewDistance = 4;
-		
-		WANDERING = new Wandering();
-		
-		flying = true;
-		state = WANDERING;
-	}
+    fun restoreFromBundle(bundle: Bundle) {
+        super.restoreFromBundle(bundle)
+        spawn(bundle.getInt(LEVEL))
+    }
 
-	private int level;
-	
-	private static final String LEVEL	= "level";
-	
-	@Override
-	public void storeInBundle( Bundle bundle ) {
-		super.storeInBundle( bundle );
-		bundle.put( LEVEL, level );
-	}
-	
-	@Override
-	public void restoreFromBundle( Bundle bundle ) {
-		super.restoreFromBundle( bundle );
-		spawn( bundle.getInt( LEVEL ) );
-	}
-	
-	public void spawn( int level ) {
-		this.level = level;
-		
-		HT = (3 + level) * 5;
-		defenseSkill = 9 + level;
-	}
-	
-	@Override
-	public int attackSkill( Char target ) {
-		return defenseSkill;
-	}
-	
-	@Override
-	public int damageRoll() {
-		return Random.NormalIntRange( HT / 10, HT / 4 );
-	}
-	
-	@Override
-	public int attackProc( Char enemy, int damage ) {
-		if (enemy instanceof Mob) {
-			((Mob)enemy).aggro( this );
-		}
-		return damage;
-	}
-	
-	@Override
-	protected boolean act() {
-		HP--;
-		if (HP <= 0) {
-			die( null );
-			return true;
-		} else {
-			return super.act();
-		}
-	}
-	
-	protected Char chooseEnemy() {
-		
-		if (enemy == null || !enemy.isAlive()) {
-			HashSet<Mob> enemies = new HashSet<Mob>();
-			for (Mob mob:Dungeon.level.mobs) {
-				if (mob.hostile && Level.fieldOfView[mob.pos]) {
-					enemies.add( mob );
-				}
-			}
-			
-			return enemies.size() > 0 ? Random.element( enemies ) : null;
-			
-		} else {
-			
-			return enemy;
-			
-		}
-	}
-	
-	@Override
-	public String description() {
-		return
-			"Despite their small size, golden bees tend " +
-			"to protect their master fiercely. They don't live long though.";
-	}
+    fun spawn(level: Int) {
+        this.level = level
+        HT = (3 + level) * 5
+        defenseSkill = 9 + level
+    }
 
-	@Override
-	public void interact() {
-		
-		int curPos = pos;
-		
-		moveSprite( pos, Dungeon.hero.pos );
-		move( Dungeon.hero.pos );
-		
-		Dungeon.hero.sprite.move( Dungeon.hero.pos, curPos );
-		Dungeon.hero.move( curPos );
-		
-		Dungeon.hero.spend( 1 / Dungeon.hero.speed() );
-		Dungeon.hero.busy();
-	}
-	
-	private static final HashSet<Class<?>> IMMUNITIES = new HashSet<Class<?>>();
-	static {
-		IMMUNITIES.add( Poison.class );
-	}
-	
-	@Override
-	public HashSet<Class<?>> immunities() {
-		return IMMUNITIES;
-	}
-	
-	private class Wandering implements AiState {
+    fun attackSkill(target: Char?): Int {
+        return defenseSkill
+    }
 
-		@Override
-		public boolean act( boolean enemyInFOV, boolean justAlerted ) {
-			if (enemyInFOV) {
-				
-				enemySeen = true;
-				
-				notice();
-				state = HUNTING;
-				target = enemy.pos;
-				
-			} else {
-				
-				enemySeen = false;
-				
-				int oldPos = pos;
-				if (getCloser( Dungeon.hero.pos )) {
-					spend( 1 / speed() );
-					return moveSprite( oldPos, pos );
-				} else {
-					spend( TICK );
-				}
-				
-			}
-			return true;
-		}
-		
-		@Override
-		public String status() {
-			return Utils.format( "This %s is wandering", name );
-		}
-	}
+    fun damageRoll(): Int {
+        return Random.NormalIntRange(HT / 10, HT / 4)
+    }
+
+    fun attackProc(enemy: Char, damage: Int): Int {
+        if (enemy is Mob) {
+            (enemy as Mob).aggro(this)
+        }
+        return damage
+    }
+
+    protected fun act(): Boolean {
+        HP--
+        return if (HP <= 0) {
+            die(null)
+            true
+        } else {
+            super.act()
+        }
+    }
+
+    protected fun chooseEnemy(): Char? {
+        return if (enemy == null || !enemy.isAlive()) {
+            val enemies: HashSet<Mob> = HashSet<Mob>()
+            for (mob in Dungeon.level.mobs) {
+                if (mob.hostile && Level.fieldOfView.get(mob.pos)) {
+                    enemies.add(mob)
+                }
+            }
+            if (enemies.size > 0) Random.element(enemies) else null
+        } else {
+            enemy
+        }
+    }
+
+    fun description(): String {
+        return "Despite their small size, golden bees tend " +
+                "to protect their master fiercely. They don't live long though."
+    }
+
+    override fun interact() {
+        val curPos: Int = pos
+        moveSprite(pos, Dungeon.hero.pos)
+        move(Dungeon.hero.pos)
+        Dungeon.hero.sprite.move(Dungeon.hero.pos, curPos)
+        Dungeon.hero.move(curPos)
+        Dungeon.hero.spend(1 / Dungeon.hero.speed())
+        Dungeon.hero.busy()
+    }
+
+    companion object {
+        private const val LEVEL = "level"
+        private val IMMUNITIES = HashSet<Class<*>>()
+
+        init {
+            IMMUNITIES.add(Poison::class.java)
+        }
+    }
+
+    fun immunities(): HashSet<Class<*>> {
+        return IMMUNITIES
+    }
+
+    private inner class Wandering : AiState {
+        fun act(enemyInFOV: Boolean, justAlerted: Boolean): Boolean {
+            if (enemyInFOV) {
+                enemySeen = true
+                notice()
+                state = HUNTING
+                target = enemy.pos
+            } else {
+                enemySeen = false
+                val oldPos: Int = pos
+                if (getCloser(Dungeon.hero.pos)) {
+                    spend(1 / speed())
+                    return moveSprite(oldPos, pos)
+                } else {
+                    spend(TICK)
+                }
+            }
+            return true
+        }
+
+        fun status(): String {
+            return Utils.format("This %s is wandering", name)
+        }
+    }
+
+    init {
+        name = "golden bee"
+        spriteClass = BeeSprite::class.java
+        viewDistance = 4
+        WANDERING = Wandering()
+        flying = true
+        state = WANDERING
+    }
 }

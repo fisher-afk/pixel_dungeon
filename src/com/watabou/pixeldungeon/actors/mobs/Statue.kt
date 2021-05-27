@@ -15,156 +15,118 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.mobs;
+package com.watabou.pixeldungeon.actors.mobs
 
-import java.util.HashSet;
+import com.watabou.pixeldungeon.Dungeon
 
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.Journal;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.blobs.ToxicGas;
-import com.watabou.pixeldungeon.actors.buffs.Poison;
-import com.watabou.pixeldungeon.items.Generator;
-import com.watabou.pixeldungeon.items.scrolls.ScrollOfPsionicBlast;
-import com.watabou.pixeldungeon.items.weapon.Weapon;
-import com.watabou.pixeldungeon.items.weapon.enchantments.Death;
-import com.watabou.pixeldungeon.items.weapon.enchantments.Leech;
-import com.watabou.pixeldungeon.items.weapon.melee.MeleeWeapon;
-import com.watabou.pixeldungeon.sprites.StatueSprite;
-import com.watabou.utils.Bundle;
-import com.watabou.utils.Random;
+class Statue : Mob() {
+    private var weapon: Weapon? = null
+    override fun storeInBundle(bundle: Bundle) {
+        super.storeInBundle(bundle)
+        bundle.put(WEAPON, weapon)
+    }
 
-public class Statue extends Mob {
-	
-	{
-		name = "animated statue";
-		spriteClass = StatueSprite.class;
+    override fun restoreFromBundle(bundle: Bundle) {
+        super.restoreFromBundle(bundle)
+        weapon = bundle.get(WEAPON) as Weapon
+    }
 
-		EXP = 0;
-		state = PASSIVE;
-	}
-	
-	private Weapon weapon;
-	
-	public Statue() {
-		super();
-		
-		do {
-			weapon = (Weapon)Generator.random( Generator.Category.WEAPON );
-		} while (!(weapon instanceof MeleeWeapon) || weapon.level() < 0);
-		
-		weapon.identify();
-		weapon.enchant();
-		
-		HP = HT = 15 + Dungeon.depth * 5;
-		defenseSkill = 4 + Dungeon.depth;
-	}
-	
-	private static final String WEAPON	= "weapon";
-	
-	@Override
-	public void storeInBundle( Bundle bundle ) {
-		super.storeInBundle( bundle );
-		bundle.put( WEAPON, weapon );
-	}
-	
-	@Override
-	public void restoreFromBundle( Bundle bundle ) {
-		super.restoreFromBundle( bundle );
-		weapon = (Weapon)bundle.get( WEAPON );
-	}
-	
-	@Override
-	protected boolean act() {
-		if (Dungeon.visible[pos]) {
-			Journal.add( Journal.Feature.STATUE );
-		}
-		return super.act();
-	}
-	
-	@Override
-	public int damageRoll() {
-		return Random.NormalIntRange( weapon.min(), weapon.max() );
-	}
-	
-	@Override
-	public int attackSkill( Char target ) {
-		return (int)((9 + Dungeon.depth) * weapon.ACU);
-	}
-	
-	@Override
-	protected float attackDelay() {
-		return weapon.DLY;
-	}
-	
-	@Override
-	public int dr() {
-		return Dungeon.depth;
-	}
-	
-	@Override
-	public void damage( int dmg, Object src ) {
+    protected override fun act(): Boolean {
+        if (Dungeon.visible.get(pos)) {
+            Journal.add(Journal.Feature.STATUE)
+        }
+        return super.act()
+    }
 
-		if (state == PASSIVE) {
-			state = HUNTING;
-		}
-		
-		super.damage( dmg, src );
-	}
-	
-	@Override
-	public int attackProc( Char enemy, int damage ) {
-		weapon.proc( this, enemy, damage );
-		return damage;
-	}
-	
-	@Override
-	public void beckon( int cell ) {
-		// Do nothing
-	}
-	
-	@Override
-	public void die( Object cause ) {
-		Dungeon.level.drop( weapon, pos ).sprite.drop();
-		super.die( cause );
-	}
-	
-	@Override
-	public void destroy() {
-		Journal.remove( Journal.Feature.STATUE );
-		super.destroy();
-	}
-	
-	@Override
-	public boolean reset() {
-		state = PASSIVE;
-		return true;
-	}
+    fun damageRoll(): Int {
+        return Random.NormalIntRange(weapon.min(), weapon.max())
+    }
 
-	@Override
-	public String description() {
-		return
-			"You would think that it's just another ugly statue of this dungeon, but its red glowing eyes give itself away. " +
-			"While the statue itself is made of stone, the _" + weapon.name() + "_, it's wielding, looks real.";
-	}
-	
-	private static final HashSet<Class<?>> RESISTANCES = new HashSet<Class<?>>();
-	private static final HashSet<Class<?>> IMMUNITIES = new HashSet<Class<?>>();
-	static {
-		RESISTANCES.add( ToxicGas.class );
-		RESISTANCES.add( Poison.class );
-		RESISTANCES.add( Death.class );
-		RESISTANCES.add( ScrollOfPsionicBlast.class );
-		IMMUNITIES.add( Leech.class );
-	}
-	
-	@Override
-	public HashSet<Class<?>> resistances() {
-		return RESISTANCES;
-	}
-	
-	@Override
-	public HashSet<Class<?>> immunities() {
-		return IMMUNITIES;
-	}
+    fun attackSkill(target: Char?): Int {
+        return ((9 + Dungeon.depth) * weapon.ACU) as Int
+    }
+
+    protected override fun attackDelay(): Float {
+        return weapon.DLY
+    }
+
+    fun dr(): Int {
+        return Dungeon.depth
+    }
+
+    override fun damage(dmg: Int, src: Any?) {
+        if (state === PASSIVE) {
+            state = HUNTING
+        }
+        super.damage(dmg, src)
+    }
+
+    fun attackProc(enemy: Char?, damage: Int): Int {
+        weapon.proc(this, enemy, damage)
+        return damage
+    }
+
+    override fun beckon(cell: Int) {
+        // Do nothing
+    }
+
+    override fun die(cause: Any?) {
+        Dungeon.level.drop(weapon, pos).sprite.drop()
+        super.die(cause)
+    }
+
+    override fun destroy() {
+        Journal.remove(Journal.Feature.STATUE)
+        super.destroy()
+    }
+
+    override fun reset(): Boolean {
+        state = PASSIVE
+        return true
+    }
+
+    override fun description(): String {
+        return "You would think that it's just another ugly statue of this dungeon, but its red glowing eyes give itself away. " +
+                "While the statue itself is made of stone, the _" + weapon.name() + "_, it's wielding, looks real."
+    }
+
+    companion object {
+        private const val WEAPON = "weapon"
+        private val RESISTANCES = HashSet<Class<*>>()
+        private val IMMUNITIES = HashSet<Class<*>>()
+
+        init {
+            RESISTANCES.add(ToxicGas::class.java)
+            RESISTANCES.add(Poison::class.java)
+            RESISTANCES.add(Death::class.java)
+            RESISTANCES.add(ScrollOfPsionicBlast::class.java)
+            IMMUNITIES.add(Leech::class.java)
+        }
+    }
+
+    fun resistances(): HashSet<Class<*>> {
+        return RESISTANCES
+    }
+
+    fun immunities(): HashSet<Class<*>> {
+        return IMMUNITIES
+    }
+
+    init {
+        name = "animated statue"
+        spriteClass = StatueSprite::class.java
+        EXP = 0
+        state = PASSIVE
+    }
+
+    init {
+        do {
+            weapon = Generator.random(Generator.Category.WEAPON) as Weapon
+        } while (weapon !is MeleeWeapon || weapon.level() < 0)
+        weapon.identify()
+        weapon.enchant()
+        HT = 15 + Dungeon.depth * 5
+        HP = HT
+        defenseSkill = 4 + Dungeon.depth
+    }
 }

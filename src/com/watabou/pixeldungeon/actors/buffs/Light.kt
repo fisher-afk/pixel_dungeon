@@ -15,44 +15,42 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.buffs;
+package com.watabou.pixeldungeon.actors.buffs
 
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.ui.BuffIndicator;
+import com.watabou.pixeldungeon.Dungeon
 
-public class Light extends FlavourBuff {
+class Light : FlavourBuff() {
+    override fun attachTo(target: Char): Boolean {
+        return if (super.attachTo(target)) {
+            if (Dungeon.level != null) {
+                target.viewDistance = Math.max(
+                    Dungeon.level.viewDistance,
+                    DISTANCE
+                )
+                Dungeon.observe()
+            }
+            true
+        } else {
+            false
+        }
+    }
 
-	public static final float DURATION	= 250f;
-	public static final int DISTANCE	= 4;
-	
-	@Override
-	public boolean attachTo( Char target ) {
-		if (super.attachTo( target )) {
-			if (Dungeon.level != null) {
-				target.viewDistance = Math.max( Dungeon.level.viewDistance, DISTANCE );
-				Dungeon.observe();
-			}
-			return true;
-		} else {
-			return false;
-		}
-	}
-	
-	@Override
-	public void detach() {
-		target.viewDistance = Dungeon.level.viewDistance;
-		Dungeon.observe();
-		super.detach();
-	}
-	
-	@Override
-	public int icon() {
-		return BuffIndicator.LIGHT;
-	}
-	
-	@Override
-	public String toString() {
-		return "Illuminated";
-	}
+    override fun detach() {
+        target.viewDistance = Dungeon.level.viewDistance
+        Dungeon.observe()
+        super.detach()
+    }
+
+    override fun icon(): Int {
+        return BuffIndicator.LIGHT
+    }
+
+    override fun toString(): String {
+        return "Illuminated"
+    }
+
+    companion object {
+        const val DURATION = 250f
+        const val DISTANCE = 4
+    }
 }

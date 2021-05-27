@@ -15,33 +15,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.mobs;
+package com.watabou.pixeldungeon.actors.mobs
 
-import com.watabou.pixeldungeon.Badges;
-import com.watabou.pixeldungeon.sprites.ShieldedSprite;
+import com.watabou.pixeldungeon.Badges
 
-public class Shielded extends Brute {
+class Shielded : Brute() {
+    override fun dr(): Int {
+        return 10
+    }
 
-	{
-		name = "shielded brute";
-		spriteClass = ShieldedSprite.class;
-		
-		defenseSkill = 20;
-	}
-	
-	@Override
-	public int dr() {
-		return 10;
-	}
-	
-	@Override
-	public String defenseVerb() {
-		return "blocked";
-	}
-	
-	@Override
-	public void die( Object cause ) {
-		super.die( cause );
-		Badges.validateRare( this );
-	}
+    fun defenseVerb(): String {
+        return "blocked"
+    }
+
+    override fun die(cause: Any?) {
+        super.die(cause)
+        Badges.validateRare(this)
+    }
+
+    init {
+        name = "shielded brute"
+        spriteClass = ShieldedSprite::class.java
+        defenseSkill = 20
+    }
 }

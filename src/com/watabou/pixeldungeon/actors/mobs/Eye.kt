@@ -15,160 +15,112 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.mobs;
+package com.watabou.pixeldungeon.actors.mobs
 
-import java.util.HashSet;
+import com.watabou.pixeldungeon.Dungeon
 
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.ResultDescriptions;
-import com.watabou.pixeldungeon.actors.Actor;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.buffs.Light;
-import com.watabou.pixeldungeon.actors.buffs.Terror;
-import com.watabou.pixeldungeon.effects.CellEmitter;
-import com.watabou.pixeldungeon.effects.particles.PurpleParticle;
-import com.watabou.pixeldungeon.items.Dewdrop;
-import com.watabou.pixeldungeon.items.wands.WandOfDisintegration;
-import com.watabou.pixeldungeon.items.weapon.enchantments.Death;
-import com.watabou.pixeldungeon.items.weapon.enchantments.Leech;
-import com.watabou.pixeldungeon.mechanics.Ballistica;
-import com.watabou.pixeldungeon.sprites.CharSprite;
-import com.watabou.pixeldungeon.sprites.EyeSprite;
-import com.watabou.pixeldungeon.utils.GLog;
-import com.watabou.pixeldungeon.utils.Utils;
-import com.watabou.utils.Random;
+class Eye : Mob() {
+    fun dr(): Int {
+        return 10
+    }
 
-public class Eye extends Mob {
-	
-	private static final String TXT_DEATHGAZE_KILLED = "%s's deathgaze killed you...";
-	
-	{
-		name = "evil eye";
-		spriteClass = EyeSprite.class;
-		
-		HP = HT = 100;
-		defenseSkill = 20;
-		viewDistance = Light.DISTANCE;
-		
-		EXP = 13;
-		maxLvl = 25;
-		
-		flying = true;
-		
-		loot = new Dewdrop();
-		lootChance = 0.5f;
-	}
-	
-	@Override
-	public int dr() {
-		return 10;
-	}
-	
-	private int hitCell;
-	
-	@Override
-	protected boolean canAttack( Char enemy ) {
-		
-		hitCell = Ballistica.cast( pos, enemy.pos, true, false );
+    private var hitCell = 0
+    protected fun canAttack(enemy: Char): Boolean {
+        hitCell = Ballistica.cast(pos, enemy.pos, true, false)
+        for (i in 1 until Ballistica.distance) {
+            if (Ballistica.trace.get(i) === enemy.pos) {
+                return true
+            }
+        }
+        return false
+    }
 
-		for (int i=1; i < Ballistica.distance; i++) {
-			if (Ballistica.trace[i] == enemy.pos) {
-				return true;
-			}
-		}
-		return false;
-	}
-	
-	@Override
-	public int attackSkill( Char target ) {
-		return 30;
-	}
-	
-	@Override
-	protected float attackDelay() {
-		return 1.6f;
-	}
-	
-	@Override
-	protected boolean doAttack( Char enemy ) {
+    fun attackSkill(target: Char?): Int {
+        return 30
+    }
 
-		spend( attackDelay() );
-		
-		boolean rayVisible = false;
-		
-		for (int i=0; i < Ballistica.distance; i++) {
-			if (Dungeon.visible[Ballistica.trace[i]]) {
-				rayVisible = true;
-			}
-		}
-		
-		if (rayVisible) {
-			sprite.attack( hitCell );
-			return false;
-		} else {
-			attack( enemy );
-			return true;
-		}
-	}
-	
-	@Override
-	public boolean attack( Char enemy ) {
-		
-		for (int i=1; i < Ballistica.distance; i++) {
-			
-			int pos = Ballistica.trace[i];
-			
-			Char ch = Actor.findChar( pos );
-			if (ch == null) {
-				continue;
-			}
-			
-			if (hit( this, ch, true )) {
-				ch.damage( Random.NormalIntRange( 14, 20 ), this );
-				
-				if (Dungeon.visible[pos]) {
-					ch.sprite.flash();
-					CellEmitter.center( pos ).burst( PurpleParticle.BURST, Random.IntRange( 1, 2 ) );
-				}
-				
-				if (!ch.isAlive() && ch == Dungeon.hero) {
-					Dungeon.fail( Utils.format( ResultDescriptions.MOB, Utils.indefinite( name ), Dungeon.depth ) );
-					GLog.n( TXT_DEATHGAZE_KILLED, name );
-				}
-			} else {
-				ch.sprite.showStatus( CharSprite.NEUTRAL,  ch.defenseVerb() );
-			}
-		}
-		
-		return true;
-	}
-	
-	@Override
-	public String description() {
-		return
-			"One of this demon's other names is \"orb of hatred\", because when it sees an enemy, " +
-			"it uses its deathgaze recklessly, often ignoring its allies and wounding them.";
-	}
-	
-	private static final HashSet<Class<?>> RESISTANCES = new HashSet<Class<?>>();
-	static {
-		RESISTANCES.add( WandOfDisintegration.class );
-		RESISTANCES.add( Death.class );
-		RESISTANCES.add( Leech.class );
-	}
-	
-	@Override
-	public HashSet<Class<?>> resistances() {
-		return RESISTANCES;
-	}
-	
-	private static final HashSet<Class<?>> IMMUNITIES = new HashSet<Class<?>>();
-	static {
-		IMMUNITIES.add( Terror.class );
-	}
-	
-	@Override
-	public HashSet<Class<?>> immunities() {
-		return IMMUNITIES;
-	}
+    protected override fun attackDelay(): Float {
+        return 1.6f
+    }
+
+    protected override fun doAttack(enemy: Char?): Boolean {
+        spend(attackDelay())
+        var rayVisible = false
+        for (i in 0 until Ballistica.distance) {
+            if (Dungeon.visible.get(Ballistica.trace.get(i))) {
+                rayVisible = true
+            }
+        }
+        return if (rayVisible) {
+            sprite.attack(hitCell)
+            false
+        } else {
+            attack(enemy)
+            true
+        }
+    }
+
+    fun attack(enemy: Char?): Boolean {
+        for (i in 1 until Ballistica.distance) {
+            val pos: Int = Ballistica.trace.get(i)
+            val ch: Char = Actor.findChar(pos) ?: continue
+            if (hit(this, ch, true)) {
+                ch.damage(Random.NormalIntRange(14, 20), this)
+                if (Dungeon.visible.get(pos)) {
+                    ch.sprite.flash()
+                    CellEmitter.center(pos).burst(PurpleParticle.BURST, Random.IntRange(1, 2))
+                }
+                if (!ch.isAlive() && ch === Dungeon.hero) {
+                    Dungeon.fail(Utils.format(ResultDescriptions.MOB, Utils.indefinite(name), Dungeon.depth))
+                    GLog.n(TXT_DEATHGAZE_KILLED, name)
+                }
+            } else {
+                ch.sprite.showStatus(CharSprite.NEUTRAL, ch.defenseVerb())
+            }
+        }
+        return true
+    }
+
+    override fun description(): String {
+        return "One of this demon's other names is \"orb of hatred\", because when it sees an enemy, " +
+                "it uses its deathgaze recklessly, often ignoring its allies and wounding them."
+    }
+
+    companion object {
+        private const val TXT_DEATHGAZE_KILLED = "%s's deathgaze killed you..."
+        private val RESISTANCES = HashSet<Class<*>>()
+        private val IMMUNITIES = HashSet<Class<*>>()
+
+        init {
+            RESISTANCES.add(WandOfDisintegration::class.java)
+            RESISTANCES.add(Death::class.java)
+            RESISTANCES.add(Leech::class.java)
+        }
+
+        init {
+            IMMUNITIES.add(Terror::class.java)
+        }
+    }
+
+    fun resistances(): HashSet<Class<*>> {
+        return RESISTANCES
+    }
+
+    fun immunities(): HashSet<Class<*>> {
+        return IMMUNITIES
+    }
+
+    init {
+        name = "evil eye"
+        spriteClass = EyeSprite::class.java
+        HT = 100
+        HP = HT
+        defenseSkill = 20
+        viewDistance = Light.DISTANCE
+        EXP = 13
+        maxLvl = 25
+        flying = true
+        loot = Dewdrop()
+        lootChance = 0.5f
+    }
 }

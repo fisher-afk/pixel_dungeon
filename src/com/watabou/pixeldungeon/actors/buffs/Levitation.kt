@@ -15,41 +15,36 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.buffs;
+package com.watabou.pixeldungeon.actors.buffs
 
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.ui.BuffIndicator;
+import com.watabou.pixeldungeon.Dungeon
 
-public class Levitation extends FlavourBuff {
+class Levitation : FlavourBuff() {
+    override fun attachTo(target: Char): Boolean {
+        return if (super.attachTo(target)) {
+            target.flying = true
+            Roots.detach(target, Roots::class.java)
+            true
+        } else {
+            false
+        }
+    }
 
-	public static final float DURATION	= 20f;
-	
-	@Override
-	public boolean attachTo( Char target ) {
-		if (super.attachTo( target )) {
-			target.flying = true;
-			Roots.detach( target, Roots.class );
-			return true;
-		} else {
-			return false;
-		}
-	}
-	
-	@Override
-	public void detach() {
-		target.flying = false;
-		Dungeon.level.press( target.pos, target );
-		super.detach();
-	}
-	
-	@Override
-	public int icon() {
-		return BuffIndicator.LEVITATION;
-	}
-	
-	@Override
-	public String toString() {
-		return "Levitating";
-	}
+    override fun detach() {
+        target.flying = false
+        Dungeon.level.press(target.pos, target)
+        super.detach()
+    }
+
+    override fun icon(): Int {
+        return BuffIndicator.LEVITATION
+    }
+
+    override fun toString(): String {
+        return "Levitating"
+    }
+
+    companion object {
+        const val DURATION = 20f
+    }
 }

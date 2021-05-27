@@ -15,59 +15,39 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.armor.glyphs;
+package com.watabou.pixeldungeon.items.armor.glyphs
 
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.buffs.Hunger;
-import com.watabou.pixeldungeon.effects.Speck;
-import com.watabou.pixeldungeon.items.armor.Armor;
-import com.watabou.pixeldungeon.items.armor.Armor.Glyph;
-import com.watabou.pixeldungeon.sprites.CharSprite;
-import com.watabou.pixeldungeon.sprites.ItemSprite;
-import com.watabou.pixeldungeon.sprites.ItemSprite.Glowing;
-import com.watabou.pixeldungeon.ui.BuffIndicator;
-import com.watabou.utils.Random;
+import com.watabou.pixeldungeon.actors.Char
 
-public class Metabolism extends Glyph {
+class Metabolism : Glyph() {
+    fun proc(armor: Armor, attacker: Char?, defender: Char, damage: Int): Int {
+        val level = Math.max(0, armor.effectiveLevel())
+        if (Random.Int(level / 2 + 5) >= 4) {
+            val healing: Int = Math.min(defender.HT - defender.HP, Random.Int(1, defender.HT / 5))
+            if (healing > 0) {
+                val hunger: Hunger = defender.buff(Hunger::class.java)
+                if (hunger != null && !hunger.isStarving()) {
+                    hunger.satisfy(-Hunger.STARVING / 10)
+                    BuffIndicator.refreshHero()
+                    defender.HP += healing
+                    defender.sprite.emitter().burst(Speck.factory(Speck.HEALING), 1)
+                    defender.sprite.showStatus(CharSprite.POSITIVE, Integer.toString(healing))
+                }
+            }
+        }
+        return damage
+    }
 
-	private static final String TXT_METABOLISM	= "%s of metabolism";
-	
-	private static ItemSprite.Glowing RED = new ItemSprite.Glowing( 0xCC0000 );
-	
-	@Override
-	public int proc( Armor armor, Char attacker, Char defender, int damage) {
+    fun name(weaponName: String?): String {
+        return String.format(TXT_METABOLISM, weaponName)
+    }
 
-		int level = Math.max( 0, armor.effectiveLevel() );
-		if (Random.Int( level / 2 + 5 ) >= 4) {
-			
-			int healing = Math.min( defender.HT - defender.HP, Random.Int( 1, defender.HT / 5 ) );
-			if (healing > 0) {
-				
-				Hunger hunger = defender.buff( Hunger.class );
-				
-				if (hunger != null && !hunger.isStarving()) {
-					
-					hunger.satisfy( -Hunger.STARVING / 10 );
-					BuffIndicator.refreshHero();
-					
-					defender.HP += healing;
-					defender.sprite.emitter().burst( Speck.factory( Speck.HEALING ), 1 );
-					defender.sprite.showStatus( CharSprite.POSITIVE, Integer.toString( healing ) );
-				}
-			}
+    fun glowing(): Glowing {
+        return RED
+    }
 
-		}
-		
-		return damage;
-	}
-	
-	@Override
-	public String name( String weaponName) {
-		return String.format( TXT_METABOLISM, weaponName );
-	}
-
-	@Override
-	public Glowing glowing() {
-		return RED;
-	}
+    companion object {
+        private const val TXT_METABOLISM = "%s of metabolism"
+        private val RED: ItemSprite.Glowing = Glowing(0xCC0000)
+    }
 }

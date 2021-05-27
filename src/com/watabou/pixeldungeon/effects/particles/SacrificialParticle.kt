@@ -15,50 +15,41 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.effects.particles;
+package com.watabou.pixeldungeon.effects.particles
 
-import com.watabou.noosa.particles.Emitter;
-import com.watabou.noosa.particles.PixelParticle;
-import com.watabou.noosa.particles.Emitter.Factory;
+import com.watabou.noosa.particles.Emitter
 
-public class SacrificialParticle extends PixelParticle.Shrinking {
-	
-	public static final Emitter.Factory FACTORY = new Factory() {	
-		@Override
-		public void emit( Emitter emitter, int index, float x, float y ) {
-			((SacrificialParticle)emitter.recycle( SacrificialParticle.class )).reset( x, y );
-		}
-		@Override
-		public boolean lightMode() {
-			return true;
-		};
-	};
-	
-	public SacrificialParticle() {
-		super();
-		
-		color( 0x4488EE );
-		lifespan = 0.6f;
-		
-		acc.set( 0, -100 );
-	}
-	
-	public void reset( float x, float y ) {
-		revive();
-		
-		this.x = x;
-		this.y = y - 4;
-		
-		left = lifespan;
-		
-		size = 4;
-		speed.set( 0 );
-	}
-	
-	@Override
-	public void update() {
-		super.update();
-		float p = left / lifespan;
-		am = p > 0.75f ? (1 - p) * 4 : 1;
-	}
+class SacrificialParticle : PixelParticle.Shrinking() {
+    fun reset(x: Float, y: Float) {
+        revive()
+        x = x
+        y = y - 4
+        left = lifespan
+        size = 4
+        speed.set(0)
+    }
+
+    fun update() {
+        super.update()
+        val p: Float = left / lifespan
+        am = if (p > 0.75f) (1 - p) * 4 else 1
+    }
+
+    companion object {
+        val FACTORY: Emitter.Factory = object : Factory() {
+            fun emit(emitter: Emitter, index: Int, x: Float, y: Float) {
+                (emitter.recycle(SacrificialParticle::class.java) as SacrificialParticle).reset(x, y)
+            }
+
+            fun lightMode(): Boolean {
+                return true
+            }
+        }
+    }
+
+    init {
+        color(0x4488EE)
+        lifespan = 0.6f
+        acc.set(0, -100)
+    }
 }

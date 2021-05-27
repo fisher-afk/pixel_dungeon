@@ -15,70 +15,52 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.windows;
+package com.watabou.pixeldungeon.windows
 
-import com.watabou.noosa.BitmapTextMultiline;
-import com.watabou.noosa.Image;
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.DungeonTilemap;
-import com.watabou.pixeldungeon.actors.blobs.Blob;
-import com.watabou.pixeldungeon.levels.Level;
-import com.watabou.pixeldungeon.levels.Terrain;
-import com.watabou.pixeldungeon.scenes.PixelScene;
-import com.watabou.pixeldungeon.ui.Window;
+import com.watabou.noosa.BitmapTextMultiline
 
-public class WndInfoCell extends Window {
-	
-	private static final float GAP	= 2;
-	
-	private static final int WIDTH = 120;
-	
-	private static final String TXT_NOTHING	= "There is nothing here.";
-	
-	public WndInfoCell( int cell ) {
-		
-		super();
-		
-		int tile = Dungeon.level.map[cell];
-		if (Level.water[cell]) {
-			tile = Terrain.WATER;
-		} else if (Level.pit[cell]) {
-			tile = Terrain.CHASM;
-		}
-		
-		IconTitle titlebar = new IconTitle();
-		if (tile == Terrain.WATER) {
-			Image water = new Image( Dungeon.level.waterTex() );
-			water.frame( 0, 0, DungeonTilemap.SIZE, DungeonTilemap.SIZE );
-			titlebar.icon( water );
-		} else {
-			titlebar.icon( DungeonTilemap.tile( tile ) );
-		}
-		titlebar.label( Dungeon.level.tileName( tile ) );
-		titlebar.setRect( 0, 0, WIDTH, 0 );
-		add( titlebar );
-		
-		BitmapTextMultiline info = PixelScene.createMultiline( 6 );
-		add( info );
-		
-		StringBuilder desc = new StringBuilder( Dungeon.level.tileDesc( tile ) );
-		
-		final char newLine = '\n';
-		for (Blob blob:Dungeon.level.blobs.values()) {
-			if (blob.cur[cell] > 0 && blob.tileDesc() != null) {
-				if (desc.length() > 0) {
-					desc.append( newLine );
-				}
-				desc.append( blob.tileDesc() );
-			}
-		}
-		
-		info.text( desc.length() > 0 ? desc.toString() : TXT_NOTHING );
-		info.maxWidth = WIDTH;
-		info.measure();
-		info.x = titlebar.left();
-		info.y = titlebar.bottom() + GAP;
-		
-		resize( WIDTH, (int)(info.y + info.height()) );
-	}
+class WndInfoCell(cell: Int) : Window() {
+    companion object {
+        private const val GAP = 2f
+        private const val WIDTH = 120
+        private const val TXT_NOTHING = "There is nothing here."
+    }
+
+    init {
+        var tile: Int = Dungeon.level.map.get(cell)
+        if (Level.water.get(cell)) {
+            tile = Terrain.WATER
+        } else if (Level.pit.get(cell)) {
+            tile = Terrain.CHASM
+        }
+        val titlebar = IconTitle()
+        if (tile == Terrain.WATER) {
+            val water = Image(Dungeon.level.waterTex())
+            water.frame(0, 0, DungeonTilemap.SIZE, DungeonTilemap.SIZE)
+            titlebar.icon(water)
+        } else {
+            titlebar.icon(DungeonTilemap.tile(tile))
+        }
+        titlebar.label(Dungeon.level.tileName(tile))
+        titlebar.setRect(0, 0, WIDTH, 0)
+        add(titlebar)
+        val info: BitmapTextMultiline = PixelScene.createMultiline(6)
+        add(info)
+        val desc: StringBuilder = StringBuilder(Dungeon.level.tileDesc(tile))
+        val newLine = '\n'
+        for (blob in Dungeon.level.blobs.values()) {
+            if (blob.cur.get(cell) > 0 && blob.tileDesc() != null) {
+                if (desc.length > 0) {
+                    desc.append(newLine)
+                }
+                desc.append(blob.tileDesc())
+            }
+        }
+        info.text(if (desc.length > 0) desc.toString() else TXT_NOTHING)
+        info.maxWidth = WIDTH
+        info.measure()
+        info.x = titlebar.left()
+        info.y = titlebar.bottom() + GAP
+        resize(WIDTH, (info.y + info.height()) as Int)
+    }
 }

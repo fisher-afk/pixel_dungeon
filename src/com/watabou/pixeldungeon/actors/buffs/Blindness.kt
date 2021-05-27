@@ -15,26 +15,20 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.buffs;
+package com.watabou.pixeldungeon.actors.buffs
 
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.ui.BuffIndicator;
+import com.watabou.pixeldungeon.Dungeon
+class Blindness : FlavourBuff() {
+    override fun detach() {
+        super.detach()
+        Dungeon.observe()
+    }
 
-public class Blindness extends FlavourBuff {
-	
-	@Override
-	public void detach() {
-		super.detach();
-		Dungeon.observe();
-	}
-	
-	@Override
-	public int icon() {
-		return BuffIndicator.BLINDNESS;
-	}
-	
-	@Override
-	public String toString() {
-		return "Blinded";
-	}
+    override fun icon(): Int {
+        return BuffIndicator.BLINDNESS
+    }
+
+    override fun toString(): String {
+        return "Blinded"
+    }
 }

@@ -15,53 +15,39 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.weapon.missiles;
+package com.watabou.pixeldungeon.items.weapon.missiles
 
-import com.watabou.pixeldungeon.items.Item;
-import com.watabou.pixeldungeon.sprites.ItemSpriteSheet;
-import com.watabou.utils.Random;
+import com.watabou.pixeldungeon.items.Item
 
-public class Dart extends MissileWeapon {
+class Dart @JvmOverloads constructor(number: Int = 1) : MissileWeapon() {
+    fun min(): Int {
+        return 1
+    }
 
-	{
-		name = "dart";
-		image = ItemSpriteSheet.DART;
-	}
-	
-	public Dart() {
-		this( 1 );
-	}
-	
-	public Dart( int number ) {
-		super();
-		quantity = number;
-	}
-	
-	@Override
-	public int min() {
-		return 1;
-	}
-	
-	@Override
-	public int max() {
-		return 4;
-	}
-	
-	@Override
-	public String desc() {
-		return 
-			"These simple metal spikes are weighted to fly true and " +
-			"sting their prey with a flick of the wrist.";
-	}
-	
-	@Override
-	public Item random() {
-		quantity = Random.Int( 5, 15 );
-		return this;
-	}
-	
-	@Override
-	public int price() {
-		return quantity * 2;
-	}
+    fun max(): Int {
+        return 4
+    }
+
+    fun desc(): String {
+        return "These simple metal spikes are weighted to fly true and " +
+                "sting their prey with a flick of the wrist."
+    }
+
+    override fun random(): Item {
+        quantity = Random.Int(5, 15)
+        return this
+    }
+
+    fun price(): Int {
+        return quantity * 2
+    }
+
+    init {
+        name = "dart"
+        image = ItemSpriteSheet.DART
+    }
+
+    init {
+        quantity = number
+    }
 }

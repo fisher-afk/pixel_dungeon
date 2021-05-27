@@ -15,132 +15,112 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.weapon.missiles;
+package com.watabou.pixeldungeon.items.weapon.missiles
 
-import java.util.ArrayList;
+import com.watabou.pixeldungeon.Dungeon
 
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.Actor;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.hero.Hero;
-import com.watabou.pixeldungeon.actors.hero.HeroClass;
-import com.watabou.pixeldungeon.items.Item;
-import com.watabou.pixeldungeon.items.weapon.Weapon;
-import com.watabou.pixeldungeon.scenes.GameScene;
-import com.watabou.pixeldungeon.windows.WndOptions;
+abstract class MissileWeapon : Weapon() {
+    fun actions(hero: Hero): ArrayList<String> {
+        val actions: ArrayList<String> = super.actions(hero)
+        if (hero.heroClass !== HeroClass.HUNTRESS && hero.heroClass !== HeroClass.ROGUE) {
+            actions.remove(AC_EQUIP)
+            actions.remove(AC_UNEQUIP)
+        }
+        return actions
+    }
 
-abstract public class MissileWeapon extends Weapon {
+    protected fun onThrow(cell: Int) {
+        val enemy: Char = Actor.findChar(cell)
+        if (enemy == null || enemy === curUser) {
+            super.onThrow(cell)
+        } else {
+            if (!curUser.shoot(enemy, this)) {
+                miss(cell)
+            }
+        }
+    }
 
-	private static final String TXT_MISSILES	= "Missile weapon";
-	private static final String TXT_YES			= "Yes, I know what I'm doing";
-	private static final String TXT_NO			= "No, I changed my mind";
-	private static final String TXT_R_U_SURE	= 
-		"Do you really want to equip it as a melee weapon?";
-	
-	{
-		stackable = true;
-		levelKnown = true;
-		defaultAction = AC_THROW;
-	}
-	
-	@Override
-	public ArrayList<String> actions( Hero hero ) {
-		ArrayList<String> actions = super.actions( hero );
-		if (hero.heroClass != HeroClass.HUNTRESS && hero.heroClass != HeroClass.ROGUE) {
-			actions.remove( AC_EQUIP );
-			actions.remove( AC_UNEQUIP );
-		}
-		return actions;
-	}
+    protected fun miss(cell: Int) {
+        super.onThrow(cell)
+    }
 
-	@Override
-	protected void onThrow( int cell ) {
-		Char enemy = Actor.findChar( cell );
-		if (enemy == null || enemy == curUser) {
-			super.onThrow( cell );
-		} else {
-			if (!curUser.shoot( enemy, this )) {
-				miss( cell );
-			}
-		}
-	}
-	
-	protected void miss( int cell ) {
-		super.onThrow( cell );
-	}
-	
-	@Override
-	public void proc( Char attacker, Char defender, int damage ) {
-		
-		super.proc( attacker, defender, damage );
-		
-		Hero hero = (Hero)attacker;
-		if (hero.rangedWeapon == null && stackable) {
-			if (quantity == 1) {
-				doUnequip( hero, false, false );
-			} else {
-				detach( null );
-			}
-		}
-	}
-	
-	@Override
-	public boolean doEquip( final Hero hero ) {
-		GameScene.show( 
-			new WndOptions( TXT_MISSILES, TXT_R_U_SURE, TXT_YES, TXT_NO ) {
-				@Override
-				protected void onSelect(int index) {
-					if (index == 0) {
-						MissileWeapon.super.doEquip( hero );
-					}
-				};
-			}
-		);
-		
-		return false;
-	}
-	
-	@Override
-	public Item random() {
-		return this;
-	}
-	
-	@Override
-	public boolean isUpgradable() {
-		return false;
-	}
-	
-	@Override
-	public boolean isIdentified() {
-		return true;
-	}
-	
-	@Override
-	public String info() {
-		
-		StringBuilder info = new StringBuilder( desc() );
-		
-		int min = min();
-		int max = max();
-		info.append( "\n\nAverage damage of this weapon equals to " + (min + (max - min) / 2) + " points per hit. " );
-		
-		if (Dungeon.hero.belongings.backpack.items.contains( this )) {
-			if (STR > Dungeon.hero.STR()) {
-				info.append( 
-					"Because of your inadequate strength the accuracy and speed " +
-					"of your attack with this " + name + " is decreased." );
-			}
-			if (STR < Dungeon.hero.STR()) {
-				info.append( 
-					"Because of your excess strength the damage " +
-					"of your attack with this " + name + " is increased." );
-			}
-		}
-		
-		if (isEquipped( Dungeon.hero )) {
-			info.append( "\n\nYou hold the " + name + " at the ready." ); 
-		}
-		
-		return info.toString();
-	}
+    fun proc(attacker: Char, defender: Char?, damage: Int) {
+        super.proc(attacker, defender, damage)
+        val hero: Hero = attacker as Hero
+        if (hero.rangedWeapon == null && stackable) {
+            if (quantity === 1) {
+                doUnequip(hero, false, false)
+            } else {
+                detach(null)
+            }
+        }
+    }
+
+    fun doEquip(hero: Hero?): Boolean {
+        GameScene.show(
+            object : WndOptions(TXT_MISSILES, TXT_R_U_SURE, TXT_YES, TXT_NO) {
+                protected fun onSelect(index: Int) {
+                    if (index == 0) {
+                        super@MissileWeapon.doEquip(hero)
+                    }
+                }
+            }
+        )
+        return false
+    }
+
+    fun random(): Item {
+        return this
+    }
+
+    val isUpgradable: Boolean
+        get() = false
+    val isIdentified: Boolean
+        get() = true
+
+    fun info(): String {
+        val info: StringBuilder = StringBuilder(desc())
+        val min: Int = min()
+        val max: Int = max()
+        info.append(
+            """
+
+Average damage of this weapon equals to ${min + (max - min) / 2} points per hit. """
+        )
+        if (Dungeon.hero.belongings.backpack.items.contains(this)) {
+            if (STR > Dungeon.hero.STR()) {
+                info.append(
+                    "Because of your inadequate strength the accuracy and speed " +
+                            "of your attack with this " + name + " is decreased."
+                )
+            }
+            if (STR < Dungeon.hero.STR()) {
+                info.append(
+                    "Because of your excess strength the damage " +
+                            "of your attack with this " + name + " is increased."
+                )
+            }
+        }
+        if (isEquipped(Dungeon.hero)) {
+            info.append(
+                """
+
+You hold the ${name.toString()} at the ready."""
+            )
+        }
+        return info.toString()
+    }
+
+    companion object {
+        private const val TXT_MISSILES = "Missile weapon"
+        private const val TXT_YES = "Yes, I know what I'm doing"
+        private const val TXT_NO = "No, I changed my mind"
+        private const val TXT_R_U_SURE = "Do you really want to equip it as a melee weapon?"
+    }
+
+    init {
+        stackable = true
+        levelKnown = true
+        defaultAction = AC_THROW
+    }
 }

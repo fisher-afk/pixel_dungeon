@@ -15,91 +15,68 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.mobs;
+package com.watabou.pixeldungeon.actors.mobs
 
-import java.util.HashSet;
+import com.watabou.pixeldungeon.Dungeon
 
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.buffs.Terror;
-import com.watabou.pixeldungeon.items.Gold;
-import com.watabou.pixeldungeon.sprites.BruteSprite;
-import com.watabou.pixeldungeon.sprites.CharSprite;
-import com.watabou.pixeldungeon.utils.GLog;
-import com.watabou.utils.Bundle;
-import com.watabou.utils.Random;
+class Brute : Mob() {
+    private var enraged = false
+    override fun restoreFromBundle(bundle: Bundle) {
+        super.restoreFromBundle(bundle)
+        enraged = HP < HT / 4
+    }
 
-public class Brute extends Mob {
+    fun damageRoll(): Int {
+        return if (enraged) Random.NormalIntRange(10, 40) else Random.NormalIntRange(8, 18)
+    }
 
-	private static final String TXT_ENRAGED = "%s becomes enraged!";
-	
-	{
-		name = "gnoll brute";
-		spriteClass = BruteSprite.class;
-		
-		HP = HT = 40;
-		defenseSkill = 15;
-		
-		EXP = 8;
-		maxLvl = 15;
-		
-		loot = Gold.class;
-		lootChance = 0.5f;
-	}
-	
-	private boolean enraged = false;
-	
-	@Override
-	public void restoreFromBundle( Bundle bundle ) {
-		super.restoreFromBundle( bundle );
-		enraged = HP < HT / 4;
-	}
-	
-	@Override
-	public int damageRoll() {
-		return enraged ?
-			Random.NormalIntRange( 10, 40 ) :	
-			Random.NormalIntRange( 8, 18 );
-	}
-	
-	@Override
-	public int attackSkill( Char target ) {
-		return 20;
-	}
-	
-	@Override
-	public int dr() {
-		return 8;
-	}
-	
-	@Override
-	public void damage( int dmg, Object src ) {
-		super.damage( dmg, src );
-		
-		if (isAlive() && !enraged && HP < HT / 4) {
-			enraged = true;
-			spend( TICK );
-			if (Dungeon.visible[pos]) {
-				GLog.w( TXT_ENRAGED, name );
-				sprite.showStatus( CharSprite.NEGATIVE, "enraged" );
-			}
-		}
-	}
-	
-	@Override
-	public String description() {
-		return
-			"Brutes are the largest, strongest and toughest of all gnolls. When severely wounded, " +
-			"they go berserk, inflicting even more damage to their enemies.";
-	}
-	
-	private static final HashSet<Class<?>> IMMUNITIES = new HashSet<Class<?>>();
-	static {
-		IMMUNITIES.add( Terror.class );
-	}
-	
-	@Override
-	public HashSet<Class<?>> immunities() {
-		return IMMUNITIES;
-	}
+    fun attackSkill(target: Char?): Int {
+        return 20
+    }
+
+    fun dr(): Int {
+        return 8
+    }
+
+    override fun damage(dmg: Int, src: Any?) {
+        super.damage(dmg, src)
+        if (isAlive() && !enraged && HP < HT / 4) {
+            enraged = true
+            spend(TICK)
+            if (Dungeon.visible.get(pos)) {
+                GLog.w(TXT_ENRAGED, name)
+                sprite.showStatus(CharSprite.NEGATIVE, "enraged")
+            }
+        }
+    }
+
+    override fun description(): String {
+        return "Brutes are the largest, strongest and toughest of all gnolls. When severely wounded, " +
+                "they go berserk, inflicting even more damage to their enemies."
+    }
+
+    companion object {
+        private const val TXT_ENRAGED = "%s becomes enraged!"
+        private val IMMUNITIES = HashSet<Class<*>>()
+
+        init {
+            IMMUNITIES.add(Terror::class.java)
+        }
+    }
+
+    fun immunities(): HashSet<Class<*>> {
+        return IMMUNITIES
+    }
+
+    init {
+        name = "gnoll brute"
+        spriteClass = BruteSprite::class.java
+        HT = 40
+        HP = HT
+        defenseSkill = 15
+        EXP = 8
+        maxLvl = 15
+        loot = Gold::class.java
+        lootChance = 0.5f
+    }
 }

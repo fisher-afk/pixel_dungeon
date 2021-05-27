@@ -15,23 +15,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.weapon.melee;
+package com.watabou.pixeldungeon.items.weapon.melee
 
-import com.watabou.pixeldungeon.sprites.ItemSpriteSheet;
+import com.watabou.pixeldungeon.sprites.ItemSpriteSheet
 
-public class Mace extends MeleeWeapon {
+class Mace : MeleeWeapon(3, 1f, 0.8f) {
+    fun desc(): String {
+        return "The iron head of this weapon inflicts substantial damage."
+    }
 
-	{
-		name = "mace";
-		image = ItemSpriteSheet.MACE;
-	}
-	
-	public Mace() {
-		super( 3, 1f, 0.8f );
-	}
-	
-	@Override
-	public String desc() {
-		return "The iron head of this weapon inflicts substantial damage.";
-	}
+    init {
+        name = "mace"
+        image = ItemSpriteSheet.MACE
+    }
 }

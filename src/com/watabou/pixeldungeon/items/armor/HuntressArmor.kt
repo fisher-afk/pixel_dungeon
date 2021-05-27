@@ -15,93 +15,70 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.armor;
+package com.watabou.pixeldungeon.items.armor
 
-import java.util.HashMap;
+import com.watabou.pixeldungeon.Dungeon
 
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.hero.Hero;
-import com.watabou.pixeldungeon.actors.hero.HeroClass;
-import com.watabou.pixeldungeon.actors.mobs.Mob;
-import com.watabou.pixeldungeon.items.Item;
-import com.watabou.pixeldungeon.items.weapon.missiles.Shuriken;
-import com.watabou.pixeldungeon.levels.Level;
-import com.watabou.pixeldungeon.sprites.ItemSpriteSheet;
-import com.watabou.pixeldungeon.sprites.MissileSprite;
-import com.watabou.pixeldungeon.utils.GLog;
-import com.watabou.utils.Callback;
+class HuntressArmor : ClassArmor() {
+    private val targets: HashMap<Callback, Mob> = HashMap<Callback, Mob>()
+    override fun special(): String {
+        return AC_SPECIAL
+    }
 
-public class HuntressArmor extends ClassArmor {
-	
-	private static final String TXT_NO_ENEMIES 		= "No enemies in sight";
-	private static final String TXT_NOT_HUNTRESS	= "Only huntresses can use this armor!";
-	
-	private static final String AC_SPECIAL = "SPECTRAL BLADES"; 
-	
-	{
-		name = "huntress cloak";
-		image = ItemSpriteSheet.ARMOR_HUNTRESS;
-	}
-	
-	private HashMap<Callback, Mob> targets = new HashMap<Callback, Mob>();
-	
-	@Override
-	public String special() {
-		return AC_SPECIAL;
-	}
-	
-	@Override
-	public void doSpecial() {
-		
-		Item proto = new Shuriken();
-		
-		for (Mob mob : Dungeon.level.mobs) {
-			if (Level.fieldOfView[mob.pos]) {
-				
-				Callback callback = new Callback() {	
-					@Override
-					public void call() {
-						curUser.attack( targets.get( this ) );
-						targets.remove( this );
-						if (targets.isEmpty()) {
-							curUser.spendAndNext( curUser.attackDelay() );
-						}
-					}
-				};
-				
-				((MissileSprite)curUser.sprite.parent.recycle( MissileSprite.class )).
-					reset( curUser.pos, mob.pos, proto, callback );
-				
-				targets.put( callback, mob );
-			}
-		}
-		
-		if (targets.size() == 0) {
-			GLog.w( TXT_NO_ENEMIES );
-			return;
-		}
-		
-		curUser.HP -= (curUser.HP / 3);
-		
-		curUser.sprite.zap( curUser.pos );
-		curUser.busy();
-	}
-	
-	@Override
-	public boolean doEquip( Hero hero ) {
-		if (hero.heroClass == HeroClass.HUNTRESS) {
-			return super.doEquip( hero );
-		} else {
-			GLog.w( TXT_NOT_HUNTRESS );
-			return false;
-		}
-	}
-	
-	@Override
-	public String desc() {
-		return
-			"A huntress in such cloak can create a fan of spectral blades. Each of these blades " +
-			"will target a single enemy in the huntress's field of view, inflicting damage depending " +
-			"on her currently equipped melee weapon.";
-	}
+    override fun doSpecial() {
+        val proto: Item = Shuriken()
+        for (mob in Dungeon.level.mobs) {
+            if (Level.fieldOfView.get(mob.pos)) {
+                val callback: Callback = object : Callback() {
+                    fun call() {
+                        curUser.attack(targets[this])
+                        targets.remove(this)
+                        if (targets.isEmpty()) {
+                            curUser.spendAndNext(curUser.attackDelay())
+                        }
+                    }
+                }
+                (curUser.sprite.parent.recycle(MissileSprite::class.java) as MissileSprite).reset(
+                    curUser.pos,
+                    mob.pos,
+                    proto,
+                    callback
+                )
+                targets[callback] = mob
+            }
+        }
+        if (targets.size == 0) {
+            GLog.w(TXT_NO_ENEMIES)
+            return
+        }
+        curUser.HP -= curUser.HP / 3
+        curUser.sprite.zap(curUser.pos)
+        curUser.busy()
+    }
+
+    override fun doEquip(hero: Hero): Boolean {
+        return if (hero.heroClass === HeroClass.HUNTRESS) {
+            super.doEquip(hero)
+        } else {
+            GLog.w(TXT_NOT_HUNTRESS)
+            false
+        }
+    }
+
+    override fun desc(): String {
+        return "A huntress in such cloak can create a fan of spectral blades. Each of these blades " +
+                "will target a single enemy in the huntress's field of view, inflicting damage depending " +
+                "on her currently equipped melee weapon."
+    }
+
+    companion object {
+        private const val TXT_NO_ENEMIES = "No enemies in sight"
+        private const val TXT_NOT_HUNTRESS = "Only huntresses can use this armor!"
+        private const val AC_SPECIAL = "SPECTRAL BLADES"
+    }
+
+    init {
+        name = "huntress cloak"
+        image = ItemSpriteSheet.ARMOR_HUNTRESS
+    }
 }

@@ -15,43 +15,35 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.weapon.enchantments;
+package com.watabou.pixeldungeon.items.weapon.enchantments
 
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.items.weapon.Weapon;
-import com.watabou.pixeldungeon.sprites.ItemSprite;
-import com.watabou.pixeldungeon.sprites.ItemSprite.Glowing;
+import com.watabou.pixeldungeon.actors.Char
 
-public class Luck extends Weapon.Enchantment {
+class Luck : Weapon.Enchantment() {
+    fun proc(weapon: Weapon, attacker: Char, defender: Char, damage: Int): Boolean {
+        val level = Math.max(0, weapon.effectiveLevel())
+        var dmg = damage
+        for (i in 1..level + 1) {
+            dmg = Math.max(dmg, attacker.damageRoll() - i)
+        }
+        return if (dmg > damage) {
+            defender.damage(dmg - damage, this)
+            true
+        } else {
+            false
+        }
+    }
 
-	private static final String TXT_LUCKY	= "lucky %s";
-	
-	private static ItemSprite.Glowing GREEN = new ItemSprite.Glowing( 0x00FF00 );
-	
-	@Override
-	public boolean proc( Weapon weapon, Char attacker, Char defender, int damage ) {
-		int level = Math.max( 0, weapon.effectiveLevel() );
-		
-		int dmg = damage;
-		for (int i=1; i <= level+1; i++) {
-			dmg = Math.max( dmg, attacker.damageRoll() - i );
-		}
-		
-		if (dmg > damage) {
-			defender.damage( dmg - damage, this );
-			return true;
-		} else {
-			return false;
-		}
-	}
-	
-	@Override
-	public String name( String weaponName) {
-		return String.format( TXT_LUCKY, weaponName );
-	}
+    fun name(weaponName: String?): String {
+        return String.format(TXT_LUCKY, weaponName)
+    }
 
-	@Override
-	public Glowing glowing() {
-		return GREEN;
-	}
+    fun glowing(): Glowing {
+        return GREEN
+    }
+
+    companion object {
+        private const val TXT_LUCKY = "lucky %s"
+        private val GREEN: ItemSprite.Glowing = Glowing(0x00FF00)
+    }
 }

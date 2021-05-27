@@ -15,58 +15,46 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.sprites;
+package com.watabou.pixeldungeon.sprites
 
-import com.watabou.noosa.tweeners.AlphaTweener;
-import com.watabou.noosa.tweeners.ScaleTweener;
-import com.watabou.pixeldungeon.DungeonTilemap;
-import com.watabou.pixeldungeon.actors.mobs.Mob;
-import com.watabou.utils.PointF;
-import com.watabou.utils.Random;
+import com.watabou.noosa.tweeners.AlphaTweener
 
-public class MobSprite extends CharSprite {
+class MobSprite : CharSprite() {
+    override fun update() {
+        sleeping = ch != null && (ch as Mob).state === (ch as Mob).SLEEPEING
+        super.update()
+    }
 
-	private static final float FADE_TIME	= 3f;
-	private static final float FALL_TIME	= 1f;
-	
-	@Override
-	public void update() {
-		sleeping = ch != null && ((Mob)ch).state == ((Mob)ch).SLEEPEING;
-		super.update();
-	}
-	
-	@Override
-	public void onComplete( Animation anim ) {
-		
-		super.onComplete( anim );
-		
-		if (anim == die) {	
-			parent.add( new AlphaTweener( this, 0, FADE_TIME ) {
-				@Override
-				protected void onComplete() {
-					MobSprite.this.killAndErase();
-					parent.erase( this );
-				};
-			} );
-		}
-	}
-	
-	public void fall() {
-		
-		origin.set( width / 2, height - DungeonTilemap.SIZE / 2 );
-		angularSpeed = Random.Int( 2 ) == 0 ? -720 : 720;
-		
-		parent.add( new ScaleTweener( this, new PointF( 0, 0 ), FALL_TIME ) {
-			@Override
-			protected void onComplete() {
-				MobSprite.this.killAndErase();
-				parent.erase( this );
-			};
-			@Override
-			protected void updateValues( float progress ) {
-				super.updateValues( progress );
-				am = 1 - progress;
-			}
-		} );
-	}
+    override fun onComplete(anim: Animation) {
+        super.onComplete(anim)
+        if (anim === die) {
+            parent.add(object : AlphaTweener(this, 0, FADE_TIME) {
+                protected fun onComplete() {
+                    this@MobSprite.killAndErase()
+                    parent.erase(this)
+                }
+            })
+        }
+    }
+
+    fun fall() {
+        origin.set(width / 2, height - DungeonTilemap.SIZE / 2)
+        angularSpeed = if (Random.Int(2) === 0) -720 else 720
+        parent.add(object : ScaleTweener(this, PointF(0, 0), FALL_TIME) {
+            protected fun onComplete() {
+                this@MobSprite.killAndErase()
+                parent.erase(this)
+            }
+
+            protected fun updateValues(progress: Float) {
+                super.updateValues(progress)
+                am = 1 - progress
+            }
+        })
+    }
+
+    companion object {
+        private const val FADE_TIME = 3f
+        private const val FALL_TIME = 1f
+    }
 }

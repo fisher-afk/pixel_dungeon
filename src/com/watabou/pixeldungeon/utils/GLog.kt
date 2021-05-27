@@ -15,46 +15,39 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.utils;
+package com.watabou.pixeldungeon.utils
 
-import com.watabou.utils.Signal;
+import com.watabou.utils.Signal
 
-import android.util.Log;
+object GLog {
+    const val TAG = "GAME"
+    const val POSITIVE = "++ "
+    const val NEGATIVE = "-- "
+    const val WARNING = "** "
+    const val HIGHLIGHT = "@@ "
+    var update: Signal<String> = Signal<String>()
+    fun i(text: String?, vararg args: Any?) {
+        var text = text
+        if (args.size > 0) {
+            text = Utils.format(text, args)
+        }
+        Log.i(TAG, text)
+        update.dispatch(text)
+    }
 
-public class GLog {
+    fun p(text: String, vararg args: Any?) {
+        i(POSITIVE + text, *args)
+    }
 
-	public static final String TAG = "GAME";
-	
-	public static final String POSITIVE		= "++ ";
-	public static final String NEGATIVE		= "-- ";
-	public static final String WARNING		= "** ";
-	public static final String HIGHLIGHT	= "@@ ";
-	
-	public static Signal<String> update = new Signal<String>();
-	
-	public static void i( String text, Object... args ) {
-		
-		if (args.length > 0) {
-			text = Utils.format( text, args );
-		}
-		
-		Log.i( TAG, text );
-		update.dispatch( text );
-	}
-	
-	public static void p( String text, Object... args ) {
-		i( POSITIVE + text, args );
-	}
-	
-	public static void n( String text, Object... args ) {
-		i( NEGATIVE + text, args );
-	}
-	
-	public static void w( String text, Object... args ) {
-		i( WARNING + text, args );
-	}
-	
-	public static void h( String text, Object... args ) {
-		i( HIGHLIGHT + text, args );
-	}
+    fun n(text: String, vararg args: Any?) {
+        i(NEGATIVE + text, *args)
+    }
+
+    fun w(text: String, vararg args: Any?) {
+        i(WARNING + text, *args)
+    }
+
+    fun h(text: String, vararg args: Any?) {
+        i(HIGHLIGHT + text, *args)
+    }
 }

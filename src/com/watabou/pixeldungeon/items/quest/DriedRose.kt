@@ -15,33 +15,23 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.items.quest;
+package com.watabou.pixeldungeon.items.quest
 
-import com.watabou.pixeldungeon.items.Item;
-import com.watabou.pixeldungeon.sprites.ItemSpriteSheet;
+import com.watabou.pixeldungeon.items.Item
 
-public class DriedRose extends Item {
-	
-	{
-		name = "dried rose";
-		image = ItemSpriteSheet.ROSE;
-		
-		unique = true;
-	}
-	
-	@Override
-	public boolean isUpgradable() {
-		return false;
-	}
-	
-	@Override
-	public boolean isIdentified() {
-		return true;
-	}
-	
-	@Override
-	public String info() {
-		return
-			"The rose has dried long ago, but it has kept all its petals somehow.";
-	}
+class DriedRose : Item() {
+    override val isUpgradable: Boolean
+        get() = false
+    override val isIdentified: Boolean
+        get() = true
+
+    override fun info(): String {
+        return "The rose has dried long ago, but it has kept all its petals somehow."
+    }
+
+    init {
+        name = "dried rose"
+        image = ItemSpriteSheet.ROSE
+        unique = true
+    }
 }

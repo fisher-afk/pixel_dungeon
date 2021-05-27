@@ -15,283 +15,232 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.hero;
+package com.watabou.pixeldungeon.actors.hero
 
-import java.util.Iterator;
+import com.watabou.pixeldungeon.Badges
 
-import com.watabou.pixeldungeon.Badges;
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.items.Item;
-import com.watabou.pixeldungeon.items.KindOfWeapon;
-import com.watabou.pixeldungeon.items.armor.Armor;
-import com.watabou.pixeldungeon.items.bags.Bag;
-import com.watabou.pixeldungeon.items.keys.IronKey;
-import com.watabou.pixeldungeon.items.keys.Key;
-import com.watabou.pixeldungeon.items.rings.Ring;
-import com.watabou.pixeldungeon.items.scrolls.ScrollOfRemoveCurse;
-import com.watabou.pixeldungeon.items.wands.Wand;
-import com.watabou.utils.Bundle;
-import com.watabou.utils.Random;
+class Belongings(owner: Hero) : Iterable<Item?> {
+    private val owner: Hero
+    var backpack: Bag
+    var weapon: KindOfWeapon? = null
+    var armor: Armor? = null
+    var ring1: Ring? = null
+    var ring2: Ring? = null
+    fun storeInBundle(bundle: Bundle) {
+        backpack.storeInBundle(bundle)
+        bundle.put(WEAPON, weapon)
+        bundle.put(ARMOR, armor)
+        bundle.put(RING1, ring1)
+        bundle.put(RING2, ring2)
+    }
 
-public class Belongings implements Iterable<Item> {
+    fun restoreFromBundle(bundle: Bundle) {
+        backpack.clear()
+        backpack.restoreFromBundle(bundle)
+        weapon = bundle.get(WEAPON) as KindOfWeapon
+        if (weapon != null) {
+            weapon.activate(owner)
+        }
+        armor = bundle.get(ARMOR) as Armor
+        ring1 = bundle.get(RING1) as Ring
+        if (ring1 != null) {
+            ring1.activate(owner)
+        }
+        ring2 = bundle.get(RING2) as Ring
+        if (ring2 != null) {
+            ring2.activate(owner)
+        }
+    }
 
-	public static final int BACKPACK_SIZE	= 19;
-	
-	private Hero owner;
-	
-	public Bag backpack;	
+    fun <T : Item?> getItem(itemClass: Class<T>): T? {
+        for (item in this) {
+            if (itemClass.isInstance(item)) {
+                return item
+            }
+        }
+        return null
+    }
 
-	public KindOfWeapon weapon = null;
-	public Armor armor = null;
-	public Ring ring1 = null;
-	public Ring ring2 = null;
-	
-	public Belongings( Hero owner ) {
-		this.owner = owner;
-		
-		backpack = new Bag() {{
-			name = "backpack";
-			size = BACKPACK_SIZE;
-		}};
-		backpack.owner = owner;
-	}
-	
-	private static final String WEAPON		= "weapon";
-	private static final String ARMOR		= "armor";
-	private static final String RING1		= "ring1";
-	private static final String RING2		= "ring2";
-	
-	public void storeInBundle( Bundle bundle ) {
-		
-		backpack.storeInBundle( bundle );
-		
-		bundle.put( WEAPON, weapon );
-		bundle.put( ARMOR, armor );
-		bundle.put( RING1, ring1 );
-		bundle.put( RING2, ring2 );
-	}
-	
-	public void restoreFromBundle( Bundle bundle ) {
-		
-		backpack.clear();
-		backpack.restoreFromBundle( bundle );
-		
-		weapon = (KindOfWeapon)bundle.get( WEAPON );
-		if (weapon != null) {
-			weapon.activate( owner );
-		}
-		
-		armor = (Armor)bundle.get( ARMOR );
-		
-		ring1 = (Ring)bundle.get( RING1 );
-		if (ring1 != null) {
-			ring1.activate( owner );
-		}
-		
-		ring2 = (Ring)bundle.get( RING2 );
-		if (ring2 != null) {
-			ring2.activate( owner );
-		}
-	}
-	
-	@SuppressWarnings("unchecked")
-	public<T extends Item> T getItem( Class<T> itemClass ) {
+    fun <T : Key?> getKey(kind: Class<T>, depth: Int): T? {
+        for (item in backpack) {
+            if (item.getClass() === kind && (item as Key).depth === depth) {
+                return item
+            }
+        }
+        return null
+    }
 
-		for (Item item : this) {
-			if (itemClass.isInstance( item )) {
-				return (T)item;
-			}
-		}
-		
-		return null;
-	}
-	
-	@SuppressWarnings("unchecked")
-	public <T extends Key> T getKey( Class<T> kind, int depth ) {
-		
-		for (Item item : backpack) {
-			if (item.getClass() == kind && ((Key)item).depth == depth) {
-				return (T)item;
-			}
-		}
-		
-		return null;
-	}
-	
-	public void countIronKeys() {
-		
-		IronKey.curDepthQuantity = 0;
-		
-		for (Item item : backpack) {
-			if (item instanceof IronKey && ((IronKey)item).depth == Dungeon.depth) {
-				IronKey.curDepthQuantity++;
-			}
-		}
-	}
-	
-	public void identify() {
-		for (Item item : this) {
-			item.identify();
-		}
-	}
-	
-	public void observe() {
-		if (weapon != null) {
-			weapon.identify();
-			Badges.validateItemLevelAquired( weapon );
-		}
-		if (armor != null) {
-			armor.identify();
-			Badges.validateItemLevelAquired( armor );
-		}
-		if (ring1 != null) {
-			ring1.identify();
-			Badges.validateItemLevelAquired( ring1 );
-		}
-		if (ring2 != null) {
-			ring2.identify();
-			Badges.validateItemLevelAquired( ring2 );
-		}
-		for (Item item : backpack) {
-			item.cursedKnown = true;
-		}
-	}
-	
-	public void uncurseEquipped() {
-		ScrollOfRemoveCurse.uncurse( owner, armor, weapon, ring1, ring2 );
-	}
-	
-	public Item randomUnequipped() {
-		return Random.element( backpack.items );
-	}
-	
-	public void resurrect( int depth ) {
-		for (Item item : backpack.items.toArray( new Item[0])) {
-			if (item instanceof Key) {
-				if (((Key)item).depth == depth) {
-					item.detachAll( backpack );
-				}
-			} else if (item.unique) {
-				// Keep unique items
-			} else if (!item.isEquipped( owner )) {
-				item.detachAll( backpack );
-			}
-		}
-		
-		if (weapon != null) {
-			weapon.cursed = false;
-			weapon.activate( owner );
-		}
-		
-		if (armor != null) {
-			armor.cursed = false;
-		}
-		
-		if (ring1 != null) {
-			ring1.cursed = false;
-			ring1.activate( owner );
-		}
-		if (ring2 != null) {
-			ring2.cursed = false;
-			ring2.activate( owner );
-		}
-	}
-	
-	public int charge( boolean full) {
-		
-		int count = 0;
-		
-		for (Item item : this) {
-			if (item instanceof Wand) {
-				Wand wand = (Wand)item;
-				if (wand.curCharges < wand.maxCharges) {
-					wand.curCharges = full ? wand.maxCharges : wand.curCharges + 1;
-					count++;
-					
-					wand.updateQuickslot();
-				}
-			}
-		}
-		
-		return count;
-	}
-	
-	public int discharge() {
-		
-		int count = 0;
-		
-		for (Item item : this) {
-			if (item instanceof Wand) {
-				Wand wand = (Wand)item;
-				if (wand.curCharges > 0) {
-					wand.curCharges--;
-					count++;
-					
-					wand.updateQuickslot();
-				}
-			}
-		}
-		
-		return count;
-	}
+    fun countIronKeys() {
+        IronKey.curDepthQuantity = 0
+        for (item in backpack) {
+            if (item is IronKey && (item as IronKey).depth === Dungeon.depth) {
+                IronKey.curDepthQuantity++
+            }
+        }
+    }
 
-	@Override
-	public Iterator<Item> iterator() {
-		return new ItemIterator(); 
-	}
-	
-	private class ItemIterator implements Iterator<Item> {
+    fun identify() {
+        for (item in this) {
+            item.identify()
+        }
+    }
 
-		private int index = 0;
-		
-		private Iterator<Item> backpackIterator = backpack.iterator();
-		
-		private Item[] equipped = {weapon, armor, ring1, ring2};
-		private int backpackIndex = equipped.length;
-		
-		@Override
-		public boolean hasNext() {
-			
-			for (int i=index; i < backpackIndex; i++) {
-				if (equipped[i] != null) {
-					return true;
-				}
-			}
-			
-			return backpackIterator.hasNext();
-		}
+    fun observe() {
+        if (weapon != null) {
+            weapon.identify()
+            Badges.validateItemLevelAquired(weapon)
+        }
+        if (armor != null) {
+            armor.identify()
+            Badges.validateItemLevelAquired(armor)
+        }
+        if (ring1 != null) {
+            ring1.identify()
+            Badges.validateItemLevelAquired(ring1)
+        }
+        if (ring2 != null) {
+            ring2.identify()
+            Badges.validateItemLevelAquired(ring2)
+        }
+        for (item in backpack) {
+            item.cursedKnown = true
+        }
+    }
 
-		@Override
-		public Item next() {
-			
-			while (index < backpackIndex) {
-				Item item = equipped[index++];
-				if (item != null) {
-					return item;
-				}
-			}
-			
-			return backpackIterator.next();
-		}
+    fun uncurseEquipped() {
+        ScrollOfRemoveCurse.uncurse(owner, armor, weapon, ring1, ring2)
+    }
 
-		@Override
-		public void remove() {
-			switch (index) {
-			case 0:
-				equipped[0] = weapon = null;
-				break;
-			case 1:
-				equipped[1] = armor = null;
-				break;
-			case 2:
-				equipped[2] = ring1 = null;
-				break;
-			case 3:
-				equipped[3] = ring2 = null;
-				break;
-			default:
-				backpackIterator.remove();
-			}
-		}
-	}
+    fun randomUnequipped(): Item {
+        return Random.element(backpack.items)
+    }
+
+    fun resurrect(depth: Int) {
+        for (item in backpack.items.toArray(arrayOfNulls<Item>(0))) {
+            if (item is Key) {
+                if ((item as Key).depth === depth) {
+                    item.detachAll(backpack)
+                }
+            } else if (item.unique) {
+                // Keep unique items
+            } else if (!item.isEquipped(owner)) {
+                item.detachAll(backpack)
+            }
+        }
+        if (weapon != null) {
+            weapon.cursed = false
+            weapon.activate(owner)
+        }
+        if (armor != null) {
+            armor.cursed = false
+        }
+        if (ring1 != null) {
+            ring1.cursed = false
+            ring1.activate(owner)
+        }
+        if (ring2 != null) {
+            ring2.cursed = false
+            ring2.activate(owner)
+        }
+    }
+
+    fun charge(full: Boolean): Int {
+        var count = 0
+        for (item in this) {
+            if (item is Wand) {
+                val wand: Wand = item as Wand
+                if (wand.curCharges < wand.maxCharges) {
+                    wand.curCharges = if (full) wand.maxCharges else wand.curCharges + 1
+                    count++
+                    wand.updateQuickslot()
+                }
+            }
+        }
+        return count
+    }
+
+    fun discharge(): Int {
+        var count = 0
+        for (item in this) {
+            if (item is Wand) {
+                val wand: Wand = item as Wand
+                if (wand.curCharges > 0) {
+                    wand.curCharges--
+                    count++
+                    wand.updateQuickslot()
+                }
+            }
+        }
+        return count
+    }
+
+    override fun iterator(): MutableIterator<Item> {
+        return ItemIterator()
+    }
+
+    private inner class ItemIterator : MutableIterator<Item?> {
+        private var index = 0
+        private val backpackIterator: MutableIterator<Item> = backpack.iterator()
+        private val equipped: Array<Item?> = arrayOf<Item?>(weapon, armor, ring1, ring2)
+        private val backpackIndex = equipped.size
+        override fun hasNext(): Boolean {
+            for (i in index until backpackIndex) {
+                if (equipped[i] != null) {
+                    return true
+                }
+            }
+            return backpackIterator.hasNext()
+        }
+
+        override fun next(): Item {
+            while (index < backpackIndex) {
+                val item: Item? = equipped[index++]
+                if (item != null) {
+                    return item
+                }
+            }
+            return backpackIterator.next()
+        }
+
+        override fun remove() {
+            when (index) {
+                0 -> {
+                    weapon = null
+                    equipped[0] = weapon
+                }
+                1 -> {
+                    armor = null
+                    equipped[1] = armor
+                }
+                2 -> {
+                    ring1 = null
+                    equipped[2] = ring1
+                }
+                3 -> {
+                    ring2 = null
+                    equipped[3] = ring2
+                }
+                else -> backpackIterator.remove()
+            }
+        }
+    }
+
+    companion object {
+        const val BACKPACK_SIZE = 19
+        private const val WEAPON = "weapon"
+        private const val ARMOR = "armor"
+        private const val RING1 = "ring1"
+        private const val RING2 = "ring2"
+    }
+
+    init {
+        this.owner = owner
+        backpack = object : Bag() {
+            init {
+                name = "backpack"
+                size = BACKPACK_SIZE
+            }
+        }
+        backpack.owner = owner
+    }
 }

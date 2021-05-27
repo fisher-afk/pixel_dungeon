@@ -15,165 +15,118 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.plants;
+package com.watabou.pixeldungeon.plants
 
-import java.util.ArrayList;
+import com.watabou.noosa.audio.Sample
 
-import com.watabou.noosa.audio.Sample;
-import com.watabou.pixeldungeon.Assets;
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.buffs.Barkskin;
-import com.watabou.pixeldungeon.actors.buffs.Buff;
-import com.watabou.pixeldungeon.actors.hero.Hero;
-import com.watabou.pixeldungeon.actors.hero.HeroSubClass;
-import com.watabou.pixeldungeon.effects.CellEmitter;
-import com.watabou.pixeldungeon.effects.particles.LeafParticle;
-import com.watabou.pixeldungeon.items.Dewdrop;
-import com.watabou.pixeldungeon.items.Generator;
-import com.watabou.pixeldungeon.items.Item;
-import com.watabou.pixeldungeon.levels.Level;
-import com.watabou.pixeldungeon.levels.Terrain;
-import com.watabou.pixeldungeon.sprites.PlantSprite;
-import com.watabou.pixeldungeon.utils.Utils;
-import com.watabou.utils.Bundlable;
-import com.watabou.utils.Bundle;
-import com.watabou.utils.Random;
+class Plant : Bundlable {
+    var plantName: String? = null
+    var image = 0
+    var pos = 0
+    var sprite: PlantSprite? = null
+    fun activate(ch: Char?) {
+        if (ch is Hero && (ch as Hero?).subClass === HeroSubClass.WARDEN) {
+            Buff.affect(ch, Barkskin::class.java).level(ch.HT / 3)
+        }
+        wither()
+    }
 
-public class Plant implements Bundlable {
+    fun wither() {
+        Dungeon.level.uproot(pos)
+        sprite.kill()
+        if (Dungeon.visible.get(pos)) {
+            CellEmitter.get(pos).burst(LeafParticle.GENERAL, 6)
+        }
+        if (Dungeon.hero.subClass === HeroSubClass.WARDEN) {
+            if (Random.Int(5) === 0) {
+                Dungeon.level.drop(Generator.random(Generator.Category.SEED), pos).sprite.drop()
+            }
+            if (Random.Int(5) === 0) {
+                Dungeon.level.drop(Dewdrop(), pos).sprite.drop()
+            }
+        }
+    }
 
-	public String plantName;
-	
-	public int image;
-	public int pos;
-	
-	public PlantSprite sprite;
-	
-	public void activate( Char ch ) {
-		
-		if (ch instanceof Hero && ((Hero)ch).subClass == HeroSubClass.WARDEN) {
-			Buff.affect( ch, Barkskin.class ).level( ch.HT / 3 );
-		}
-		
-		wither();
-	}
-	
-	public void wither() {
-		Dungeon.level.uproot( pos );
-		
-		sprite.kill();
-		if (Dungeon.visible[pos]) {
-			CellEmitter.get( pos ).burst( LeafParticle.GENERAL, 6 );
-		}
-		
-		if (Dungeon.hero.subClass == HeroSubClass.WARDEN) {
-			if (Random.Int( 5 ) == 0) {
-				Dungeon.level.drop( Generator.random( Generator.Category.SEED ), pos ).sprite.drop();
-			}
-			if (Random.Int( 5 ) == 0) {
-				Dungeon.level.drop( new Dewdrop(), pos ).sprite.drop();
-			}
-		}
-	}
-	
-	private static final String POS	= "pos";
+    fun restoreFromBundle(bundle: Bundle) {
+        pos = bundle.getInt(POS)
+    }
 
-	@Override
-	public void restoreFromBundle( Bundle bundle ) {
-		pos = bundle.getInt( POS );
-	}
+    fun storeInBundle(bundle: Bundle) {
+        bundle.put(POS, pos)
+    }
 
-	@Override
-	public void storeInBundle( Bundle bundle ) {
-		bundle.put( POS, pos );
-	}
-	
-	public String desc() {
-		return null;
-	}
-	
-	public static class Seed extends Item {
-		
-		public static final String AC_PLANT	= "PLANT";
-		
-		private static final String TXT_INFO = "Throw this seed to the place where you want to grow %s.\n\n%s";
-		
-		private static final float TIME_TO_PLANT = 1f;
-		
-		{
-			stackable = true;	
-			defaultAction = AC_THROW;
-		}
-		
-		protected Class<? extends Plant> plantClass;
-		protected String plantName;
-		
-		public Class<? extends Item> alchemyClass;
-		
-		@Override
-		public ArrayList<String> actions( Hero hero ) {
-			ArrayList<String> actions = super.actions( hero );
-			actions.add( AC_PLANT );
-			return actions;
-		}
-		
-		@Override
-		protected void onThrow( int cell ) {
-			if (Dungeon.level.map[cell] == Terrain.ALCHEMY || Level.pit[cell]) {
-				super.onThrow( cell );
-			} else {
-				Dungeon.level.plant( this, cell );
-			}
-		}
-		
-		@Override
-		public void execute( Hero hero, String action ) {
-			if (action.equals( AC_PLANT )) {
-							
-				hero.spend( TIME_TO_PLANT );
-				hero.busy();
-				((Seed)detach( hero.belongings.backpack )).onThrow( hero.pos );
-				
-				hero.sprite.operate( hero.pos );
-				
-			} else {
-				
-				super.execute (hero, action );
-				
-			}
-		}
-		
-		public Plant couch( int pos ) {
-			try {
-				if (Dungeon.visible[pos]) {
-					Sample.INSTANCE.play( Assets.SND_PLANT );
-				}
-				Plant plant = plantClass.newInstance();
-				plant.pos = pos;
-				return plant;
-			} catch (Exception e) {
-				return null;
-			}
-		}
-		
-		@Override
-		public boolean isUpgradable() {
-			return false;
-		}
-		
-		@Override
-		public boolean isIdentified() {
-			return true;
-		}
-		
-		@Override
-		public int price() {
-			return 10 * quantity;
-		}
-		
-		@Override
-		public String info() { 
-			return String.format( TXT_INFO, Utils.indefinite( plantName ), desc() );
-		}
-	}
+    fun desc(): String? {
+        return null
+    }
+
+    class Seed : Item() {
+        protected var plantClass: Class<out Plant>? = null
+        protected var plantName: String? = null
+        var alchemyClass: Class<out Item?>? = null
+        fun actions(hero: Hero?): ArrayList<String> {
+            val actions: ArrayList<String> = super.actions(hero)
+            actions.add(AC_PLANT)
+            return actions
+        }
+
+        protected fun onThrow(cell: Int) {
+            if (Dungeon.level.map.get(cell) === Terrain.ALCHEMY || Level.pit.get(cell)) {
+                super.onThrow(cell)
+            } else {
+                Dungeon.level.plant(this, cell)
+            }
+        }
+
+        fun execute(hero: Hero, action: String) {
+            if (action == AC_PLANT) {
+                hero.spend(TIME_TO_PLANT)
+                hero.busy()
+                (detach(hero.belongings.backpack) as Seed).onThrow(hero.pos)
+                hero.sprite.operate(hero.pos)
+            } else {
+                super.execute(hero, action)
+            }
+        }
+
+        fun couch(pos: Int): Plant? {
+            return try {
+                if (Dungeon.visible.get(pos)) {
+                    Sample.INSTANCE.play(Assets.SND_PLANT)
+                }
+                val plant = plantClass!!.newInstance()
+                plant.pos = pos
+                plant
+            } catch (e: Exception) {
+                null
+            }
+        }
+
+        val isUpgradable: Boolean
+            get() = false
+        val isIdentified: Boolean
+            get() = true
+
+        fun price(): Int {
+            return 10 * quantity
+        }
+
+        fun info(): String {
+            return java.lang.String.format(TXT_INFO, Utils.indefinite(plantName), desc())
+        }
+
+        companion object {
+            const val AC_PLANT = "PLANT"
+            private const val TXT_INFO = "Throw this seed to the place where you want to grow %s.\n\n%s"
+            private const val TIME_TO_PLANT = 1f
+        }
+
+        init {
+            stackable = true
+            defaultAction = AC_THROW
+        }
+    }
+
+    companion object {
+        private const val POS = "pos"
+    }
 }

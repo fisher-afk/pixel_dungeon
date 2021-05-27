@@ -15,72 +15,49 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.levels.traps;
+package com.watabou.pixeldungeon.levels.traps
 
-import java.util.ArrayList;
+import com.watabou.pixeldungeon.Dungeon
 
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.Actor;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.mobs.Bestiary;
-import com.watabou.pixeldungeon.actors.mobs.Mob;
-import com.watabou.pixeldungeon.items.wands.WandOfBlink;
-import com.watabou.pixeldungeon.levels.Level;
-import com.watabou.pixeldungeon.scenes.GameScene;
-import com.watabou.utils.Random;
+object SummoningTrap {
+    private const val DELAY = 2f
+    private val DUMMY: Mob = object : Mob() {}
 
-public class SummoningTrap {
-
-	private static final float DELAY = 2f;
-	
-	private static final Mob DUMMY = new Mob() {};
-	
-	// 0x770088
-	
-	public static void trigger( int pos, Char c ) {
-		
-		if (Dungeon.bossLevel()) {
-			return;
-		}
-		
-		if (c != null) {
-			Actor.occupyCell( c );
-		}
-		
-		int nMobs = 1;
-		if (Random.Int( 2 ) == 0) {
-			nMobs++;
-			if (Random.Int( 2 ) == 0) {
-				nMobs++;
-			}
-		}
-		
-		ArrayList<Integer> candidates = new ArrayList<Integer>();
-		
-		for (int i=0; i < Level.NEIGHBOURS8.length; i++) {
-			int p = pos + Level.NEIGHBOURS8[i];
-			if (Actor.findChar( p ) == null && (Level.passable[p] || Level.avoid[p])) {
-				candidates.add( p );
-			}
-		}
-		
-		ArrayList<Integer> respawnPoints = new ArrayList<Integer>();
-		
-		while (nMobs > 0 && candidates.size() > 0) {
-			int index = Random.index( candidates );
-			
-			DUMMY.pos = candidates.get( index );
-			Actor.occupyCell( DUMMY );
-			
-			respawnPoints.add( candidates.remove( index ) );
-			nMobs--;
-		}
-		
-		for (Integer point : respawnPoints) {
-			Mob mob = Bestiary.mob( Dungeon.depth );
-			mob.state = mob.WANDERING;
-			GameScene.add( mob, DELAY );
-			WandOfBlink.appear( mob, point );
-		}
-	}
+    // 0x770088
+    fun trigger(pos: Int, c: Char?) {
+        if (Dungeon.bossLevel()) {
+            return
+        }
+        if (c != null) {
+            Actor.occupyCell(c)
+        }
+        var nMobs = 1
+        if (Random.Int(2) === 0) {
+            nMobs++
+            if (Random.Int(2) === 0) {
+                nMobs++
+            }
+        }
+        val candidates = ArrayList<Int>()
+        for (i in 0 until Level.NEIGHBOURS8.length) {
+            val p: Int = pos + Level.NEIGHBOURS8.get(i)
+            if (Actor.findChar(p) == null && (Level.passable.get(p) || Level.avoid.get(p))) {
+                candidates.add(p)
+            }
+        }
+        val respawnPoints = ArrayList<Int>()
+        while (nMobs > 0 && candidates.size > 0) {
+            val index: Int = Random.index(candidates)
+            DUMMY.pos = candidates[index]
+            Actor.occupyCell(DUMMY)
+            respawnPoints.add(candidates.removeAt(index))
+            nMobs--
+        }
+        for (point in respawnPoints) {
+            val mob: Mob = Bestiary.mob(Dungeon.depth)
+            mob.state = mob.WANDERING
+            GameScene.add(mob, DELAY)
+            WandOfBlink.appear(mob, point)
+        }
+    }
 }

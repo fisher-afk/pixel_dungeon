@@ -15,153 +15,195 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.levels;
+package com.watabou.pixeldungeon.levels
 
-public class Terrain {
+import com.watabou.pixeldungeon.actors.hero.HeroClass.storeInBundle
+import com.watabou.pixeldungeon.actors.hero.HeroClass.title
+import com.watabou.pixeldungeon.actors.hero.HeroClass.masteryBadge
+import com.watabou.pixeldungeon.actors.hero.HeroClass.spritesheet
+import com.watabou.pixeldungeon.actors.hero.HeroClass.perks
+import com.watabou.pixeldungeon.actors.hero.HeroClass
+import com.watabou.pixeldungeon.ui.Toast
+import kotlin.jvm.JvmOverloads
+import java.util.ArrayList
+import com.watabou.pixeldungeon.ui.Toolbar
+import java.lang.ClassNotFoundException
+import com.watabou.pixeldungeon.ui.BadgesList.ListItem
+import java.lang.Exception
+import java.lang.StringBuilder
+import java.util.HashMap
+import java.util.HashSet
+import java.util.LinkedList
+import com.watabou.pixeldungeon.items.Item
+import java.util.Collections
+import java.util.Comparator
+import java.io.IOException
+import kotlin.Throws
+import java.util.Arrays
+import android.util.Log
+import java.util.Locale
+import GamesInProgress.Info
+import com.watabou.pixeldungeon.actors.mobs.Spinner
+import com.watabou.pixeldungeon.actors.blobs.Blob
+import android.util.SparseArray
+import Graph.Node
+import android.opengl.GLES20
+import javax.microedition.khronos.opengles.GL10
+import com.watabou.pixeldungeon.levels.HallsLevel.Stream
+import kotlin.jvm.Synchronized
+import android.content.Intent
+import android.net.Uri
+import java.nio.FloatBuffer
+import java.lang.Thread
+import java.io.FileNotFoundException
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.annotation.SuppressLint
+import java.nio.ShortBuffer
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
+import android.util.FloatMath
+import android.graphics.RectF
+import com.watabou.pixeldungeon.windows.WndTabbed.Tab
+import com.watabou.pixeldungeon.windows.WndJournal.ListItem
+import com.watabou.pixeldungeon.windows.WndCatalogus.ListItem
+import java.io.OutputStream
+import java.io.InputStream
+import android.content.SharedPreferences
+import android.os.Bundle
+import android.util.DisplayMetrics
+import android.content.pm.ActivityInfo
+import java.lang.Runnable
+import android.view.View
+import com.watabou.pixeldungeon.GamesInProgress.Info
 
-	public static final int CHASM			= 0;
-	public static final int EMPTY			= 1;
-	public static final int GRASS			= 2;
-	public static final int EMPTY_WELL		= 3;
-	public static final int WALL			= 4;
-	public static final int DOOR			= 5;
-	public static final int OPEN_DOOR		= 6;
-	public static final int ENTRANCE		= 7;
-	public static final int EXIT			= 8;
-	public static final int EMBERS			= 9;
-	public static final int LOCKED_DOOR		= 10;
-	public static final int PEDESTAL		= 11;
-	public static final int WALL_DECO		= 12;
-	public static final int BARRICADE		= 13;
-	public static final int EMPTY_SP		= 14;
-	public static final int HIGH_GRASS		= 15;
-	public static final int EMPTY_DECO		= 24;
-	public static final int LOCKED_EXIT		= 25;
-	public static final int UNLOCKED_EXIT	= 26;
-	public static final int SIGN			= 29;
-	public static final int WELL			= 34;
-	public static final int STATUE			= 35;
-	public static final int STATUE_SP		= 36;
-	public static final int BOOKSHELF		= 41;
-	public static final int ALCHEMY			= 42;
-	public static final int CHASM_FLOOR		= 43;
-	public static final int CHASM_FLOOR_SP	= 44;
-	public static final int CHASM_WALL		= 45;
-	public static final int CHASM_WATER		= 46;
-	
-	public static final int SECRET_DOOR				= 16;
-	public static final int TOXIC_TRAP				= 17;
-	public static final int SECRET_TOXIC_TRAP		= 18;
-	public static final int FIRE_TRAP				= 19;
-	public static final int SECRET_FIRE_TRAP		= 20;
-	public static final int PARALYTIC_TRAP			= 21;
-	public static final int SECRET_PARALYTIC_TRAP	= 22;
-	public static final int INACTIVE_TRAP			= 23;
-	public static final int POISON_TRAP				= 27;
-	public static final int SECRET_POISON_TRAP		= 28;
-	public static final int ALARM_TRAP				= 30;
-	public static final int SECRET_ALARM_TRAP		= 31;
-	public static final int LIGHTNING_TRAP			= 32;
-	public static final int SECRET_LIGHTNING_TRAP	= 33;
-	public static final int GRIPPING_TRAP			= 37;
-	public static final int SECRET_GRIPPING_TRAP	= 38;
-	public static final int SUMMONING_TRAP			= 39;
-	public static final int SECRET_SUMMONING_TRAP	= 40;
-	
-	public static final int WATER_TILES	= 48;
-	public static final int WATER		= 63;
-	
-	public static final int PASSABLE		= 0x01;
-	public static final int LOS_BLOCKING	= 0x02;
-	public static final int FLAMABLE		= 0x04;
-	public static final int SECRET			= 0x08;
-	public static final int SOLID			= 0x10;
-	public static final int AVOID			= 0x20;
-	public static final int LIQUID			= 0x40;
-	public static final int PIT				= 0x80;
-	
-	public static final int UNSTITCHABLE	= 0x100; 
-	
-	public static final int[] flags = new int[256];
-	static {
-		flags[CHASM]		= AVOID	| PIT									| UNSTITCHABLE;
-		flags[EMPTY]		= PASSABLE;
-		flags[GRASS]		= PASSABLE | FLAMABLE;
-		flags[EMPTY_WELL]	= PASSABLE;
-		flags[WATER]		= PASSABLE | LIQUID 							| UNSTITCHABLE;
-		flags[WALL]			= LOS_BLOCKING | SOLID 							| UNSTITCHABLE;
-		flags[DOOR]			= PASSABLE | LOS_BLOCKING | FLAMABLE | SOLID	| UNSTITCHABLE;
-		flags[OPEN_DOOR]	= PASSABLE | FLAMABLE 							| UNSTITCHABLE;
-		flags[ENTRANCE]		= PASSABLE/* | SOLID*/;
-		flags[EXIT]			= PASSABLE;
-		flags[EMBERS]		= PASSABLE;
-		flags[LOCKED_DOOR]	= LOS_BLOCKING | SOLID 							| UNSTITCHABLE;
-		flags[PEDESTAL]		= PASSABLE 										| UNSTITCHABLE;
-		flags[WALL_DECO]	= flags[WALL];
-		flags[BARRICADE]	= FLAMABLE | SOLID | LOS_BLOCKING;
-		flags[EMPTY_SP]		= flags[EMPTY]									| UNSTITCHABLE;
-		flags[HIGH_GRASS]	= PASSABLE | LOS_BLOCKING | FLAMABLE;
-		flags[EMPTY_DECO]	= flags[EMPTY];
-		flags[LOCKED_EXIT]	= SOLID;
-		flags[UNLOCKED_EXIT]= PASSABLE;
-		flags[SIGN]			= PASSABLE | FLAMABLE;
-		flags[WELL]			= AVOID;
-		flags[STATUE]		= SOLID;
-		flags[STATUE_SP]	= flags[STATUE] 								| UNSTITCHABLE;
-		flags[BOOKSHELF]	= flags[BARRICADE]								| UNSTITCHABLE;
-		flags[ALCHEMY]		= PASSABLE;
-		
-		flags[CHASM_WALL]		= flags[CHASM];
-		flags[CHASM_FLOOR]		= flags[CHASM];
-		flags[CHASM_FLOOR_SP]	= flags[CHASM];
-		flags[CHASM_WATER]		= flags[CHASM];
-		
-		flags[SECRET_DOOR]				= flags[WALL] | SECRET				| UNSTITCHABLE;
-		flags[TOXIC_TRAP]				= AVOID;
-		flags[SECRET_TOXIC_TRAP]		= flags[EMPTY] | SECRET;
-		flags[FIRE_TRAP]				= AVOID;
-		flags[SECRET_FIRE_TRAP]			= flags[EMPTY] | SECRET;
-		flags[PARALYTIC_TRAP]			= AVOID;
-		flags[SECRET_PARALYTIC_TRAP]	= flags[EMPTY] | SECRET;
-		flags[POISON_TRAP]				= AVOID;
-		flags[SECRET_POISON_TRAP]		= flags[EMPTY] | SECRET;
-		flags[ALARM_TRAP]				= AVOID;
-		flags[SECRET_ALARM_TRAP]		= flags[EMPTY] | SECRET;
-		flags[LIGHTNING_TRAP]			= AVOID;
-		flags[SECRET_LIGHTNING_TRAP]	= flags[EMPTY] | SECRET;
-		flags[GRIPPING_TRAP]			= AVOID;
-		flags[SECRET_GRIPPING_TRAP]		= flags[EMPTY] | SECRET;
-		flags[SUMMONING_TRAP]			= AVOID;
-		flags[SECRET_SUMMONING_TRAP]	= flags[EMPTY] | SECRET;
-		flags[INACTIVE_TRAP]			= flags[EMPTY];
-		
-		for (int i=WATER_TILES; i < WATER_TILES + 16; i++) {
-			flags[i] = flags[WATER];
-		}
-	};
-	
-	public static int discover( int terr ) {
-		switch (terr) {
-		case SECRET_DOOR:
-			return DOOR;
-		case SECRET_FIRE_TRAP:
-			return FIRE_TRAP;
-		case SECRET_PARALYTIC_TRAP:
-			return PARALYTIC_TRAP;
-		case SECRET_TOXIC_TRAP:
-			return TOXIC_TRAP;
-		case SECRET_POISON_TRAP:
-			return POISON_TRAP;
-		case SECRET_ALARM_TRAP:
-			return ALARM_TRAP;
-		case SECRET_LIGHTNING_TRAP:
-			return LIGHTNING_TRAP;
-		case SECRET_GRIPPING_TRAP:
-			return GRIPPING_TRAP;
-		case SECRET_SUMMONING_TRAP:
-			return SUMMONING_TRAP;
-		default:
-			return terr;
-		}
-	}
+object Terrain {
+    const val CHASM = 0
+    const val EMPTY = 1
+    const val GRASS = 2
+    const val EMPTY_WELL = 3
+    const val WALL = 4
+    const val DOOR = 5
+    const val OPEN_DOOR = 6
+    const val ENTRANCE = 7
+    const val EXIT = 8
+    const val EMBERS = 9
+    const val LOCKED_DOOR = 10
+    const val PEDESTAL = 11
+    const val WALL_DECO = 12
+    const val BARRICADE = 13
+    const val EMPTY_SP = 14
+    const val HIGH_GRASS = 15
+    const val EMPTY_DECO = 24
+    const val LOCKED_EXIT = 25
+    const val UNLOCKED_EXIT = 26
+    const val SIGN = 29
+    const val WELL = 34
+    const val STATUE = 35
+    const val STATUE_SP = 36
+    const val BOOKSHELF = 41
+    const val ALCHEMY = 42
+    const val CHASM_FLOOR = 43
+    const val CHASM_FLOOR_SP = 44
+    const val CHASM_WALL = 45
+    const val CHASM_WATER = 46
+    const val SECRET_DOOR = 16
+    const val TOXIC_TRAP = 17
+    const val SECRET_TOXIC_TRAP = 18
+    const val FIRE_TRAP = 19
+    const val SECRET_FIRE_TRAP = 20
+    const val PARALYTIC_TRAP = 21
+    const val SECRET_PARALYTIC_TRAP = 22
+    const val INACTIVE_TRAP = 23
+    const val POISON_TRAP = 27
+    const val SECRET_POISON_TRAP = 28
+    const val ALARM_TRAP = 30
+    const val SECRET_ALARM_TRAP = 31
+    const val LIGHTNING_TRAP = 32
+    const val SECRET_LIGHTNING_TRAP = 33
+    const val GRIPPING_TRAP = 37
+    const val SECRET_GRIPPING_TRAP = 38
+    const val SUMMONING_TRAP = 39
+    const val SECRET_SUMMONING_TRAP = 40
+    const val WATER_TILES = 48
+    const val WATER = 63
+    const val PASSABLE = 0x01
+    const val LOS_BLOCKING = 0x02
+    const val FLAMABLE = 0x04
+    const val SECRET = 0x08
+    const val SOLID = 0x10
+    const val AVOID = 0x20
+    const val LIQUID = 0x40
+    const val PIT = 0x80
+    const val UNSTITCHABLE = 0x100
+    val flags = IntArray(256)
+    fun discover(terr: Int): Int {
+        return when (terr) {
+            SECRET_DOOR -> DOOR
+            SECRET_FIRE_TRAP -> FIRE_TRAP
+            SECRET_PARALYTIC_TRAP -> PARALYTIC_TRAP
+            SECRET_TOXIC_TRAP -> TOXIC_TRAP
+            SECRET_POISON_TRAP -> POISON_TRAP
+            SECRET_ALARM_TRAP -> ALARM_TRAP
+            SECRET_LIGHTNING_TRAP -> LIGHTNING_TRAP
+            SECRET_GRIPPING_TRAP -> GRIPPING_TRAP
+            SECRET_SUMMONING_TRAP -> SUMMONING_TRAP
+            else -> terr
+        }
+    }
+
+    init {
+        flags[CHASM] = AVOID or PIT or UNSTITCHABLE
+        flags[EMPTY] = PASSABLE
+        flags[GRASS] = PASSABLE or FLAMABLE
+        flags[EMPTY_WELL] = PASSABLE
+        flags[WATER] = PASSABLE or LIQUID or UNSTITCHABLE
+        flags[WALL] = LOS_BLOCKING or SOLID or UNSTITCHABLE
+        flags[DOOR] = PASSABLE or LOS_BLOCKING or FLAMABLE or SOLID or UNSTITCHABLE
+        flags[OPEN_DOOR] = PASSABLE or FLAMABLE or UNSTITCHABLE
+        flags[ENTRANCE] = PASSABLE /* | SOLID*/
+        flags[EXIT] = PASSABLE
+        flags[EMBERS] = PASSABLE
+        flags[LOCKED_DOOR] = LOS_BLOCKING or SOLID or UNSTITCHABLE
+        flags[PEDESTAL] = PASSABLE or UNSTITCHABLE
+        flags[WALL_DECO] = flags[WALL]
+        flags[BARRICADE] = FLAMABLE or SOLID or LOS_BLOCKING
+        flags[EMPTY_SP] = flags[EMPTY] or UNSTITCHABLE
+        flags[HIGH_GRASS] = PASSABLE or LOS_BLOCKING or FLAMABLE
+        flags[EMPTY_DECO] = flags[EMPTY]
+        flags[LOCKED_EXIT] = SOLID
+        flags[UNLOCKED_EXIT] = PASSABLE
+        flags[SIGN] = PASSABLE or FLAMABLE
+        flags[WELL] = AVOID
+        flags[STATUE] = SOLID
+        flags[STATUE_SP] = flags[STATUE] or UNSTITCHABLE
+        flags[BOOKSHELF] = flags[BARRICADE] or UNSTITCHABLE
+        flags[ALCHEMY] = PASSABLE
+        flags[CHASM_WALL] = flags[CHASM]
+        flags[CHASM_FLOOR] = flags[CHASM]
+        flags[CHASM_FLOOR_SP] = flags[CHASM]
+        flags[CHASM_WATER] = flags[CHASM]
+        flags[SECRET_DOOR] = flags[WALL] or SECRET or UNSTITCHABLE
+        flags[TOXIC_TRAP] = AVOID
+        flags[SECRET_TOXIC_TRAP] = flags[EMPTY] or SECRET
+        flags[FIRE_TRAP] = AVOID
+        flags[SECRET_FIRE_TRAP] = flags[EMPTY] or SECRET
+        flags[PARALYTIC_TRAP] = AVOID
+        flags[SECRET_PARALYTIC_TRAP] = flags[EMPTY] or SECRET
+        flags[POISON_TRAP] = AVOID
+        flags[SECRET_POISON_TRAP] = flags[EMPTY] or SECRET
+        flags[ALARM_TRAP] = AVOID
+        flags[SECRET_ALARM_TRAP] = flags[EMPTY] or SECRET
+        flags[LIGHTNING_TRAP] = AVOID
+        flags[SECRET_LIGHTNING_TRAP] = flags[EMPTY] or SECRET
+        flags[GRIPPING_TRAP] = AVOID
+        flags[SECRET_GRIPPING_TRAP] = flags[EMPTY] or SECRET
+        flags[SUMMONING_TRAP] = AVOID
+        flags[SECRET_SUMMONING_TRAP] = flags[EMPTY] or SECRET
+        flags[INACTIVE_TRAP] = flags[EMPTY]
+        for (i in WATER_TILES until WATER_TILES + 16) {
+            flags[i] = flags[WATER]
+        }
+    }
 }

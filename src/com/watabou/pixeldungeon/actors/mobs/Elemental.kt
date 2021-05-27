@@ -15,96 +15,72 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.mobs;
+package com.watabou.pixeldungeon.actors.mobs
 
-import java.util.HashSet;
+class Elemental : Mob() {
+    fun damageRoll(): Int {
+        return Random.NormalIntRange(16, 20)
+    }
 
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.actors.buffs.Buff;
-import com.watabou.pixeldungeon.actors.buffs.Burning;
-import com.watabou.pixeldungeon.actors.buffs.Frost;
-import com.watabou.pixeldungeon.effects.Speck;
-import com.watabou.pixeldungeon.items.potions.PotionOfLiquidFlame;
-import com.watabou.pixeldungeon.items.scrolls.ScrollOfPsionicBlast;
-import com.watabou.pixeldungeon.items.wands.WandOfFirebolt;
-import com.watabou.pixeldungeon.items.weapon.enchantments.Fire;
-import com.watabou.pixeldungeon.sprites.ElementalSprite;
-import com.watabou.utils.Random;
+    fun attackSkill(target: Char?): Int {
+        return 25
+    }
 
-public class Elemental extends Mob {
+    fun dr(): Int {
+        return 5
+    }
 
-	{
-		name = "fire elemental";
-		spriteClass = ElementalSprite.class;
-		
-		HP = HT = 65;
-		defenseSkill = 20;
-		
-		EXP = 10;
-		maxLvl = 20;
-		
-		flying = true;
-		
-		loot = new PotionOfLiquidFlame();
-		lootChance = 0.1f;
-	}
-	
-	@Override
-	public int damageRoll() {
-		return Random.NormalIntRange( 16, 20 );
-	}
-	
-	@Override
-	public int attackSkill( Char target ) {
-		return 25;
-	}
-	
-	@Override
-	public int dr() {
-		return 5;
-	}
-	
-	@Override
-	public int attackProc( Char enemy, int damage ) {
-		if (Random.Int( 2 ) == 0) {
-			Buff.affect( enemy, Burning.class ).reignite( enemy );
-		}
-		
-		return damage;
-	}
-	
-	@Override
-	public void add( Buff buff ) {
-		if (buff instanceof Burning) {
-			if (HP < HT) {
-				HP++;
-				sprite.emitter().burst( Speck.factory( Speck.HEALING ), 1 );
-			}
-		} else {
-			if (buff instanceof Frost) {
-				damage( Random.NormalIntRange( 1, HT * 2 / 3 ), buff );
-			}
-			super.add( buff );
-		}
-	}
-	
-	@Override
-	public String description() {
-		return
-			"Wandering fire elementals are a byproduct of summoning greater entities. " +
-			"They are too chaotic in their nature to be controlled by even the most powerful demonologist.";
-	}
-	
-	private static final HashSet<Class<?>> IMMUNITIES = new HashSet<Class<?>>();
-	static {
-		IMMUNITIES.add( Burning.class );
-		IMMUNITIES.add( Fire.class );
-		IMMUNITIES.add( WandOfFirebolt.class );
-		IMMUNITIES.add( ScrollOfPsionicBlast.class );
-	}
-	
-	@Override
-	public HashSet<Class<?>> immunities() {
-		return IMMUNITIES;
-	}
+    fun attackProc(enemy: Char?, damage: Int): Int {
+        if (Random.Int(2) === 0) {
+            Buff.affect(enemy, Burning::class.java).reignite(enemy)
+        }
+        return damage
+    }
+
+    override fun add(buff: Buff?) {
+        if (buff is Burning) {
+            if (HP < HT) {
+                HP++
+                sprite.emitter().burst(Speck.factory(Speck.HEALING), 1)
+            }
+        } else {
+            if (buff is Frost) {
+                damage(Random.NormalIntRange(1, HT * 2 / 3), buff)
+            }
+            super.add(buff)
+        }
+    }
+
+    override fun description(): String {
+        return "Wandering fire elementals are a byproduct of summoning greater entities. " +
+                "They are too chaotic in their nature to be controlled by even the most powerful demonologist."
+    }
+
+    companion object {
+        private val IMMUNITIES = HashSet<Class<*>>()
+
+        init {
+            IMMUNITIES.add(Burning::class.java)
+            IMMUNITIES.add(Fire::class.java)
+            IMMUNITIES.add(WandOfFirebolt::class.java)
+            IMMUNITIES.add(ScrollOfPsionicBlast::class.java)
+        }
+    }
+
+    fun immunities(): HashSet<Class<*>> {
+        return IMMUNITIES
+    }
+
+    init {
+        name = "fire elemental"
+        spriteClass = ElementalSprite::class.java
+        HT = 65
+        HP = HT
+        defenseSkill = 20
+        EXP = 10
+        maxLvl = 20
+        flying = true
+        loot = PotionOfLiquidFlame()
+        lootChance = 0.1f
+    }
 }

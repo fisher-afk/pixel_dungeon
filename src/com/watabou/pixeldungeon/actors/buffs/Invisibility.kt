@@ -15,46 +15,40 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.actors.buffs;
+package com.watabou.pixeldungeon.actors.buffs
 
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.actors.Char;
-import com.watabou.pixeldungeon.ui.BuffIndicator;
+import com.watabou.pixeldungeon.Dungeon
 
-public class Invisibility extends FlavourBuff {
+class Invisibility : FlavourBuff() {
+    override fun attachTo(target: Char): Boolean {
+        return if (super.attachTo(target)) {
+            target.invisible++
+            true
+        } else {
+            false
+        }
+    }
 
-	public static final float DURATION	= 15f;
-	
-	@Override
-	public boolean attachTo( Char target ) {
-		if (super.attachTo( target )) {
-			target.invisible++;
-			return true;
-		} else {
-			return false;
-		}
-	}
-	
-	@Override
-	public void detach() {
-		target.invisible--;
-		super.detach();
-	}
-	
-	@Override
-	public int icon() {
-		return BuffIndicator.INVISIBLE;
-	}
-	
-	@Override
-	public String toString() {
-		return "Invisible";
-	}
-	
-	public static void dispel() {
-		Invisibility buff = Dungeon.hero.buff( Invisibility.class );
-		if (buff != null && Dungeon.hero.visibleEnemies() > 0) {
-			buff.detach();
-		}
-	}
+    override fun detach() {
+        target.invisible--
+        super.detach()
+    }
+
+    override fun icon(): Int {
+        return BuffIndicator.INVISIBLE
+    }
+
+    override fun toString(): String {
+        return "Invisible"
+    }
+
+    companion object {
+        const val DURATION = 15f
+        fun dispel() {
+            val buff: Invisibility = Dungeon.hero.buff(Invisibility::class.java)
+            if (buff != null && Dungeon.hero.visibleEnemies() > 0) {
+                buff.detach()
+            }
+        }
+    }
 }

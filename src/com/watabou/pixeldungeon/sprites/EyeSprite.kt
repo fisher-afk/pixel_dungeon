@@ -15,54 +15,37 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-package com.watabou.pixeldungeon.sprites;
+package com.watabou.pixeldungeon.sprites
 
-import com.watabou.noosa.TextureFilm;
-import com.watabou.pixeldungeon.Assets;
-import com.watabou.pixeldungeon.Dungeon;
-import com.watabou.pixeldungeon.DungeonTilemap;
-import com.watabou.pixeldungeon.effects.DeathRay;
+import com.watabou.noosa.TextureFilm
 
-public class EyeSprite extends MobSprite {
-	
-	private int attackPos;
-	
-	public EyeSprite() {
-		super();
-		
-		texture( Assets.EYE );
-		
-		TextureFilm frames = new TextureFilm( texture, 16, 18 );
-		
-		idle = new Animation( 8, true );
-		idle.frames( frames, 0, 1, 2 );
-		
-		run = new Animation( 12, true );
-		run.frames( frames, 5, 6 );
-		
-		attack = new Animation( 8, false );
-		attack.frames( frames, 4, 3 );
-		
-		die = new Animation( 8, false );
-		die.frames( frames, 7, 8, 9 );
-		
-		play( idle );
-	}
-	
-	@Override
-	public void attack( int pos ) {
-		attackPos = pos;
-		super.attack( pos );
-	}
-	
-	@Override
-	public void onComplete( Animation anim ) {
-		super.onComplete( anim );
-		
-		if (anim == attack) {
-			if (Dungeon.visible[ch.pos] || Dungeon.visible[attackPos]) {
-				parent.add( new DeathRay( center(), DungeonTilemap.tileCenterToWorld( attackPos ) ) );
-			}
-		}
-	}
+class EyeSprite : MobSprite() {
+    private var attackPos = 0
+    override fun attack(pos: Int) {
+        attackPos = pos
+        super.attack(pos)
+    }
+
+    override fun onComplete(anim: Animation) {
+        super.onComplete(anim)
+        if (anim === attack) {
+            if (Dungeon.visible.get(ch.pos) || Dungeon.visible.get(attackPos)) {
+                parent.add(DeathRay(center(), DungeonTilemap.tileCenterToWorld(attackPos)))
+            }
+        }
+    }
+
+    init {
+        texture(Assets.EYE)
+        val frames = TextureFilm(texture, 16, 18)
+        idle = Animation(8, true)
+        idle.frames(frames, 0, 1, 2)
+        run = Animation(12, true)
+        run.frames(frames, 5, 6)
+        attack = Animation(8, false)
+        attack.frames(frames, 4, 3)
+        die = Animation(8, false)
+        die.frames(frames, 7, 8, 9)
+        play(idle)
+    }
 }
