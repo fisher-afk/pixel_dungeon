@@ -19,6 +19,26 @@ package com.watabou.pixeldungeon
 
 import android.os.Build
 import com.watabou.noosa.Game
+import com.watabou.pixeldungeon.actors.blobs.Foliage
+import com.watabou.pixeldungeon.actors.blobs.WaterOfHealth
+import com.watabou.pixeldungeon.actors.buffs.Shadows
+import com.watabou.pixeldungeon.actors.hero.Hero
+import com.watabou.pixeldungeon.actors.mobs.FetidRat
+import com.watabou.pixeldungeon.actors.mobs.npcs.MirrorImage
+import com.watabou.pixeldungeon.actors.mobs.npcs.Shopkeeper
+import com.watabou.pixeldungeon.items.quest.DriedRose
+import com.watabou.pixeldungeon.items.rings.RingOfElements
+import com.watabou.pixeldungeon.items.rings.RingOfMending
+import com.watabou.pixeldungeon.items.rings.RingOfPower
+import com.watabou.pixeldungeon.items.scrolls.ScrollOfEnchantment
+import com.watabou.pixeldungeon.items.scrolls.ScrollOfPsionicBlast
+import com.watabou.pixeldungeon.items.scrolls.ScrollOfUpgrade
+import com.watabou.pixeldungeon.items.wands.WandOfReach
+import com.watabou.pixeldungeon.items.weapon.enchantments.Shock
+import com.watabou.pixeldungeon.items.weapon.missiles.Boomerang
+import com.watabou.pixeldungeon.plants.Dreamweed
+import com.watabou.pixeldungeon.plants.Rotberry
+import com.watabou.pixeldungeon.scenes.TitleScene
 
 class PixelDungeon : Game(TitleScene::class.java) {
     protected fun onCreate(savedInstanceState: Bundle?) {
@@ -238,110 +258,110 @@ class PixelDungeon : Game(TitleScene::class.java) {
 
     init {
         com.watabou.utils.Bundle.addAlias(
-            com.watabou.pixeldungeon.items.scrolls.ScrollOfUpgrade::class.java,
+            ScrollOfUpgrade::class.java,
             "com.watabou.pixeldungeon.items.scrolls.ScrollOfEnhancement"
         )
         com.watabou.utils.Bundle.addAlias(
-            com.watabou.pixeldungeon.actors.blobs.WaterOfHealth::class.java,
+            WaterOfHealth::class.java,
             "com.watabou.pixeldungeon.actors.blobs.Light"
         )
         com.watabou.utils.Bundle.addAlias(
-            com.watabou.pixeldungeon.items.rings.RingOfMending::class.java,
+            RingOfMending::class.java,
             "com.watabou.pixeldungeon.items.rings.RingOfRejuvenation"
         )
         com.watabou.utils.Bundle.addAlias(
-            com.watabou.pixeldungeon.items.wands.WandOfReach::class.java,
+            WandOfReach::class.java,
             "com.watabou.pixeldungeon.items.wands.WandOfTelekenesis"
         )
         com.watabou.utils.Bundle.addAlias(
-            com.watabou.pixeldungeon.actors.blobs.Foliage::class.java,
+            Foliage::class.java,
             "com.watabou.pixeldungeon.actors.blobs.Blooming"
         )
         com.watabou.utils.Bundle.addAlias(
-            com.watabou.pixeldungeon.actors.buffs.Shadows::class.java,
+            Shadows::class.java,
             "com.watabou.pixeldungeon.actors.buffs.Rejuvenation"
         )
         com.watabou.utils.Bundle.addAlias(
-            com.watabou.pixeldungeon.items.scrolls.ScrollOfPsionicBlast::class.java,
+            ScrollOfPsionicBlast::class.java,
             "com.watabou.pixeldungeon.items.scrolls.ScrollOfNuclearBlast"
         )
         com.watabou.utils.Bundle.addAlias(
-            com.watabou.pixeldungeon.actors.hero.Hero::class.java,
+            Hero::class.java,
             "com.watabou.pixeldungeon.actors.Hero"
         )
         com.watabou.utils.Bundle.addAlias(
-            com.watabou.pixeldungeon.actors.mobs.npcs.Shopkeeper::class.java,
+            Shopkeeper::class.java,
             "com.watabou.pixeldungeon.actors.mobs.Shopkeeper"
         )
         // 1.6.1
         com.watabou.utils.Bundle.addAlias(
-            com.watabou.pixeldungeon.items.quest.DriedRose::class.java,
+            DriedRose::class.java,
             "com.watabou.pixeldungeon.items.DriedRose"
         )
         com.watabou.utils.Bundle.addAlias(
-            com.watabou.pixeldungeon.actors.mobs.npcs.MirrorImage::class.java,
+            MirrorImage::class.java,
             "com.watabou.pixeldungeon.items.scrolls.ScrollOfMirrorImage\$MirrorImage"
         )
         // 1.6.4
         com.watabou.utils.Bundle.addAlias(
-            com.watabou.pixeldungeon.items.rings.RingOfElements::class.java,
+            RingOfElements::class.java,
             "com.watabou.pixeldungeon.items.rings.RingOfCleansing"
         )
         com.watabou.utils.Bundle.addAlias(
-            com.watabou.pixeldungeon.items.rings.RingOfElements::class.java,
+            RingOfElements::class.java,
             "com.watabou.pixeldungeon.items.rings.RingOfResistance"
         )
         com.watabou.utils.Bundle.addAlias(
-            com.watabou.pixeldungeon.items.weapon.missiles.Boomerang::class.java,
+            Boomerang::class.java,
             "com.watabou.pixeldungeon.items.weapon.missiles.RangersBoomerang"
         )
         com.watabou.utils.Bundle.addAlias(
-            com.watabou.pixeldungeon.items.rings.RingOfPower::class.java,
+            RingOfPower::class.java,
             "com.watabou.pixeldungeon.items.rings.RingOfEnergy"
         )
         // 1.7.2
         com.watabou.utils.Bundle.addAlias(
-            com.watabou.pixeldungeon.plants.Dreamweed::class.java,
+            Dreamweed::class.java,
             "com.watabou.pixeldungeon.plants.Blindweed"
         )
         com.watabou.utils.Bundle.addAlias(
-            com.watabou.pixeldungeon.plants.Dreamweed.Seed::class.java,
+            Dreamweed.Seed::class.java,
             "com.watabou.pixeldungeon.plants.Blindweed\$Seed"
         )
         // 1.7.4
         com.watabou.utils.Bundle.addAlias(
-            com.watabou.pixeldungeon.items.weapon.enchantments.Shock::class.java,
+            Shock::class.java,
             "com.watabou.pixeldungeon.items.weapon.enchantments.Piercing"
         )
         com.watabou.utils.Bundle.addAlias(
-            com.watabou.pixeldungeon.items.weapon.enchantments.Shock::class.java,
+            Shock::class.java,
             "com.watabou.pixeldungeon.items.weapon.enchantments.Swing"
         )
         com.watabou.utils.Bundle.addAlias(
-            com.watabou.pixeldungeon.items.scrolls.ScrollOfEnchantment::class.java,
+            ScrollOfEnchantment::class.java,
             "com.watabou.pixeldungeon.items.scrolls.ScrollOfWeaponUpgrade"
         )
         // 1.7.5
         com.watabou.utils.Bundle.addAlias(
-            com.watabou.pixeldungeon.items.scrolls.ScrollOfEnchantment::class.java,
+            ScrollOfEnchantment::class.java,
             "com.watabou.pixeldungeon.items.Stylus"
         )
         // 1.8.0
         com.watabou.utils.Bundle.addAlias(
-            com.watabou.pixeldungeon.actors.mobs.FetidRat::class.java,
+            FetidRat::class.java,
             "com.watabou.pixeldungeon.actors.mobs.npcs.Ghost\$FetidRat"
         )
         com.watabou.utils.Bundle.addAlias(
-            com.watabou.pixeldungeon.plants.Rotberry::class.java,
+            Rotberry::class.java,
             "com.watabou.pixeldungeon.actors.mobs.npcs.Wandmaker\$Rotberry"
         )
         com.watabou.utils.Bundle.addAlias(
-            com.watabou.pixeldungeon.plants.Rotberry.Seed::class.java,
+            Rotberry.Seed::class.java,
             "com.watabou.pixeldungeon.actors.mobs.npcs.Wandmaker\$Rotberry\$Seed"
         )
         // 1.9.0
         com.watabou.utils.Bundle.addAlias(
-            com.watabou.pixeldungeon.items.wands.WandOfReach::class.java,
+            WandOfReach::class.java,
             "com.watabou.pixeldungeon.items.wands.WandOfTelekinesis"
         )
     }
